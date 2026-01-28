@@ -1,0 +1,92 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<!-- Page Title -->
+<h2 class="text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-500 text-transparent bg-clip-text text-center mb-10">
+    Dashboard
+</h2>
+
+<!-- Stats Section -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+
+    <!-- Total Events -->
+    <div class="glass p-8 rounded-2xl soft-shadow hover:scale-[1.03] transition-transform duration-300">
+        <div class="flex justify-between items-center">
+            <h4 class="card-title">Total Events</h4>
+            <i data-lucide="calendar-days" class="icon-blob text-blue-500"></i>
+        </div>
+        <p class="count-number text-5xl font-extrabold mt-4 text-blue-600">{{ events|length }}</p>
+    </div>
+
+    <!-- Total Clubs -->
+    <div class="glass p-8 rounded-2xl soft-shadow hover:scale-[1.03] transition-transform duration-300">
+        <div class="flex justify-between items-center">
+            <h4 class="card-title">Total Clubs</h4>
+            <i data-lucide="building-2" class="icon-blob text-green-500"></i>
+        </div>
+        <p class="count-number text-5xl font-extrabold mt-4 text-green-600">{{ club_count }}</p>
+    </div>
+
+    <!-- Certificates Earned -->
+    <div class="glass p-8 rounded-2xl soft-shadow hover:scale-[1.03] transition-transform duration-300">
+        <div class="flex justify-between items-center">
+            <h4 class="card-title">Certificates Earned</h4>
+            <i data-lucide="award" class="icon-blob text-purple-500"></i>
+        </div>
+        <p class="count-number text-5xl font-extrabold mt-4 text-purple-600">3</p>
+    </div>
+
+</div>
+
+<!-- Section Title -->
+<h3 class="text-2xl font-semibold text-gray-800 mb-4">Upcoming Events</h3>
+
+<!-- Upcoming Events Table -->
+<div class="glass soft-shadow rounded-2xl p-6 backdrop-blur-xl overflow-x-auto">
+
+    <table class="modern-table w-full">
+        <thead>
+            <tr class="bg-gray-100 text-left">
+                <th class="p-3">Event</th>
+                <th class="p-3">Date</th>
+                <th class="p-3">Club</th>
+                <th class="p-3">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for e in events %}
+            <tr class="hover:bg-gray-50 transition border-b">
+                <td class="p-3">{{ e.title }}</td>
+                <td class="p-3">{{ e.date }}</td>
+                <td class="p-3">{{ e.club_name }}</td>
+                <td class="p-3">
+                    <a href="/events/{{ e.event_id }}" class="btn-primary px-4 py-1.5 text-sm">
+                        View
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+<!-- Script for animated counters -->
+<script>
+document.querySelectorAll(".count-number").forEach((el) => {
+    let final = parseInt(el.innerText);
+    let current = 0;
+    let step = Math.ceil(final / 40);
+    let interval = setInterval(() => {
+        current += step;
+        if (current >= final) {
+            current = final;
+            clearInterval(interval);
+        }
+        el.innerText = current;
+    }, 20);
+});
+</script>
+
+{% endblock %}

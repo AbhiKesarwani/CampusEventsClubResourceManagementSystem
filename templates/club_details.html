@@ -1,0 +1,166 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<h2 class="page-title text-center mb-6">{{ club.club_name }}</h2>
+
+<div class="glass p-8 rounded-2xl max-w-4xl mx-auto soft-shadow-lg">
+
+    <!-- Club Description -->
+    <div class="bg-white/60 backdrop-blur p-5 rounded-2xl soft-shadow mb-6">
+        <h3 class="text-xl font-bold text-blue-700 mb-2">About the Club</h3>
+        <p class="text-gray-700 text-lg leading-relaxed">
+            {{ club.description }}
+        </p>
+
+        {% if club.coordinator_name %}
+        <p class="mt-4 text-gray-900 font-semibold">
+            💼 Coordinator: {{ club.coordinator_name }}
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex gap-4 mb-8">
+        <a href="/clubs/{{ club.club_id }}/edit" 
+           class="btn-primary px-5 py-2 text-sm">
+           Edit
+        </a>
+
+        <form action="/clubs/{{ club.club_id }}/delete" method="POST"
+              onsubmit="return confirm('Are you sure to delete?');">
+            <button class="btn-danger px-5 py-2 text-sm">
+                Delete
+            </button>
+        </form>
+    </div>
+
+    <!-- Gallery Title -->
+    <h3 class="text-2xl font-bold text-blue-700 mb-4">Club Gallery</h3>
+
+    {% if club_images %}
+
+    <!-- CAROUSEL WRAPPER -->
+    <div class="relative w-full overflow-hidden rounded-2xl soft-shadow mb-6">
+
+        <h3 class="text-2xl font-bold mt-8 mb-4 text-blue-700">Club Gallery</h3>
+
+{% if club_images %}
+<div id="clubCarousel" class="relative w-full" data-carousel="slide">
+
+    <!-- Carousel wrapper -->
+    <div class="relative h-64 overflow-hidden rounded-2xl soft-shadow">
+
+        {% for img in club_images %}
+        <div class="hidden duration-700 ease-in-out" data-carousel-item>
+            <img src="/static/{{ img.img_path }}" class="absolute block w-full h-full object-cover rounded-2xl" />
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- Slider indicators -->
+    <div class="absolute z-30 flex space-x-3 -translate-x-1/2 bottom-4 left-1/2">
+        {% for img in club_images %}
+        <button type="button" class="w-3 h-3 rounded-full bg-white/70" aria-current="false"
+                aria-label="Slide {{ loop.index }}" data-carousel-slide-to="{{ loop.index0 }}"></button>
+        {% endfor %}
+    </div>
+
+    <!-- Slider controls -->
+    <button type="button"
+            class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer 
+                   group focus:outline-none">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/70 group-hover:bg-white">
+            <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
+        </span>
+        <span class="sr-only">Previous</span>
+    </button>
+    <button type="button"
+            class="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer 
+                   group focus:outline-none">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/70 group-hover:bg-white">
+            <i data-lucide="chevron-right" class="w-6 h-6 text-gray-800"></i>
+        </span>
+        <span class="sr-only">Next</span>
+    </button>
+
+</div>
+{% else %}
+<p class="text-gray-500">No images uploaded for this club.</p>
+{% endif %}
+
+
+        <!-- Prev Button -->
+        <button onclick="prevSlide()"
+                class="absolute top-1/2 -translate-y-1/2 left-4 bg-black/40 hover:bg-black/70 text-white p-3 rounded-full">
+            ‹
+        </button>
+
+        <!-- Next Button -->
+        <button onclick="nextSlide()"
+                class="absolute top-1/2 -translate-y-1/2 right-4 bg-black/40 hover:bg-black/70 text-white p-3 rounded-full">
+            ›
+        </button>
+    </div>
+
+    {% else %}
+    <p class="text-gray-500">No images uploaded.</p>
+    {% endif %}
+
+    <!-- Additional Image Grid (Optional Thumbnails) -->
+    {% if club_images %}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+        {% for img in club_images %}
+        <img src="/static/{{ img.img_path }}"
+             class="rounded-xl soft-shadow hover:scale-[1.02] transition cursor-pointer"
+             onclick="openClubModal('/static/{{ img.img_path }}')">
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+
+
+<!-- FULLSCREEN IMAGE MODAL -->
+<div id="clubImageModal"
+     class="fixed inset-0 bg-black/80 flex justify-center items-center hidden z-50 backdrop-blur">
+
+    <img id="clubModalImage"
+         class="max-w-[90%] max-h-[90%] rounded-2xl soft-shadow-lg border border-white/20">
+
+    <button onclick="closeClubModal()"
+            class="absolute top-6 right-6 text-white text-4xl font-bold hover:text-gray-300">
+        ✕
+    </button>
+</div>
+
+
+<!-- JS for Carousel & Modal -->
+<script>
+
+    // --- Modal Show/Hide ---
+    function openClubModal(src) {
+        document.getElementById("clubModalImage").src = src;
+        document.getElementById("clubImageModal").classList.remove("hidden");
+    }
+    function closeClubModal() {
+        document.getElementById("clubImageModal").classList.add("hidden");
+    }
+
+    // --- Carousel Logic ---
+    let slideIndex = 0;
+    function nextSlide() {
+        const carousel = document.getElementById("clubCarousel");
+        const total = carousel.children.length;
+        slideIndex = (slideIndex + 1) % total;
+        carousel.style.transform = `translateX(-${slideIndex * 100}%)`;
+    }
+    function prevSlide() {
+        const carousel = document.getElementById("clubCarousel");
+        const total = carousel.children.length;
+        slideIndex = (slideIndex - 1 + total) % total;
+        carousel.style.transform = `translateX(-${slideIndex * 100}%)`;
+    }
+</script>
+
+{% endblock %}

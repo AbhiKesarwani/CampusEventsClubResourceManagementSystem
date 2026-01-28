@@ -1,0 +1,85 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<h2 class="page-title text-center mb-8">Edit Club</h2>
+
+<div class="glass soft-shadow-lg p-8 rounded-2xl max-w-3xl mx-auto">
+
+    <!-- FORM -->
+    <form method="POST" enctype="multipart/form-data" class="grid gap-6">
+
+        <!-- Club Name -->
+        <div>
+            <label class="font-semibold text-gray-700">Club Name</label>
+            <input name="club_name"
+                   value="{{ club.club_name }}"
+                   class="input-box bg-white">
+        </div>
+
+        <!-- Description -->
+        <div>
+            <label class="font-semibold text-gray-700">Description</label>
+            <textarea name="description" class="input-box h-28 bg-white">{{ club.description }}</textarea>
+        </div>
+
+        <!-- Add Images -->
+        <div>
+            <label class="font-semibold text-gray-700">Add More Images</label>
+            <input type="file" name="club_images" multiple accept="image/*"
+                   class="input-box bg-white">
+        </div>
+
+        <button class="btn-primary w-full mt-2">
+            Save Changes
+        </button>
+    </form>
+
+    <!-- Gallery -->
+    <h3 class="text-xl font-bold text-blue-700 mt-10 mb-3">Club Gallery</h3>
+
+    {% if club_images %}
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
+
+        {% for img in club_images %}
+        <div class="relative group">
+
+            <img src="/static/{{ img.img_path }}"
+                 class="rounded-xl soft-shadow object-cover h-40 w-full"/>
+
+            <!-- DELETE BUTTON -->
+            <button onclick="deleteImage({{ club.club_id }}, {{ img.img_id }}, this)"
+                    class="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-lg opacity-0
+                           group-hover:opacity-100 transition">
+                Delete
+            </button>
+
+        </div>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <p class="text-gray-500">No images uploaded.</p>
+    {% endif %}
+
+</div>
+
+<!-- AJAX DELETE SCRIPT -->
+<script>
+function deleteImage(club_id, img_id, btn) {
+    if (!confirm("Delete this image?")) return;
+
+    fetch(`/clubs/${club_id}/delete_image/${img_id}`, {
+        method: "POST"
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            btn.parentElement.remove();  // Remove image div
+        } else {
+            alert("Error deleting image");
+        }
+    });
+}
+</script>
+
+{% endblock %}

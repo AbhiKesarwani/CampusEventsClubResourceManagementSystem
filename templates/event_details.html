@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="glass p-10 rounded-2xl max-w-5xl mx-auto soft-shadow-lg animate-fade-in">
+
+    <!-- TITLE -->
+    <h2 class="page-title text-center mb-8">{{ event.title }}</h2>
+
+    <!-- EVENT INFO CARD -->
+    <div class="bg-white/70 backdrop-blur-xl p-6 rounded-2xl soft-shadow border border-white/40">
+
+        <h3 class="text-xl font-bold text-blue-700 mb-4">Event Information</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 leading-relaxed">
+
+            <p><b class="text-gray-900">Club:</b> {{ event.club_name }}</p>
+            <p><b class="text-gray-900">Event Lead:</b> {{ event.event_lead }}</p>
+
+            <p><b class="text-gray-900">Contact:</b> {{ event.contact_no }}</p>
+            <p><b class="text-gray-900">Date:</b> {{ event.date }}</p>
+
+            <p><b class="text-gray-900">Time:</b> {{ event.start_time }} - {{ event.end_time }}</p>
+            <p><b class="text-gray-900">Venue:</b> {{ event.venue_name }}</p>
+
+            <p class="col-span-2"><b class="text-gray-900">Description:</b> {{ event.description }}</p>
+        </div>
+
+        {% if event.registration_link %}
+        <div class="mt-6">
+            <a href="{{ event.registration_link }}" target="_blank"
+               class="btn-primary px-6 py-3 shadow-lg hover:shadow-xl">
+                Open Registration Form
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- CLUB INFO -->
+    <div class="mt-8 p-6 rounded-2xl bg-white/70 backdrop-blur soft-shadow border border-white/40">
+        <h3 class="text-xl font-bold text-blue-700 mb-2">Organizing Club</h3>
+
+        <p class="text-gray-900 font-medium">{{ event.club_name }}</p>
+        <p class="text-gray-600 text-sm leading-relaxed">{{ event.club_description }}</p>
+    </div>
+
+    <!-- RESOURCES -->
+    <div class="mt-8 p-6 rounded-2xl bg-white/70 backdrop-blur soft-shadow border border-white/40">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Resources Assigned</h3>
+
+        <ul class="space-y-2">
+            {% if event_resources %}
+                {% for r in event_resources %}
+                <li class="flex justify-between items-center bg-white/60 p-3 rounded-lg soft-shadow">
+                    <span>{{ r.resource_name }}</span>
+                    <span class="font-semibold text-gray-900">x {{ r.quantity }}</span>
+                </li>
+                {% endfor %}
+            {% else %}
+                <li class="text-gray-400">No resources assigned</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- GALLERY -->
+    <h3 class="text-2xl font-bold mt-12 mb-4 text-blue-700">Event Gallery</h3>
+
+    {% if event_images %}
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+        {% for img in event_images %}
+        <div class="rounded-2xl overflow-hidden soft-shadow-lg cursor-pointer
+                    hover:scale-[1.03] hover:shadow-2xl transition"
+             onclick="openImageModal('/static/{{ img.img_path }}')">
+             
+            <img src="/static/{{ img.img_path }}"
+                 class="rounded-img h-48 w-full object-cover transition-all duration-300 hover:brightness-90">
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-500">No images uploaded.</p>
+    {% endif %}
+
+    <!-- MODAL -->
+    <div id="imageModal"
+         class="fixed inset-0 bg-black/80 backdrop-blur-lg flex justify-center items-center hidden z-50">
+
+        <img id="modalImage"
+             class="max-w-[92%] max-h-[92%] rounded-2xl shadow-2xl border border-white/20 animate-zoom-in">
+        
+        <button onclick="closeImageModal()"
+            class="absolute top-6 right-6 text-white text-4xl font-bold hover:text-gray-300 transition">
+            ✕
+        </button>
+    </div>
+
+    <script>
+        function openImageModal(src) {
+            document.getElementById("modalImage").src = src;
+            document.getElementById("imageModal").classList.remove("hidden");
+        }
+        function closeImageModal() {
+            document.getElementById("imageModal").classList.add("hidden");
+        }
+    </script>
+
+    <!-- BUTTONS -->
+    <div class="mt-10 flex gap-4 justify-end">
+
+        <a href="/events/{{ event.event_id }}/edit"
+           class="btn-primary shadow-md px-5 py-2 rounded-xl">
+           Edit
+        </a>
+
+        <form action="/events/{{ event.event_id }}/delete" method="POST"
+              onsubmit="return confirm('Are you sure to delete?');">
+            <button class="btn-danger px-5 py-2 rounded-xl shadow">
+                Delete
+            </button>
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
