@@ -1,0 +1,244 @@
+{% extends 'layout.html' %}
+{% block title %}Scan Attendance — {{ event.title }}{% endblock %}
+{% block page_title %}Attendance Scanner{% endblock %}
+
+{% block head %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto anim-fade">
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-slate-500 mb-6 flex items-center gap-1.5">
+        <a href="{{ url_for('events.list_events') }}" class="hover:text-indigo-600 transition">Events</a>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        <a href="{{ url_for('events.detail', event_id=event.event_id) }}" class="hover:text-indigo-600 transition truncate max-w-[180px]">{{ event.title }}</a>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        <span class="text-slate-700 dark:text-slate-300 font-medium">Scan Attendance</span>
+    </nav>
+
+    <!-- Event header -->
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5 mb-6 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600
+                    flex items-center justify-center flex-shrink-0">
+            <i data-lucide="scan-line" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+            <h1 class="text-lg font-bold text-slate-800 dark:text-slate-100">{{ event.title }}</h1>
+            <p class="text-sm text-slate-500">
+                {{ event.date.strftime('%A, %d %B %Y') if event.date else 'Date TBD' }}
+                {% if event.start_time %} · {{ event.start_time }}{% endif %}
+            </p>
+        </div>
+        <div class="ml-auto text-right">
+            <p class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">{{ attendance_records|length }}</p>
+            <p class="text-xs text-slate-500">attended</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- ── Scanner Panel ── -->
+        <div class="space-y-4">
+
+            <!-- Tab switcher -->
+            <div class="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 gap-1">
+                <button id="tab-camera" onclick="switchTab('camera')"
+                        class="flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition
+                               bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200
+                               shadow-sm flex items-center justify-center gap-2">
+                    <i data-lucide="camera" class="w-4 h-4"></i> Scan QR
+                </button>
+                <button id="tab-paste" onclick="switchTab('paste')"
+                        class="flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition
+                               text-slate-500 dark:text-slate-400
+                               flex items-center justify-center gap-2">
+                    <i data-lucide="clipboard-paste" class="w-4 h-4"></i> Paste Payload
+                </button>
+            </div>
+
+            <!-- Camera Scanner -->
+            <div id="pane-camera" class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+                <div id="qr-reader-container">
+                    <div id="qr-reader" class="rounded-xl overflow-hidden w-full"></div>
+                    <div id="qr-status" class="mt-3 text-center text-sm text-slate-500 dark:text-slate-400"></div>
+                    <button id="btn-start-scan" onclick="startScan()"
+                            class="btn-primary w-full mt-3 justify-center">
+                        <i data-lucide="camera" class="w-4 h-4"></i> Start Camera
+                    </button>
+                    <button id="btn-stop-scan" onclick="stopScan()"
+                            class="btn-secondary w-full mt-2 justify-center hidden">
+                        <i data-lucide="x" class="w-4 h-4"></i> Stop Camera
+                    </button>
+                </div>
+
+                <!-- Auto-submit form (populated by camera scan) -->
+                <form method="POST" id="camera-form" class="hidden" action="">
+                    <input type="hidden" name="qr_payload" id="camera-payload">
+                </form>
+
+                <div id="scan-success" class="hidden mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/30
+                     rounded-xl border border-emerald-200 dark:border-emerald-800 text-center">
+                    <i data-lucide="check-circle" class="w-6 h-6 text-emerald-600 mx-auto mb-1"></i>
+                    <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-300">QR Detected! Processing…</p>
+                </div>
+            </div>
+
+            <!-- Paste Payload -->
+            <div id="pane-paste" class="glass-card dark:bg-slate-800/70 rounded-2xl p-5 hidden">
+                <form method="POST" class="space-y-4" id="paste-form">
+                    <div>
+                        <label class="form-label">QR Payload</label>
+                        <textarea name="qr_payload" id="qr_payload" rows="4" required
+                                  placeholder="Paste the student's QR payload here…"
+                                  class="form-input resize-none font-mono text-xs mt-1"></textarea>
+                        <p class="text-xs text-slate-400 mt-1.5">Paste the payload string from the student's QR code.</p>
+                    </div>
+                    <button type="submit" class="btn-primary w-full justify-center">
+                        <i data-lucide="check" class="w-4 h-4"></i> Mark Attendance
+                    </button>
+                </form>
+            </div>
+
+            <!-- Generate Certificates -->
+            {% if attendance_records and session.get('role') in ('admin', 'club_admin') %}
+            <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
+                    <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+                    Generate Certificates
+                </h3>
+                <div class="space-y-2 max-h-48 overflow-y-auto">
+                    {% for rec in attendance_records %}
+                    <div class="flex items-center justify-between bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-xl">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-amber-100 dark:bg-amber-900/40
+                                        flex items-center justify-center text-amber-700 dark:text-amber-400 font-bold text-xs">
+                                {{ rec.name[0]|upper }}
+                            </div>
+                            <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ rec.name }}</span>
+                        </div>
+                        <form method="POST" action="{{ url_for('certificates.generate', event_id=event.event_id, user_id=rec.user_id) }}">
+                            <button class="text-xs px-3 py-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/40
+                                           text-amber-700 dark:text-amber-300 hover:bg-amber-200 font-semibold transition">
+                                Gen Cert
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── Attendance List ── -->
+        <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i>
+                Attendance List
+                <span class="ml-auto bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
+                             text-xs font-bold px-2 py-0.5 rounded-full">
+                    {{ attendance_records|length }} attended
+                </span>
+            </h3>
+
+            {% if attendance_records %}
+            <div class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                {% for rec in attendance_records %}
+                <div class="flex items-center gap-3 bg-white dark:bg-slate-700/50
+                            px-3 py-2.5 rounded-xl border border-slate-100 dark:border-slate-600/50">
+                    <div class="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/40
+                                flex items-center justify-center font-bold text-emerald-700 dark:text-emerald-400 text-sm flex-shrink-0">
+                        {{ rec.name[0]|upper }}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{{ rec.name }}</p>
+                        <p class="text-xs text-slate-400">
+                            {{ rec.scan_time.strftime('%H:%M') if rec.scan_time else 'Time unknown' }}
+                        </p>
+                    </div>
+                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 ml-auto flex-shrink-0"></i>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <i data-lucide="users" class="w-10 h-10 text-slate-300 mx-auto mb-3"></i>
+                <p class="text-slate-400 text-sm font-medium">No attendance marked yet</p>
+                <p class="text-slate-400 text-xs mt-1">Use the camera scanner or paste a QR payload</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let html5QrCode = null;
+
+function switchTab(tab) {
+    const camPane   = document.getElementById('pane-camera');
+    const pastePane = document.getElementById('pane-paste');
+    const tabCam    = document.getElementById('tab-camera');
+    const tabPaste  = document.getElementById('tab-paste');
+
+    if (tab === 'camera') {
+        camPane.classList.remove('hidden');
+        pastePane.classList.add('hidden');
+        tabCam.classList.add('bg-white','dark:bg-slate-700','text-slate-700','dark:text-slate-200','shadow-sm');
+        tabCam.classList.remove('text-slate-500','dark:text-slate-400');
+        tabPaste.classList.remove('bg-white','dark:bg-slate-700','text-slate-700','dark:text-slate-200','shadow-sm');
+        tabPaste.classList.add('text-slate-500','dark:text-slate-400');
+    } else {
+        pastePane.classList.remove('hidden');
+        camPane.classList.add('hidden');
+        stopScan();
+        tabPaste.classList.add('bg-white','dark:bg-slate-700','text-slate-700','dark:text-slate-200','shadow-sm');
+        tabPaste.classList.remove('text-slate-500','dark:text-slate-400');
+        tabCam.classList.remove('bg-white','dark:bg-slate-700','text-slate-700','dark:text-slate-200','shadow-sm');
+        tabCam.classList.add('text-slate-500','dark:text-slate-400');
+    }
+}
+
+function startScan() {
+    const startBtn = document.getElementById('btn-start-scan');
+    const stopBtn  = document.getElementById('btn-stop-scan');
+    const status   = document.getElementById('qr-status');
+
+    html5QrCode = new Html5Qrcode("qr-reader");
+    status.textContent = 'Requesting camera access…';
+
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+            // QR decoded
+            document.getElementById('scan-success').classList.remove('hidden');
+            status.textContent = 'QR Scanned — submitting…';
+            document.getElementById('camera-payload').value = decodedText;
+            stopScan();
+            document.getElementById('camera-form').submit();
+        },
+        (errorMsg) => {
+            // scanning frame errors are normal
+        }
+    ).then(() => {
+        startBtn.classList.add('hidden');
+        stopBtn.classList.remove('hidden');
+        status.textContent = 'Camera active — point at student QR code';
+    }).catch(err => {
+        status.textContent = 'Camera error: ' + err;
+    });
+}
+
+function stopScan() {
+    if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => {
+            document.getElementById('btn-start-scan').classList.remove('hidden');
+            document.getElementById('btn-stop-scan').classList.add('hidden');
+            document.getElementById('qr-status').textContent = '';
+        });
+    }
+}
+</script>
+{% endblock %}

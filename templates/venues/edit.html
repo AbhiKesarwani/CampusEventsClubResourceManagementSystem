@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}
+{% block title %}Edit Venue — CECRMS{% endblock %}
+{% block page_title %}Edit Venue{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
+        <a href="{{ url_for('venues.list_venues') }}" class="hover:text-indigo-600">Venues</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <span class="text-gray-800">Edit {{ venue.venue_name }}</span>
+    </nav>
+    <div class="glass rounded-2xl p-8 shadow-lg">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Edit Venue</h2>
+        <form method="POST" class="space-y-5">
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-gray-700">Venue Name</label>
+                <input name="venue_name" value="{{ venue.venue_name }}"
+                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Capacity</label>
+                    <input type="number" name="capacity" value="{{ venue.capacity or '' }}"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Type</label>
+                    <input name="type" value="{{ venue.type or '' }}"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+            </div>
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-gray-700">Location</label>
+                <input name="location" value="{{ venue.location or '' }}"
+                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+            </div>
+            <button type="submit"
+                    class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition shadow-lg">
+                Save Changes
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

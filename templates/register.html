@@ -2,77 +2,124 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register – CECRMS</title>
-
-    <!-- Tailwind -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — CECRMS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body {
-            background: linear-gradient(135deg, #e0f2fe, #f5eaff);
-            font-family: "Inter", sans-serif;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(14px);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
+        * { font-family: 'Inter', sans-serif; }
+        body { background: linear-gradient(135deg, #1e1b4b, #312e81, #1e3a5f); min-height: 100vh; }
+        .glass { background: rgba(255,255,255,0.90); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8); }
     </style>
 </head>
+<body class="flex items-center justify-center min-h-screen p-4">
 
-<body class="min-h-screen flex items-center justify-center p-4">
-
-    <div class="glass-card p-10 w-full max-w-lg shadow-2xl animate-fadeIn">
-
-        <h2 class="text-3xl font-extrabold text-center bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text mb-6">
-            Create an Account
-        </h2>
-
-        {% if error %}
-        <p class="text-red-500 text-center mb-4">{{ error }}</p>
-        {% endif %}
-
-        <form method="POST" class="space-y-5">
-
-            <div>
-                <label class="text-gray-700 font-semibold">Full Name</label>
-                <input type="text" name="name" required
-                       class="w-full p-3 rounded-xl border outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition">
+    <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-2xl mb-4 backdrop-blur-sm border border-white/30">
+                <i data-lucide="graduation-cap" class="w-9 h-9 text-white"></i>
             </div>
+            <h1 class="text-3xl font-extrabold text-white">CECRMS</h1>
+            <p class="text-indigo-300 text-sm mt-1">Create Your Account</p>
+        </div>
 
-            <div>
-                <label class="text-gray-700 font-semibold">Email</label>
-                <input type="email" name="email" required
-                       class="w-full p-3 rounded-xl border outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition">
+        <div class="glass rounded-3xl p-8 shadow-2xl">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Join CECRMS 🎓</h2>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for cat, msg in messages %}
+                <div class="px-4 py-3 rounded-xl text-sm font-medium
+                    {% if cat == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200
+                    {% elif cat == 'danger' %}bg-red-50 text-red-800 border border-red-200
+                    {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">{{ msg }}</div>
+                {% endfor %}
             </div>
+            {% endif %}
+            {% endwith %}
 
-            <div>
-                <label class="text-gray-700 font-semibold">Password</label>
-                <input type="password" name="password" required
-                       class="w-full p-3 rounded-xl border outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition">
-            </div>
+            <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-5">
 
-            <div>
-                <label class="text-gray-700 font-semibold">Confirm Password</label>
-                <input type="password" name="confirm_password" required
-                       class="w-full p-3 rounded-xl border outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition">
-            </div>
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Full Name <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <input type="text" name="name" required placeholder="Your full name"
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white"
+                               id="reg-name">
+                    </div>
+                </div>
 
-            <button class="w-full py-3 mt-4 rounded-xl font-semibold text-white text-lg 
-                           bg-gradient-to-r from-blue-600 to-purple-600 
-                           hover:opacity-90 transition">
-                Register
-            </button>
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Email <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <input type="email" name="email" required placeholder="you@college.edu"
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                    </div>
+                </div>
 
-        </form>
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Phone</label>
+                    <div class="relative">
+                        <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <input type="tel" name="phone" placeholder="+91 99999 99999"
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                    </div>
+                </div>
 
-        <p class="mt-6 text-center text-gray-700">
-            Already have an account?
-            <a href="/login" class="text-blue-600 font-semibold hover:underline">Login</a>
-        </p>
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Club (optional)</label>
+                    <select name="club_id"
+                            class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                        <option value="">No club</option>
+                        {% for c in clubs %}
+                        <option value="{{ c.club_id }}">{{ c.club_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Password <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <input type="password" name="password" required placeholder="Min 6 characters"
+                               class="w-full pl-11 pr-12 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white"
+                               id="reg-password">
+                        <button type="button" onclick="togglePw()"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <i data-lucide="eye" class="w-4 h-4" id="eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600
+                               text-white font-bold text-sm hover:from-indigo-700 hover:to-blue-700
+                               transition shadow-lg hover:shadow-xl active:scale-[0.98]">
+                    Create Account
+                </button>
+            </form>
+
+            <p class="mt-6 text-center text-sm text-gray-600">
+                Already have an account?
+                <a href="{{ url_for('auth.login') }}" class="text-indigo-600 font-semibold hover:underline">Sign in</a>
+            </p>
+        </div>
     </div>
 
+    <script>
+        lucide.createIcons();
+        function togglePw() {
+            const inp = document.getElementById('reg-password');
+            const ico = document.getElementById('eye-icon');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+            ico.setAttribute('data-lucide', inp.type === 'password' ? 'eye' : 'eye-off');
+            lucide.createIcons();
+        }
+    </script>
 </body>
 </html>

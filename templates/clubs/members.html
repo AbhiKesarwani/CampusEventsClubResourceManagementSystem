@@ -1,0 +1,174 @@
+{% extends 'layout.html' %}
+{% block title %}Members — {{ club.club_name }}{% endblock %}
+{% block page_title %}Club Members{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto anim-fade space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+        <a href="{{ url_for('clubs.detail', club_id=club.club_id) }}"
+           class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-500">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-800 dark:text-slate-100">{{ club.club_name }}</h1>
+            <p class="text-sm text-slate-500 mt-0.5">{{ members|length }} member{{ 's' if members|length != 1 }}</p>
+        </div>
+        {% if can_manage %}
+        <a href="{{ url_for('clubs.membership_requests', club_id=club.club_id) }}"
+           class="btn-secondary ml-auto">
+            <i data-lucide="inbox" class="w-4 h-4"></i>
+            Join Requests
+        </a>
+        {% endif %}
+    </div>
+
+    {% set leadership = members | selectattr('position', 'in', ['President','Vice President','Secretary','Treasurer']) | list %}
+    {% set core_team  = members | selectattr('position', 'in', ['Coordinator','Volunteer']) | list %}
+    {% set reg_members = members | selectattr('position', 'equalto', 'Member') | list %}
+
+    <!-- Leadership -->
+    {% if leadership %}
+    <div>
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Leadership</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {% for m in leadership %}
+            <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-4 text-center">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600
+                            flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
+                    {{ m.name[0]|upper }}
+                </div>
+                <p class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ m.name }}</p>
+                <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold
+                             bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                    {{ m.position }}
+                </span>
+                {% if can_manage %}
+                <div class="mt-3 flex gap-1 justify-center">
+                    <form method="POST" action="{{ url_for('clubs.member_position', club_id=club.club_id, user_id=m.user_id) }}" class="flex gap-1">
+                        <select name="position" class="form-input text-xs py-1 px-1.5 w-auto" onchange="this.form.submit()">
+                            {% for pos in positions %}
+                            <option value="{{ pos }}" {% if pos == m.position %}selected{% endif %}>{{ pos }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    <form method="POST" action="{{ url_for('clubs.member_remove', club_id=club.club_id, user_id=m.user_id) }}"
+                          onsubmit="return confirm('Remove this member?')">
+                        <button class="p-1.5 rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Core Team -->
+    {% if core_team %}
+    <div>
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Core Team</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {% for m in core_team %}
+            <div class="glass-card dark:bg-slate-800/70 rounded-xl p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500
+                            flex items-center justify-center text-white font-bold flex-shrink-0">
+                    {{ m.name[0]|upper }}
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{{ m.name }}</p>
+                    <p class="text-xs text-slate-400">{{ m.position }}</p>
+                </div>
+                {% if can_manage %}
+                <form method="POST" action="{{ url_for('clubs.member_remove', club_id=club.club_id, user_id=m.user_id) }}"
+                      onsubmit="return confirm('Remove member?')">
+                    <button class="p-1.5 rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Members -->
+    {% if reg_members %}
+    <div>
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Members ({{ reg_members|length }})</h2>
+        <div class="glass-card dark:bg-slate-800/70 rounded-2xl divide-y divide-slate-100 dark:divide-slate-700">
+            {% for m in reg_members %}
+            <div class="flex items-center gap-3 px-4 py-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40
+                            flex items-center justify-center text-emerald-700 dark:text-emerald-400 font-bold text-sm flex-shrink-0">
+                    {{ m.name[0]|upper }}
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{{ m.name }}</p>
+                    <p class="text-xs text-slate-400">{{ m.email }}</p>
+                </div>
+                <span class="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
+                             font-semibold px-2 py-0.5 rounded-full">Member</span>
+                {% if can_manage %}
+                <div class="flex gap-1 ml-2">
+                    <form method="POST" action="{{ url_for('clubs.member_position', club_id=club.club_id, user_id=m.user_id) }}" class="flex gap-1">
+                        <select name="position" class="form-input text-xs py-1 px-1.5 w-auto" onchange="this.form.submit()">
+                            {% for pos in positions %}
+                            <option value="{{ pos }}" {% if pos == m.position %}selected{% endif %}>{{ pos }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    <form method="POST" action="{{ url_for('clubs.member_remove', club_id=club.club_id, user_id=m.user_id) }}"
+                          onsubmit="return confirm('Remove?')">
+                        <button class="p-1.5 rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not members %}
+    <div class="text-center py-16">
+        <i data-lucide="users" class="w-12 h-12 text-slate-300 mx-auto mb-3"></i>
+        <p class="text-slate-500 font-medium">No members yet</p>
+    </div>
+    {% endif %}
+
+    <!-- Add Member (admin/club_admin only) -->
+    {% if can_manage and non_members %}
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="user-plus" class="w-4 h-4 text-indigo-500"></i>
+            Add Member
+        </h3>
+        <form method="POST" action="{{ url_for('clubs.member_add', club_id=club.club_id) }}"
+              class="flex flex-wrap gap-3">
+            <select name="user_id" required class="form-input flex-1 min-w-[180px]">
+                <option value="">— Select user —</option>
+                {% for u in non_members %}
+                <option value="{{ u.user_id }}">{{ u.name }} ({{ u.email }})</option>
+                {% endfor %}
+            </select>
+            <select name="position" class="form-input w-40">
+                {% for pos in positions %}
+                <option value="{{ pos }}">{{ pos }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-primary">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

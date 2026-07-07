@@ -1,67 +1,415 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <title>Login – CECRMS</title>
-
-    <!-- Tailwind -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — CECRMS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        body {
-            background: linear-gradient(135deg, #dbeafe, #ede9fe);
-            font-family: "Inter", sans-serif;
+        * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+
+        :root {
+            --bg: #0d1117;
+            --bg-2: #161b22;
+            --bg-card: #1c2128;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #7d8590;
+            --emerald: #10b981;
+            --emerald-dim: rgba(16,185,129,0.15);
+            --emerald-glow: rgba(16,185,129,0.3);
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(14px);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.3);
+
+        body {
+            background: var(--bg);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* ── Left Hero ── */
+        .hero-side {
+            flex: 1;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0d1117 0%, #0f2027 40%, #0d1117 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: orb-float linear infinite;
+            pointer-events: none;
+        }
+        @keyframes orb-float {
+            0%   { transform: translate(0,0) scale(1); }
+            33%  { transform: translate(30px,-20px) scale(1.05); }
+            66%  { transform: translate(-20px,15px) scale(0.95); }
+            100% { transform: translate(0,0) scale(1); }
+        }
+
+        /* Floating shapes */
+        .float-shape {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(16,185,129,0.2);
+            animation: shape-spin linear infinite;
+            pointer-events: none;
+        }
+        @keyframes shape-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        /* Grid overlay */
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(16,185,129,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16,185,129,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* Stats */
+        .stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: rgba(28,33,40,0.7);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            backdrop-filter: blur(12px);
+        }
+        .stat-pill-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Feature list */
+        .feature-item {
+            display: flex; align-items: center; gap: 10px;
+            color: rgba(230,237,243,0.7);
+            font-size: 0.875rem;
+        }
+        .feature-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--emerald);
+            flex-shrink: 0;
+        }
+
+        /* ── Right Panel ── */
+        .login-side {
+            width: 440px;
+            min-height: 100vh;
+            background: var(--bg-2);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px 40px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        /* Glass card effect on login panel */
+        .login-side::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--emerald), transparent);
+            opacity: 0.6;
+        }
+
+        /* Form */
+        .form-input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px 11px 40px;
+            font-size: 0.875rem;
+            color: var(--text);
+            outline: none;
+            transition: all 0.15s;
+        }
+        .form-input:focus {
+            border-color: var(--emerald);
+            box-shadow: 0 0 0 3px var(--emerald-dim);
+        }
+        .form-input::placeholder { color: var(--text-muted); }
+        .input-wrap { position: relative; }
+        .input-icon {
+            position: absolute; left: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 15px; height: 15px;
+        }
+
+        /* Flash */
+        .flash-msg {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .flash-danger { background: rgba(248,81,73,0.12); border: 1px solid rgba(248,81,73,0.3); color: #f85149; }
+        .flash-success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
+
+        /* Submit btn */
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--emerald);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 16px var(--emerald-glow);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-submit:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px var(--emerald-glow);
+        }
+        .btn-submit:active { transform: scale(0.98); }
+
+        /* Glow animation for logo */
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 20px var(--emerald-glow); }
+            50%       { box-shadow: 0 0 40px rgba(16,185,129,0.5); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-side { display: none; }
+            .login-side { width: 100%; padding: 40px 24px; border-left: none; }
+        }
+        @media (max-width: 480px) {
+            .login-side { padding: 32px 20px; }
+        }
+
+        /* Counter animation */
+        .stat-num {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+        }
+        .stat-desc {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 1px;
         }
     </style>
 </head>
+<body>
 
-<body class="min-h-screen flex items-center justify-center p-4">
+<!-- ═══ LEFT HERO ═══ -->
+<div class="hero-side">
+    <!-- Grid overlay -->
+    <div class="grid-overlay"></div>
 
-    <div class="glass-card p-10 w-full max-w-md shadow-2xl animate-fadeIn">
+    <!-- Animated orbs -->
+    <div class="orb" style="width:350px;height:350px;background:rgba(16,185,129,0.08);top:-80px;right:-100px;animation-duration:18s;"></div>
+    <div class="orb" style="width:280px;height:280px;background:rgba(88,166,255,0.06);bottom:-60px;left:-80px;animation-duration:22s;animation-direction:reverse;"></div>
+    <div class="orb" style="width:180px;height:180px;background:rgba(167,139,250,0.07);top:50%;left:30%;animation-duration:15s;"></div>
 
-        <h2 class="text-3xl font-extrabold text-center bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text mb-6">
-            Login to CECRMS
+    <!-- Floating rings -->
+    <div class="float-shape" style="width:180px;height:180px;top:10%;right:5%;animation-duration:30s;"></div>
+    <div class="float-shape" style="width:80px;height:80px;bottom:15%;right:20%;animation-duration:20s;animation-direction:reverse;border-color:rgba(88,166,255,0.15);"></div>
+
+    <!-- Content -->
+    <div style="position:relative;z-index:10;max-width:500px;">
+
+        <!-- Logo -->
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:48px;">
+            <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;animation:glow-pulse 3s ease infinite;">
+                <i data-lucide="graduation-cap" style="width:24px;height:24px;color:white;"></i>
+            </div>
+            <div>
+                <h1 style="font-size:1.5rem;font-weight:900;color:var(--text);line-height:1;">CECRMS</h1>
+                <p style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Campus Event & Club Resource Management</p>
+            </div>
+        </div>
+
+        <!-- Headline -->
+        <h2 style="font-size:2.8rem;font-weight:900;color:var(--text);line-height:1.15;margin-bottom:16px;">
+            Your campus,<br>
+            <span style="background:linear-gradient(135deg,#10b981,#58a6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                organized.
+            </span>
         </h2>
-
-        {% if error %}
-        <p class="text-red-500 text-center mb-4">{{ error }}</p>
-        {% endif %}
-
-        <form method="POST" class="space-y-5">
-
-            <div>
-                <label class="text-gray-700 font-semibold">Email</label>
-                <input type="email" name="email" required
-                       class="w-full p-3 rounded-xl border outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition">
-            </div>
-
-            <div>
-                <label class="text-gray-700 font-semibold">Password</label>
-                <input type="password" name="password" required
-                       class="w-full p-3 rounded-xl border outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition">
-            </div>
-
-            <button class="w-full py-3 mt-4 rounded-xl font-semibold text-white text-lg 
-                           bg-gradient-to-r from-blue-600 to-purple-600 
-                           hover:opacity-90 transition">
-                Login
-            </button>
-
-        </form>
-
-        <p class="mt-6 text-center text-gray-700">
-            Don’t have an account?
-            <a href="/register" class="text-blue-600 font-semibold hover:underline">Register</a>
+        <p style="font-size:1rem;color:var(--text-muted);margin-bottom:40px;line-height:1.7;">
+            Manage events, coordinate clubs, track resources and celebrate achievements — all in one platform.
         </p>
 
+        <!-- Stats row -->
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px;">
+            <div class="stat-pill">
+                <div class="stat-pill-icon" style="background:rgba(16,185,129,0.15);">
+                    <i data-lucide="users" style="width:16px;height:16px;color:#10b981;"></i>
+                </div>
+                <div>
+                    <div class="stat-num">50+</div>
+                    <div class="stat-desc">Active Clubs</div>
+                </div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-pill-icon" style="background:rgba(88,166,255,0.15);">
+                    <i data-lucide="calendar-days" style="width:16px;height:16px;color:#58a6ff;"></i>
+                </div>
+                <div>
+                    <div class="stat-num">500+</div>
+                    <div class="stat-desc">Events Hosted</div>
+                </div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-pill-icon" style="background:rgba(167,139,250,0.15);">
+                    <i data-lucide="graduation-cap" style="width:16px;height:16px;color:#a78bfa;"></i>
+                </div>
+                <div>
+                    <div class="stat-num">1000+</div>
+                    <div class="stat-desc">Students</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature list -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="feature-item"><div class="feature-dot"></div>Seamless event registration & attendance</div>
+            <div class="feature-item"><div class="feature-dot"></div>QR-code attendance with instant certificates</div>
+            <div class="feature-item"><div class="feature-dot"></div>Resource & venue management for clubs</div>
+            <div class="feature-item"><div class="feature-dot"></div>AI-powered event recommendations</div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ RIGHT LOGIN PANEL ═══ -->
+<div class="login-side">
+
+    <!-- Mobile logo (hidden on desktop) -->
+    <div class="md:hidden" style="text-align:center;margin-bottom:32px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+            <i data-lucide="graduation-cap" style="width:24px;height:24px;color:white;"></i>
+        </div>
+        <h1 style="font-size:1.4rem;font-weight:900;color:var(--text);">CECRMS</h1>
     </div>
 
+    <!-- Heading -->
+    <div style="margin-bottom:28px;">
+        <h2 style="font-size:1.6rem;font-weight:800;color:var(--text);margin-bottom:6px;">Welcome back</h2>
+        <p style="font-size:0.875rem;color:var(--text-muted);">Sign in to your campus account</p>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for cat, msg in messages %}
+    <div class="flash-msg flash-{{ cat }}">
+        <i data-lucide="{% if cat=='success' %}check-circle{% else %}alert-circle{% endif %}" style="width:15px;height:15px;flex-shrink:0;"></i>
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Form -->
+    <form method="POST" action="{{ url_for('auth.login') }}" style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Email -->
+        <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Email address</label>
+            <div class="input-wrap">
+                <i data-lucide="mail" class="input-icon"></i>
+                <input type="email" name="email" required
+                       placeholder="you@college.edu"
+                       class="form-input"
+                       id="login-email"
+                       autocomplete="email">
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Password</label>
+            <div class="input-wrap">
+                <i data-lucide="lock" class="input-icon"></i>
+                <input type="password" name="password" required
+                       placeholder="••••••••"
+                       class="form-input"
+                       id="login-password"
+                       style="padding-right:42px;"
+                       autocomplete="current-password">
+                <button type="button" onclick="togglePw()"
+                        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;">
+                    <i data-lucide="eye" style="width:15px;height:15px;" id="eye-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-submit" id="login-btn" style="margin-top:8px;">
+            <i data-lucide="log-in" style="width:16px;height:16px;"></i>
+            Sign In
+        </button>
+    </form>
+
+    <!-- Divider -->
+    <div style="display:flex;align-items:center;gap:12px;margin:24px 0;">
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <span style="font-size:0.75rem;color:var(--text-muted);">OR</span>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+    </div>
+
+    <!-- Register link -->
+    <p style="text-align:center;font-size:0.875rem;color:var(--text-muted);">
+        New to CECRMS?
+        <a href="{{ url_for('auth.register') }}"
+           style="color:var(--emerald);font-weight:700;text-decoration:none;margin-left:4px;"
+           onmouseover="this.style.textDecoration='underline'"
+           onmouseout="this.style.textDecoration='none'">
+            Create an account →
+        </a>
+    </p>
+
+    <!-- Footer note -->
+    <p style="text-align:center;font-size:0.72rem;color:var(--text-muted);margin-top:32px;opacity:0.6;">
+        Campus Event & Club Resource Management System<br>
+        © 2025 CECRMS. All rights reserved.
+    </p>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    function togglePw() {
+        const inp = document.getElementById('login-password');
+        const ico = document.getElementById('eye-icon');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+        ico.setAttribute('data-lucide', inp.type === 'password' ? 'eye' : 'eye-off');
+        lucide.createIcons();
+    }
+</script>
 </body>
 </html>
-

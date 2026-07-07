@@ -1,0 +1,118 @@
+{#
+  templates/components/event_card.html
+
+  Variables expected (passed via with / set from parent loop):
+    e            — event dict (event_id, title, club_name, venue_name, date,
+                               description, first_image, registration_link)
+    show_actions — bool, show Edit/Delete buttons (admin/club_admin)
+    user_role    — string, current user role
+#}
+
+{% set role = session.get('role', 'student') %}
+
+<div class="group glass rounded-2xl overflow-hidden
+            hover:scale-[1.025] hover:shadow-2xl
+            transition-all duration-300 cursor-pointer flex flex-col"
+     style="box-shadow: 0 4px 24px rgba(99,102,241,0.08);">
+
+    {# ── Thumbnail ── #}
+    {% if e.first_image %}
+    <div class="h-48 overflow-hidden flex-shrink-0">
+        <img src="/static/{{ e.first_image }}"
+             class="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+             alt="{{ e.title }}">
+    </div>
+    {% else %}
+    <div class="h-48 flex-shrink-0 bg-gradient-to-br from-indigo-400 via-purple-500 to-blue-500
+                flex items-center justify-center">
+        <i data-lucide="calendar-days" class="w-14 h-14 text-white/60"></i>
+    </div>
+    {% endif %}
+
+    {# ── Content ── #}
+    <div class="p-5 flex flex-col flex-1">
+
+        {# Title & Club #}
+        <div class="mb-3">
+            <h3 class="text-base font-bold text-gray-900 leading-snug line-clamp-2">{{ e.title }}</h3>
+            <p class="text-indigo-600 font-semibold text-xs mt-1 flex items-center gap-1">
+                <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                {{ e.club_name or '—' }}
+            </p>
+        </div>
+
+        {# Meta #}
+        <div class="space-y-1 text-xs text-gray-600 mb-4">
+            {% if e.venue_name %}
+            <div class="flex items-center gap-1.5">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0"></i>
+                <span class="truncate">{{ e.venue_name }}</span>
+            </div>
+            {% endif %}
+            {% if e.date %}
+            <div class="flex items-center gap-1.5">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0"></i>
+                <span>{{ e.date }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        {# Description snippet #}
+        {% if e.description %}
+        <p class="text-xs text-gray-500 leading-relaxed mb-4 line-clamp-2">{{ e.description }}</p>
+        {% endif %}
+
+        {# ── Buttons ── #}
+        <div class="mt-auto flex flex-wrap gap-2">
+
+            {# View Details — always visible #}
+            <a href="{{ url_for('events.detail', event_id=e.event_id) }}"
+               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                      bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                View Details
+            </a>
+
+            {# Register via Google Form — students and guests #}
+            {% if e.registration_link and role == 'student' %}
+            <a href="{{ e.registration_link }}" target="_blank" rel="noopener"
+               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                      bg-emerald-500 text-white hover:bg-emerald-600 transition shadow-sm">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                Register
+            </a>
+            {% endif %}
+
+            {# Attendance QR — students #}
+            {% if role == 'student' %}
+            <a href="{{ url_for('attendance.show_qr', event_id=e.event_id) }}"
+               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                      bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
+                <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
+                My QR
+            </a>
+            {% endif %}
+
+            {# Edit / Delete — admin & club_admin #}
+            {% if role in ('admin', 'club_admin') %}
+            <a href="{{ url_for('events.edit', event_id=e.event_id) }}"
+               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                      bg-amber-100 text-amber-700 hover:bg-amber-200 transition">
+                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                Edit
+            </a>
+            {% if role == 'admin' %}
+            <form method="POST" action="{{ url_for('events.delete', event_id=e.event_id) }}"
+                  onsubmit="return confirm('Delete {{ e.title }}?');">
+                <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                               bg-red-100 text-red-700 hover:bg-red-200 transition">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    Delete
+                </button>
+            </form>
+            {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+</div>

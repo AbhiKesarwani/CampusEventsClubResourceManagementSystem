@@ -1,92 +1,515 @@
 {% extends 'layout.html' %}
+{% block title %}Dashboard — CECRMS{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
 {% block content %}
+<div class="space-y-6 anim-fade">
 
-<!-- Page Title -->
-<h2 class="text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-500 text-transparent bg-clip-text text-center mb-10">
-    Dashboard
-</h2>
+{# ══════════════════════════ HERO BANNER ══════════════════════════ #}
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-800 p-6 md:p-8 text-white">
+    <!-- Background orbs -->
+    <div class="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
+    <div class="absolute -bottom-10 -left-5 w-32 h-32 bg-blue-400/20 rounded-full blur-xl"></div>
+    <div class="absolute top-1/2 right-1/4 w-20 h-20 bg-indigo-400/20 rounded-full blur-lg"></div>
 
-<!-- Stats Section -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-
-    <!-- Total Events -->
-    <div class="glass p-8 rounded-2xl soft-shadow hover:scale-[1.03] transition-transform duration-300">
-        <div class="flex justify-between items-center">
-            <h4 class="card-title">Total Events</h4>
-            <i data-lucide="calendar-days" class="icon-blob text-blue-500"></i>
+    <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <p class="text-indigo-200 text-sm font-medium mb-1">
+                {% set hr = current_time|default(0) %}
+                {% if hr < 12 %}Good morning{% elif hr < 17 %}Good afternoon{% else %}Good evening{% endif %},
+            </p>
+            <h1 class="text-2xl md:text-3xl font-extrabold leading-tight">{{ session.get('name','') }} 👋</h1>
+            <p class="text-indigo-200 text-sm mt-1.5">
+                {% if role == 'admin' %}
+                    Full system access — {{ stat_clubs or 0 }} clubs, {{ stat_events or 0 }} events
+                {% elif role == 'club_admin' %}
+                    Managing <strong class="text-white">{{ my_club.club_name if my_club else 'your club' }}</strong>
+                {% else %}
+                    Attended {{ stat_attended or 0 }} events · {{ stat_certificates or 0 }} certificates earned
+                {% endif %}
+            </p>
         </div>
-        <p class="count-number text-5xl font-extrabold mt-4 text-blue-600">{{ events|length }}</p>
-    </div>
-
-    <!-- Total Clubs -->
-    <div class="glass p-8 rounded-2xl soft-shadow hover:scale-[1.03] transition-transform duration-300">
-        <div class="flex justify-between items-center">
-            <h4 class="card-title">Total Clubs</h4>
-            <i data-lucide="building-2" class="icon-blob text-green-500"></i>
+        <div class="flex gap-2 flex-shrink-0">
+            {% if role in ('admin',) %}
+            <a href="{{ url_for('clubs.create') }}" class="bg-white/15 hover:bg-white/25 border border-white/25
+               text-white text-sm font-semibold px-4 py-2 rounded-xl transition inline-flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> New Club
+            </a>
+            {% elif role == 'club_admin' %}
+            <a href="{{ url_for('events.create') }}" class="bg-white/15 hover:bg-white/25 border border-white/25
+               text-white text-sm font-semibold px-4 py-2 rounded-xl transition inline-flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> New Event
+            </a>
+            {% else %}
+            <a href="{{ url_for('recommendations.index') }}" class="bg-white/15 hover:bg-white/25 border border-white/25
+               text-white text-sm font-semibold px-4 py-2 rounded-xl transition inline-flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-4 h-4"></i> For You
+            </a>
+            {% endif %}
+            <a href="{{ url_for('events.list_events') }}" class="bg-white text-indigo-700
+               text-sm font-bold px-4 py-2 rounded-xl transition hover:bg-indigo-50 inline-flex items-center gap-2">
+                <i data-lucide="calendar" class="w-4 h-4"></i> Events
+            </a>
         </div>
-        <p class="count-number text-5xl font-extrabold mt-4 text-green-600">{{ club_count }}</p>
     </div>
-
-    <!-- Certificates Earned -->
-    <div class="glass p-8 rounded-2xl soft-shadow hover:scale-[1.03] transition-transform duration-300">
-        <div class="flex justify-between items-center">
-            <h4 class="card-title">Certificates Earned</h4>
-            <i data-lucide="award" class="icon-blob text-purple-500"></i>
-        </div>
-        <p class="count-number text-5xl font-extrabold mt-4 text-purple-600">3</p>
-    </div>
-
 </div>
 
-<!-- Section Title -->
-<h3 class="text-2xl font-semibold text-gray-800 mb-4">Upcoming Events</h3>
+{# ══════════════════════════ STATS GRID ══════════════════════════ #}
+{% if role == 'admin' %}
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    {% set stats = [
+        ('calendar-days', 'Events',    stat_events,             'from-blue-500 to-blue-600'),
+        ('users',         'Clubs',     stat_clubs,              'from-violet-500 to-violet-600'),
+        ('building-2',    'Venues',    stat_venues,             'from-sky-500 to-sky-600'),
+        ('package',       'Resources', stat_resources,          'from-orange-500 to-orange-600'),
+        ('check-circle',  'Attendance',stat_attendance,         'from-emerald-500 to-emerald-600'),
+        ('inbox',         'Pending',   stat_pending_requests,   'from-rose-500 to-rose-600'),
+    ] %}
+    {% for icon, label, val, grad in stats %}
+    <div class="stat-card dark:bg-slate-800 dark:border-slate-700 group cursor-default">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br {{ grad }} flex items-center justify-center mb-3
+                    group-hover:scale-110 transition-transform">
+            <i data-lucide="{{ icon }}" class="w-4 h-4 text-white"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 stat-counter" data-val="{{ val or 0 }}">0</p>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{{ label }}</p>
+    </div>
+    {% endfor %}
+</div>
 
-<!-- Upcoming Events Table -->
-<div class="glass soft-shadow rounded-2xl p-6 backdrop-blur-xl overflow-x-auto">
+{# Admin Charts #}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Top Events bar chart -->
+    <div class="lg:col-span-2 glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-indigo-500"></i>
+            Top Events by Attendance
+        </h3>
+        <canvas id="eventsChart" height="180"></canvas>
+    </div>
+    <!-- Top Clubs doughnut -->
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-violet-500"></i>
+            Active Clubs
+        </h3>
+        <canvas id="clubsChart" height="180"></canvas>
+    </div>
+</div>
 
-    <table class="modern-table w-full">
-        <thead>
-            <tr class="bg-gray-100 text-left">
-                <th class="p-3">Event</th>
-                <th class="p-3">Date</th>
-                <th class="p-3">Club</th>
-                <th class="p-3">Actions</th>
-            </tr>
-        </thead>
+<!-- Top Students leaderboard -->
+<div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+            <i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i>
+            Most Active Students
+        </h3>
+        {% if top_event %}
+        <span class="text-xs text-slate-500 dark:text-slate-400">
+            Top event: <strong class="text-slate-700 dark:text-slate-200">{{ top_event.title }}</strong> ({{ top_event.count }})
+        </span>
+        {% endif %}
+    </div>
+    <canvas id="studentsChart" height="80"></canvas>
+</div>
 
-        <tbody>
-            {% for e in events %}
-            <tr class="hover:bg-gray-50 transition border-b">
-                <td class="p-3">{{ e.title }}</td>
-                <td class="p-3">{{ e.date }}</td>
-                <td class="p-3">{{ e.club_name }}</td>
-                <td class="p-3">
-                    <a href="/events/{{ e.event_id }}" class="btn-primary px-4 py-1.5 text-sm">
-                        View
-                    </a>
-                </td>
-            </tr>
+{% elif role == 'club_admin' %}
+<!-- Club Admin Stats -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    {% for icon, label, val, grad in [
+        ('calendar-days','Events',   stat_events,           'from-indigo-500 to-indigo-600'),
+        ('users',        'Members',  stat_members,          'from-emerald-500 to-emerald-600'),
+        ('inbox',        'Pending',  stat_pending_requests, 'from-amber-500 to-amber-600'),
+        ('check-circle', 'Approved', (stat_members or 0) - (stat_pending_requests or 0), 'from-blue-500 to-blue-600'),
+    ] %}
+    <div class="stat-card dark:bg-slate-800 dark:border-slate-700 group cursor-default">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br {{ grad }} flex items-center justify-center mb-3
+                    group-hover:scale-110 transition-transform">
+            <i data-lucide="{{ icon }}" class="w-4 h-4 text-white"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 stat-counter" data-val="{{ val or 0 }}">0</p>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{{ label }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Club Admin Chart + Requests -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
+            Monthly Attendance Trend
+        </h3>
+        <canvas id="monthlyChart" height="180"></canvas>
+    </div>
+
+    <!-- Pending requests -->
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
+            Pending Resource Requests
+            {% if stat_pending_requests %}
+            <span class="ml-auto bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ stat_pending_requests }}</span>
+            {% endif %}
+        </h3>
+        {% if my_requests %}
+        <div class="space-y-2 max-h-64 overflow-y-auto">
+            {% for req in my_requests %}
+            {% if req.status == 'Pending' %}
+            <div class="flex items-center justify-between bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-xl">
+                <div>
+                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ req.resource_name or 'Resource' }}</p>
+                    <p class="text-xs text-slate-500">Qty: {{ req.quantity }}</p>
+                </div>
+                <span class="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-semibold px-2 py-0.5 rounded-full">Pending</span>
+            </div>
+            {% endif %}
             {% endfor %}
-        </tbody>
-    </table>
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <i data-lucide="package-check" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+            <p class="text-sm text-slate-400">No pending requests</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% else %}
+{# Student Stats #}
+<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    {% for icon, label, val, grad in [
+        ('check-circle','Attended',     stat_attended,      'from-emerald-500 to-emerald-600'),
+        ('award',       'Certificates', stat_certificates,  'from-amber-500 to-amber-600'),
+    ] %}
+    <div class="stat-card dark:bg-slate-800 dark:border-slate-700 group cursor-default col-span-1">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br {{ grad }} flex items-center justify-center mb-3
+                    group-hover:scale-110 transition-transform">
+            <i data-lucide="{{ icon }}" class="w-4 h-4 text-white"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 stat-counter" data-val="{{ val or 0 }}">0</p>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{{ label }}</p>
+    </div>
+    {% endfor %}
+    <!-- Progress rings -->
+    <div class="col-span-2 glass-card dark:bg-slate-800/70 rounded-2xl p-4 flex items-center justify-around">
+        {% for label, val, max_val, color in [
+            ('Attendance', stat_attended, [stat_attended or 1, 10]|max, '#10b981'),
+            ('Certs', stat_certificates, [stat_certificates or 1, 5]|max, '#f59e0b'),
+        ] %}
+        <div class="flex flex-col items-center gap-2">
+            <div class="relative w-16 h-16">
+                <svg class="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="14" fill="none" stroke="#e2e8f0" stroke-width="3"/>
+                    <circle cx="18" cy="18" r="14" fill="none" stroke="{{ color }}" stroke-width="3"
+                            stroke-dasharray="{{ [(val or 0) / max_val * 88, 88]|min }} 88"
+                            stroke-linecap="round"/>
+                </svg>
+                <span class="absolute inset-0 flex items-center justify-center text-sm font-bold text-slate-700 dark:text-slate-200">{{ val or 0 }}</span>
+            </div>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ label }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# ══════════════════════════ UPCOMING EVENTS ══════════════════════════ #}
+<div>
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <i data-lucide="calendar-days" class="w-4 h-4 text-indigo-500"></i>
+            Upcoming Events
+        </h2>
+        <a href="{{ url_for('events.list_events') }}"
+           class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1">
+            View all <i data-lucide="arrow-right" class="w-3 h-3"></i>
+        </a>
+    </div>
+
+    {% if upcoming_events %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for event in upcoming_events %}
+        {% include 'components/event_card.html' %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-10 text-center">
+        <i data-lucide="calendar-x" class="w-10 h-10 text-slate-300 mx-auto mb-3"></i>
+        <p class="text-slate-500 dark:text-slate-400 font-medium">No upcoming events</p>
+        {% if role in ('admin', 'club_admin') %}
+        <a href="{{ url_for('events.create') }}" class="btn-primary mt-4 mx-auto w-fit">
+            <i data-lucide="plus" class="w-4 h-4"></i> Create Event
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{# ══════════════════════════ ACTIVITY + RECOMMENDATIONS ══════════════════════════ #}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Recent Activity (admin) or Attendance History (student) -->
+    {% if role == 'admin' and recent_activity %}
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="activity" class="w-4 h-4 text-blue-500"></i>
+            Recent Activity
+        </h3>
+        <div class="space-y-3">
+            {% for act in recent_activity[:6] %}
+            <div class="timeline-item relative pl-8">
+                <div class="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40
+                            flex items-center justify-center">
+                    <i data-lucide="zap" class="w-3 h-3 text-indigo-600 dark:text-indigo-400"></i>
+                </div>
+                <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">{{ act.action|replace('_',' ')|title }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">
+                    {{ act.user_name or 'User' }} ·
+                    {{ act.created_at.strftime('%d %b %H:%M') if act.created_at else '' }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% elif role == 'student' and attendance_history %}
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="check-square" class="w-4 h-4 text-emerald-500"></i>
+            Recent Attendance
+        </h3>
+        <div class="space-y-2">
+            {% for att in attendance_history %}
+            <div class="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-900/20
+                        rounded-xl px-3 py-2.5">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40
+                            flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="check" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{{ att.title }}</p>
+                    <p class="text-xs text-slate-400">{{ att.club_name or '' }} · {{ att.date.strftime('%d %b %Y') if att.date else '' }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% elif role == 'club_admin' and my_events %}
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="calendar-check" class="w-4 h-4 text-indigo-500"></i>
+            My Club Events
+        </h3>
+        <div class="space-y-2">
+            {% for ev in my_events[:5] %}
+            <a href="{{ url_for('events.detail', event_id=ev.event_id) }}"
+               class="flex items-center gap-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl px-3 py-2.5 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition">
+                <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40
+                            flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="calendar" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{{ ev.title }}</p>
+                    <p class="text-xs text-slate-400">{{ ev.date.strftime('%d %b %Y') if ev.date else 'TBD' }}</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5 flex items-center justify-center">
+        <div class="text-center">
+            <i data-lucide="inbox" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+            <p class="text-sm text-slate-400">No recent activity</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recommendations -->
+    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-4 h-4 text-violet-500"></i>
+            Recommended for You
+        </h3>
+        {% if recommended_events %}
+        <div class="space-y-3">
+            {% for ev in recommended_events %}
+            <a href="{{ url_for('events.detail', event_id=ev.event_id) }}"
+               class="flex gap-3 group hover:bg-violet-50 dark:hover:bg-violet-900/20
+                      rounded-xl p-2 transition -mx-2">
+                {% if ev.first_image %}
+                <img src="{{ url_for('static', filename=ev.first_image) }}"
+                     class="w-14 h-14 rounded-xl object-cover flex-shrink-0"
+                     alt="{{ ev.title }}">
+                {% else %}
+                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500
+                            flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="calendar" class="w-5 h-5 text-white"></i>
+                </div>
+                {% endif %}
+                <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition truncate">{{ ev.title }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5">{{ ev.club_name or 'Campus' }} · {{ ev.date.strftime('%d %b') if ev.date else 'TBD' }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('recommendations.index') }}"
+           class="mt-4 text-xs text-violet-600 dark:text-violet-400 font-semibold hover:underline flex items-center gap-1">
+            See all <i data-lucide="arrow-right" class="w-3 h-3"></i>
+        </a>
+        {% else %}
+        <div class="text-center py-6">
+            <i data-lucide="sparkles" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+            <p class="text-sm text-slate-400">Attend events to get recommendations</p>
+        </div>
+        {% endif %}
+    </div>
 
 </div>
 
-<!-- Script for animated counters -->
-<script>
-document.querySelectorAll(".count-number").forEach((el) => {
-    let final = parseInt(el.innerText);
-    let current = 0;
-    let step = Math.ceil(final / 40);
-    let interval = setInterval(() => {
-        current += step;
-        if (current >= final) {
-            current = final;
-            clearInterval(interval);
-        }
-        el.innerText = current;
-    }, 20);
-});
-</script>
+</div><!-- /space-y-6 -->
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── Animated Counters ──
+document.querySelectorAll('.stat-counter').forEach(el => {
+    const target = parseInt(el.dataset.val) || 0;
+    let current = 0;
+    const step  = Math.max(1, Math.ceil(target / 30));
+    const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = current.toLocaleString();
+        if (current >= target) clearInterval(timer);
+    }, 40);
+});
+
+// ── Chart.js colours ──
+const GRAD_COLORS = [
+    '#6366f1','#3b82f6','#8b5cf6','#06b6d4','#10b981',
+    '#f59e0b','#ef4444','#ec4899','#84cc16','#f97316'
+];
+
+// ── Admin Charts ──
+{% if role == 'admin' %}
+const isDark = document.documentElement.classList.contains('dark');
+Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
+Chart.defaults.borderColor = isDark ? '#1e293b' : '#e2e8f0';
+
+// Events Bar
+const evCtx = document.getElementById('eventsChart');
+if (evCtx) {
+    new Chart(evCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_events_labels | safe }},
+            datasets: [{
+                label: 'Attendance',
+                data: {{ chart_events_data | safe }},
+                backgroundColor: GRAD_COLORS.slice(0,5).map(c => c + 'cc'),
+                borderColor: GRAD_COLORS.slice(0,5),
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: isDark ? '#1e293b' : '#f1f5f9' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+// Clubs Doughnut
+const clCtx = document.getElementById('clubsChart');
+if (clCtx) {
+    new Chart(clCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_clubs_labels | safe }},
+            datasets: [{
+                data: {{ chart_clubs_data | safe }},
+                backgroundColor: GRAD_COLORS,
+                borderWidth: 2,
+                borderColor: isDark ? '#0f172a' : '#fff',
+                hoverOffset: 8,
+            }]
+        },
+        options: {
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
+            cutout: '65%',
+        }
+    });
+}
+
+// Students Horizontal Bar
+const stCtx = document.getElementById('studentsChart');
+if (stCtx) {
+    new Chart(stCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_students_labels | safe }},
+            datasets: [{
+                label: 'Events Attended',
+                data: {{ chart_students_data | safe }},
+                backgroundColor: '#10b981cc',
+                borderColor: '#10b981',
+                borderWidth: 2,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, grid: { color: isDark ? '#1e293b' : '#f1f5f9' } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+}
+{% endif %}
+
+// ── Club Admin Monthly Chart ──
+{% if role == 'club_admin' %}
+const mCtx = document.getElementById('monthlyChart');
+if (mCtx) {
+    const isDark2 = document.documentElement.classList.contains('dark');
+    new Chart(mCtx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_monthly_labels | safe }},
+            datasets: [{
+                label: 'Attendance',
+                data: {{ chart_monthly_data | safe }},
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99,102,241,0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#6366f1',
+                pointRadius: 5,
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: isDark2 ? '#1e293b' : '#f1f5f9' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+{% endif %}
+</script>
 {% endblock %}

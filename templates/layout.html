@@ -2,149 +2,509 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ title or "CECRMS" }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CECRMS — Campus Event & Club Resource Management System">
+    <title>{% block title %}CECRMS{% endblock %}</title>
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- Tailwind -->
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Flowbite CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" />
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: { 500: '#10b981', 600: '#059669' },
+                        charcoal: { DEFAULT: '#0d1117' },
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
 
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
-    <style>
-        body {
-            background: #eef2f7;
-            font-family: "Inter", sans-serif;
-        }
+    <!-- Custom CSS (Design System) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-        /* Sidebar link beautification */
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 10px;
-            color: #4b5563;
-            font-weight: 500;
-            transition: 0.25s;
-        }
-        .sidebar-link:hover {
-            background: rgba(59,130,246,0.1);
-            color: #1d4ed8;
-        }
-        .active-sidebar {
-            background: linear-gradient(135deg, #3b82f6, #6366f1);
-            color: white !important;
-            box-shadow: 0 5px 20px rgba(59,130,246,0.35);
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-        }
-    </style>
+    {% block head %}{% endblock %}
 </head>
+<body class="dark">
 
-<!-- THE FIX → remove overflow-hidden -->
-<body class="min-h-screen flex bg-gray-100">
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════ -->
+<aside id="sidebar">
 
-<!-- SIDEBAR -->
-<aside id="sidebar"
-       class="fixed top-0 left-0 h-full w-64 glass border-r border-white/30 shadow-xl
-              transition-transform duration-300 -translate-x-full md:translate-x-0 z-50 overflow-y-auto">
-
-    <div class="p-6">
-        <h2 class="text-2xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
-            CECRMS
-        </h2>
+    <!-- Logo + Toggle -->
+    <div class="logo-wrap">
+        <div class="logo-icon flex-shrink-0">
+            <i data-lucide="graduation-cap" style="width:16px;height:16px;color:white;"></i>
+        </div>
+        <div class="sidebar-brand-text min-w-0">
+            <p style="font-size:0.9rem;font-weight:800;color:var(--text);white-space:nowrap;">CECRMS</p>
+            <p style="font-size:0.65rem;color:var(--text-muted);white-space:nowrap;">Campus Platform</p>
+        </div>
+        <button id="sidebar-toggle-btn" onclick="toggleSidebar()" class="ml-auto" title="Collapse sidebar">
+            <i data-lucide="panel-left-close" style="width:14px;height:14px;"></i>
+        </button>
     </div>
 
-    <nav class="mt-4 px-4 space-y-2 pb-10">
+    <!-- User chip -->
+    {% if session.get('user_id') %}
+    <div class="sidebar-user">
+        <div class="sidebar-avatar">{{ (session.get('name','U'))[0]|upper }}</div>
+        <div class="sidebar-user-info min-w-0">
+            <p style="font-size:0.8rem;font-weight:600;color:var(--text);" class="truncate">{{ session.get('name','User') }}</p>
+            <span class="role-badge role-{{ session.get('role','student') }}">
+                {{ session.get('role','student')|replace('_',' ')|title }}
+            </span>
+        </div>
+    </div>
+    {% endif %}
 
-        <a href="/" class="sidebar-link {% if active=='dashboard' %}active-sidebar{% endif %}">
-            <i data-lucide="layout-dashboard" class="w-6"></i>
-            <span>Dashboard</span>
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+
+        <p class="sidebar-section sidebar-label">Main</p>
+
+        <a href="{{ url_for('dashboard.index') }}"
+           class="sidebar-link {% if active=='dashboard' %}active-nav{% endif %}">
+            <i data-lucide="layout-dashboard" class="sidebar-icon"></i>
+            <span class="sidebar-label">Dashboard</span>
         </a>
 
-        <a href="/events" class="sidebar-link {% if active=='events' %}active-sidebar{% endif %}">
-            <i data-lucide="calendar-days" class="w-6"></i>
-            <span>Events</span>
+        <a href="{{ url_for('events.list_events') }}"
+           class="sidebar-link {% if active=='events' %}active-nav{% endif %}">
+            <i data-lucide="calendar-days" class="sidebar-icon"></i>
+            <span class="sidebar-label">Events</span>
         </a>
 
-        <a href="/clubs" class="sidebar-link {% if active=='clubs' %}active-sidebar{% endif %}">
-            <i data-lucide="users" class="w-6"></i>
-            <span>Clubs</span>
+        <a href="{{ url_for('clubs.list_clubs') }}"
+           class="sidebar-link {% if active=='clubs' %}active-nav{% endif %}">
+            <i data-lucide="users" class="sidebar-icon"></i>
+            <span class="sidebar-label">Clubs</span>
         </a>
 
-        <a href="/venues" class="sidebar-link {% if active=='venues' %}active-sidebar{% endif %}">
-            <i data-lucide="building" class="w-6"></i>
-            <span>Venues</span>
+        <a href="{{ url_for('recommendations.index') }}"
+           class="sidebar-link {% if active=='recommendations' %}active-nav{% endif %}">
+            <i data-lucide="sparkles" class="sidebar-icon"></i>
+            <span class="sidebar-label">For You</span>
         </a>
 
-        <a href="/resources" class="sidebar-link {% if active=='resources' %}active-sidebar{% endif %}">
-            <i data-lucide="package" class="w-6"></i>
-            <span>Resources</span>
+        <!-- Student only -->
+        {% if session.get('role') == 'student' %}
+        <p class="sidebar-section sidebar-label">My Space</p>
+
+        <a href="{{ url_for('certificates.my_certificates') }}"
+           class="sidebar-link {% if active=='certificates' %}active-nav{% endif %}">
+            <i data-lucide="award" class="sidebar-icon"></i>
+            <span class="sidebar-label">Certificates</span>
+        </a>
+        {% endif %}
+
+        <!-- Club Admin only -->
+        {% if session.get('role') == 'club_admin' %}
+        <p class="sidebar-section sidebar-label">My Club</p>
+
+        {% if session.get('club_id') %}
+        <a href="{{ url_for('clubs.detail', club_id=session['club_id']) }}"
+           class="sidebar-link">
+            <i data-lucide="shield" class="sidebar-icon"></i>
+            <span class="sidebar-label">My Club</span>
+        </a>
+        <a href="{{ url_for('clubs.members', club_id=session['club_id']) }}"
+           class="sidebar-link">
+            <i data-lucide="users-2" class="sidebar-icon"></i>
+            <span class="sidebar-label">Members</span>
+        </a>
+        {% endif %}
+        {% endif %}
+
+        <!-- Admin only -->
+        {% if session.get('role') == 'admin' %}
+        <p class="sidebar-section sidebar-label">Management</p>
+
+        <a href="{{ url_for('venues.list_venues') }}"
+           class="sidebar-link {% if active=='venues' %}active-nav{% endif %}">
+            <i data-lucide="building-2" class="sidebar-icon"></i>
+            <span class="sidebar-label">Venues</span>
         </a>
 
-        <a href="/recommendations" class="sidebar-link {% if active=='recommendations' %}active-sidebar{% endif %}">
-            <i data-lucide="sparkles" class="w-6"></i>
-            <span>Recommendations</span>
+        <a href="{{ url_for('resources.list_resources') }}"
+           class="sidebar-link {% if active=='resources' %}active-nav{% endif %}">
+            <i data-lucide="package" class="sidebar-icon"></i>
+            <span class="sidebar-label">Resources</span>
         </a>
 
-        <a href="/logout" class="sidebar-link text-red-500">
-            <i data-lucide="log-out" class="w-6"></i>
-            <span>Logout</span>
+        <a href="{{ url_for('resources.all_requests') }}"
+           class="sidebar-link {% if active=='resource_requests' %}active-nav{% endif %}">
+            <i data-lucide="inbox" class="sidebar-icon"></i>
+            <span class="sidebar-label">Requests</span>
+        </a>
+
+        <a href="{{ url_for('admin.coordinators') }}"
+           class="sidebar-link {% if active=='admin_coordinators' %}active-nav{% endif %}">
+            <i data-lucide="user-cog" class="sidebar-icon"></i>
+            <span class="sidebar-label">Coordinators</span>
+        </a>
+        {% endif %}
+
+        <!-- Notifications (all roles) -->
+        <a href="{{ url_for('notifications.index') }}"
+           class="sidebar-link {% if active=='notifications' %}active-nav{% endif %}" style="margin-top:auto;">
+            <i data-lucide="bell" class="sidebar-icon"></i>
+            <span class="sidebar-label">Notifications</span>
+            {% if unread_count > 0 %}
+            <span class="sidebar-badge">{{ unread_count }}</span>
+            {% endif %}
         </a>
 
     </nav>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}"
+           class="sidebar-link"
+           style="color:var(--red);"
+           onmouseover="this.style.background='var(--red-dim)'"
+           onmouseout="this.style.background='transparent'">
+            <i data-lucide="log-out" class="sidebar-icon"></i>
+            <span class="sidebar-label">Logout</span>
+        </a>
+    </div>
+
 </aside>
 
-<!-- MOBILE MENU BUTTON -->
-<button onclick="toggleSidebar()"
-        class="md:hidden fixed top-4 left-4 bg-blue-600 text-white p-2 rounded-lg shadow-lg z-50">
-    <i data-lucide="menu"></i>
-</button>
+<!-- Sidebar overlay (mobile) -->
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
 
-<script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById("sidebar");
-        sidebar.classList.toggle("-translate-x-full");
-    }
-</script>
+<!-- ═══════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════ -->
+<div id="main-content">
 
-<!-- MAIN CONTENT -->
-<div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+    <!-- Top Navbar -->
+    <header id="topnav">
 
-    <!-- Sticky Top Bar -->
-    <header class="glass shadow-sm p-5 flex justify-between items-center sticky top-0 z-30">
-        <h2 class="text-3xl font-bold text-gray-700 tracking-tight">
-            {{ title or "Dashboard" }}
-        </h2>
+        <!-- Left: hamburger + breadcrumb -->
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+            <!-- Mobile hamburger -->
+            <button id="mobile-menu-btn" onclick="openMobileSidebar()"
+                    class="nav-icon-btn md:hidden" style="display:none;">
+                <i data-lucide="menu" style="width:18px;height:18px;"></i>
+            </button>
 
-        <div class="flex items-center gap-3">
-            <span class="font-medium text-gray-700">{{ user.name if user else "User" }}</span>
-            <i data-lucide="user-circle" class="w-9 h-9 text-blue-600"></i>
+            <!-- Page breadcrumb / title -->
+            <div class="breadcrumb">
+                <a href="{{ url_for('dashboard.index') }}" style="color:var(--text-muted);text-decoration:none;">
+                    <i data-lucide="home" style="width:12px;height:12px;"></i>
+                </a>
+                {% block breadcrumb %}
+                <i data-lucide="chevron-right" style="width:12px;height:12px;color:var(--text-subtle);"></i>
+                <span class="current">{% block page_title %}CECRMS{% endblock %}</span>
+                {% endblock %}
+            </div>
+        </div>
+
+        <!-- Center: Search -->
+        <form action="{{ url_for('search.results') }}" method="GET"
+              class="search-wrap hidden sm:block">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" name="q"
+                   value="{{ request.args.get('q', '') }}"
+                   placeholder="Search events, clubs…"
+                   id="global-search-input"
+                   autocomplete="off">
+        </form>
+
+        <!-- Right: actions -->
+        <div style="display:flex;align-items:center;gap:4px;">
+
+            <!-- Theme toggle -->
+            <button id="theme-toggle" onclick="toggleDark()" class="nav-icon-btn" title="Toggle theme">
+                <i data-lucide="sun" style="width:16px;height:16px;display:none;" id="icon-sun"></i>
+                <i data-lucide="moon" style="width:16px;height:16px;" id="icon-moon"></i>
+            </button>
+
+            <!-- Notifications -->
+            {% if session.get('user_id') %}
+            <a href="{{ url_for('notifications.index') }}" class="nav-icon-btn">
+                <i data-lucide="bell" style="width:16px;height:16px;"></i>
+                {% if unread_count > 0 %}
+                <span class="notif-dot"></span>
+                {% endif %}
+            </a>
+            {% endif %}
+
+            <!-- User chip -->
+            {% if session.get('user_id') %}
+            <div class="user-menu" style="margin-left:4px;">
+                <div class="hidden sm:block text-right">
+                    <p style="font-size:0.75rem;font-weight:600;color:var(--text);line-height:1.2;">{{ session.get('name','User') }}</p>
+                    <span class="role-badge role-{{ session.get('role','student') }}">{{ session.get('role')|replace('_',' ')|title }}</span>
+                </div>
+                <div class="user-avatar">{{ (session.get('name','U'))[0]|upper }}</div>
+            </div>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">Sign In</a>
+            {% endif %}
         </div>
     </header>
 
-    <!-- Scrollable Page Content -->
-    <main class="p-6 overflow-y-auto flex-1">
+    <!-- Flash Messages (toast style) -->
+    <div class="flash-wrap" id="flash-wrap">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for cat, msg in messages %}
+        <div class="flash-item {{ cat }}" data-flash>
+            <i data-lucide="{% if cat=='success' %}check-circle{% elif cat=='danger' %}x-circle{% elif cat=='warning' %}alert-triangle{% else %}info{% endif %}"
+               style="width:16px;height:16px;flex-shrink:0;color:{% if cat=='success' %}var(--emerald){% elif cat=='danger' %}var(--red){% elif cat=='warning' %}var(--amber){% else %}var(--blue){% endif %};"></i>
+            <span>{{ msg }}</span>
+            <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;">
+                <i data-lucide="x" style="width:14px;height:14px;"></i>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Page Content -->
+    <main class="flex-1 p-4 md:p-6 page-enter" style="min-width:0;">
         {% block content %}{% endblock %}
     </main>
 
 </div>
 
-<!-- Flowbite -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+<!-- ═══════════════════════════════════════
+     BOTTOM NAV (mobile only)
+════════════════════════════════════════ -->
+<nav id="bottom-nav">
+    <a href="{{ url_for('dashboard.index') }}"
+       class="bnav-item {% if active=='dashboard' %}active{% endif %}">
+        <i data-lucide="layout-dashboard" style="width:20px;height:20px;"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ url_for('events.list_events') }}"
+       class="bnav-item {% if active=='events' %}active{% endif %}">
+        <i data-lucide="calendar-days" style="width:20px;height:20px;"></i>
+        <span>Events</span>
+    </a>
+    <a href="{{ url_for('clubs.list_clubs') }}"
+       class="bnav-item {% if active=='clubs' %}active{% endif %}">
+        <i data-lucide="users" style="width:20px;height:20px;"></i>
+        <span>Clubs</span>
+    </a>
+    <a href="{{ url_for('search.results') }}" class="bnav-item">
+        <i data-lucide="search" style="width:20px;height:20px;"></i>
+        <span>Search</span>
+    </a>
+    {% if session.get('role') == 'student' %}
+    <a href="{{ url_for('certificates.my_certificates') }}"
+       class="bnav-item {% if active=='certificates' %}active{% endif %}">
+        <i data-lucide="award" style="width:20px;height:20px;"></i>
+        <span>Certs</span>
+    </a>
+    {% else %}
+    <a href="{{ url_for('notifications.index') }}"
+       class="bnav-item {% if active=='notifications' %}active{% endif %}" style="position:relative;">
+        <i data-lucide="bell" style="width:20px;height:20px;"></i>
+        {% if unread_count > 0 %}
+        <span style="position:absolute;top:4px;right:14px;width:7px;height:7px;background:var(--red);border-radius:50%;border:2px solid var(--bg-2);"></span>
+        {% endif %}
+        <span>Alerts</span>
+    </a>
+    {% endif %}
+</nav>
 
+<!-- ═══════════════════════════════════════
+     LIGHTBOX
+════════════════════════════════════════ -->
+<div id="lightbox" style="display:none;" onclick="closeLightbox()">
+    <button id="lightbox-close" onclick="closeLightbox()">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+    </button>
+    <img id="lightbox-img" src="" alt="Preview" onclick="event.stopPropagation()">
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════════ -->
 <script>
-    lucide.createIcons();
+// ── Icons ──
+lucide.createIcons();
+
+// ── Dark mode (default ON for new visitors) ──
+(function() {
+    const saved = localStorage.getItem('cecrms_theme');
+    if (saved === 'light') {
+        document.body.classList.remove('dark');
+        document.documentElement.classList.remove('dark');
+    } else {
+        document.body.classList.add('dark');
+        document.documentElement.classList.add('dark');
+    }
+    updateThemeIcons();
+})();
+
+function updateThemeIcons() {
+    const isDark = document.body.classList.contains('dark');
+    const sun  = document.getElementById('icon-sun');
+    const moon = document.getElementById('icon-moon');
+    if (isDark) {
+        sun?.style  && (sun.style.display = 'block');
+        moon?.style && (moon.style.display = 'none');
+    } else {
+        sun?.style  && (sun.style.display = 'none');
+        moon?.style && (moon.style.display = 'block');
+    }
+}
+
+function toggleDark() {
+    const isDark = document.body.classList.toggle('dark');
+    document.documentElement.classList.toggle('dark', isDark);
+    localStorage.setItem('cecrms_theme', isDark ? 'dark' : 'light');
+    updateThemeIcons();
+}
+
+// ── Sidebar (desktop collapse) ──
+(function() {
+    const collapsed = localStorage.getItem('cecrms_sidebar') === 'collapsed';
+    const sb = document.getElementById('sidebar');
+    const mc = document.getElementById('main-content');
+    if (sb && mc && collapsed) {
+        sb.classList.add('collapsed');
+        mc.classList.add('sidebar-collapsed');
+        const btn = document.getElementById('sidebar-toggle-btn');
+        if (btn) btn.querySelector('[data-lucide]').setAttribute('data-lucide', 'panel-left-open');
+    }
+})();
+
+function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const mc = document.getElementById('main-content');
+    const btn = document.getElementById('sidebar-toggle-btn');
+    if (!sb) return;
+
+    const isCollapsed = sb.classList.toggle('collapsed');
+    mc.classList.toggle('sidebar-collapsed', isCollapsed);
+    localStorage.setItem('cecrms_sidebar', isCollapsed ? 'collapsed' : 'expanded');
+
+    const icon = btn?.querySelector('[data-lucide]');
+    if (icon) {
+        icon.setAttribute('data-lucide', isCollapsed ? 'panel-left-open' : 'panel-left-close');
+        lucide.createIcons();
+    }
+}
+
+// ── Mobile sidebar ──
+function openMobileSidebar() {
+    const sb = document.getElementById('sidebar');
+    const ov = document.getElementById('sidebar-overlay');
+    sb?.classList.add('mobile-open');
+    ov?.classList.add('active');
+}
+function closeSidebar() {
+    const sb = document.getElementById('sidebar');
+    const ov = document.getElementById('sidebar-overlay');
+    sb?.classList.remove('mobile-open', 'translate-x-0');
+    ov?.classList.remove('active');
+}
+
+// Show mobile hamburger on small screens
+(function() {
+    const btn = document.getElementById('mobile-menu-btn');
+    if (btn && window.innerWidth < 768) btn.style.display = 'flex';
+    window.addEventListener('resize', () => {
+        if (btn) btn.style.display = window.innerWidth < 768 ? 'flex' : 'none';
+    });
+})();
+
+// ── Auto-dismiss flash messages ──
+setTimeout(() => {
+    document.querySelectorAll('[data-flash]').forEach(el => {
+        el.style.transition = 'opacity 0.5s, transform 0.5s';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(20px)';
+        setTimeout(() => el.remove(), 500);
+    });
+}, 4500);
+
+// ── Lightbox ──
+function openLightbox(src) {
+    const lb = document.getElementById('lightbox');
+    const img = document.getElementById('lightbox-img');
+    if (lb && img) {
+        img.src = src;
+        lb.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+function closeLightbox() {
+    const lb = document.getElementById('lightbox');
+    if (lb) {
+        lb.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLightbox();
+});
+
+// ── Animated counters ──
+function animateCounters() {
+    document.querySelectorAll('[data-count]').forEach(el => {
+        const target = parseInt(el.dataset.count) || 0;
+        let cur = 0;
+        const step = Math.max(1, Math.ceil(target / 40));
+        const timer = setInterval(() => {
+            cur = Math.min(cur + step, target);
+            el.textContent = cur.toLocaleString();
+            if (cur >= target) clearInterval(timer);
+        }, 30);
+    });
+}
+
+// Run counters when visible (IntersectionObserver)
+const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            animateCounters();
+            counterObserver.disconnect();
+        }
+    });
+}, { threshold: 0.2 });
+const firstCounter = document.querySelector('[data-count]');
+if (firstCounter) counterObserver.observe(firstCounter);
+
+// ── Toast utility ──
+function showToast(message, type = 'info') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icons = { success: 'check-circle', danger: 'x-circle', warning: 'alert-triangle', info: 'info' };
+    const colors = { success: 'var(--emerald)', danger: 'var(--red)', warning: 'var(--amber)', info: 'var(--blue)' };
+    toast.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${colors[type]||colors.info}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"></svg>
+        <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.classList.add('toast-fade-out'); setTimeout(() => toast.remove(), 300); }, 3500);
+}
 </script>
 
+{% block scripts %}{% endblock %}
 </body>
 </html>

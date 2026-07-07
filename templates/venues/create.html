@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}
+{% block title %}Add Venue — CECRMS{% endblock %}
+{% block page_title %}Add Venue{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
+        <a href="{{ url_for('venues.list_venues') }}" class="hover:text-indigo-600">Venues</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <span class="text-gray-800">Create</span>
+    </nav>
+    <div class="glass rounded-2xl p-8 shadow-lg">
+        <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <i data-lucide="map-pin-plus" class="w-5 h-5 text-indigo-600"></i> New Venue
+        </h2>
+        <form method="POST" class="space-y-5">
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-gray-700">Venue Name <span class="text-red-500">*</span></label>
+                <input name="venue_name" required placeholder="e.g. Main Auditorium"
+                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Capacity</label>
+                    <input type="number" name="capacity" min="1" placeholder="500"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Type</label>
+                    <input name="type" placeholder="Auditorium / Lab / Hall"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+            </div>
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-gray-700">Location</label>
+                <input name="location" placeholder="Building A, 2nd Floor"
+                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+            </div>
+            <button type="submit"
+                    class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition shadow-lg">
+                Add Venue
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

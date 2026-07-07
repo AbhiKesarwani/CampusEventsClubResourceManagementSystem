@@ -1,0 +1,153 @@
+{% extends 'layout.html' %}
+{% block title %}Edit Event — CECRMS{% endblock %}
+{% block page_title %}Edit Event{% endblock %}
+
+{% block content %}
+{% set role = session.get('role', 'student') %}
+
+<div class="max-w-4xl mx-auto">
+    <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
+        <a href="{{ url_for('events.list_events') }}" class="hover:text-indigo-600">Events</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <a href="{{ url_for('events.detail', event_id=event.event_id) }}" class="hover:text-indigo-600 truncate">{{ event.title }}</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <span class="text-gray-800 font-medium">Edit</span>
+    </nav>
+
+    <div class="glass rounded-2xl p-8 shadow-lg">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Edit: {{ event.title }}</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Club (admin only) -->
+                {% if role == 'admin' %}
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Club</label>
+                    <select name="club_id" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                        {% for c in clubs %}
+                        <option value="{{ c.club_id }}" {% if c.club_id == event.club_id %}selected{% endif %}>{{ c.club_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <!-- Title -->
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Title</label>
+                    <input name="title" value="{{ event.title }}"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+
+                <!-- Lead + Contact -->
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Event Lead</label>
+                    <input name="event_lead" value="{{ event.event_lead or '' }}"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Contact</label>
+                    <input name="contact_no" value="{{ event.contact_no or '' }}"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+
+                <!-- Venue + Date -->
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Venue</label>
+                    <select name="venue_id" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                        <option value="">No venue</option>
+                        {% for v in venues %}
+                        <option value="{{ v.venue_id }}" {% if v.venue_id == event.venue_id %}selected{% endif %}>{{ v.venue_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Date</label>
+                    <input type="date" name="date" value="{{ event.date }}"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+
+                <!-- Time -->
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Start Time</label>
+                    <input type="time" name="start_time" value="{{ event.start_time }}"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">End Time</label>
+                    <input type="time" name="end_time" value="{{ event.end_time }}"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+
+                <!-- Registration Link -->
+                <div class="md:col-span-2 space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Google Form Link</label>
+                    <input name="registration_link" value="{{ event.registration_link or '' }}"
+                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                </div>
+
+                <!-- Description -->
+                <div class="md:col-span-2 space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Description</label>
+                    <textarea name="description" rows="4"
+                              class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white resize-none">{{ event.description or '' }}</textarea>
+                </div>
+
+                <!-- Upload More Images -->
+                <div class="md:col-span-2 space-y-1.5">
+                    <label class="block text-sm font-semibold text-gray-700">Upload More Images</label>
+                    <input type="file" name="event_images" multiple accept=".jpg,.jpeg,.png,.gif,.webp"
+                           class="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    <p class="text-xs text-gray-400">Max 5 MB each · JPG, PNG, GIF, WebP</p>
+                </div>
+
+                <!-- Submit -->
+                <div class="md:col-span-2">
+                    <button type="submit"
+                            class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition shadow-lg">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Existing Images -->
+    {% if event_images %}
+    <div class="mt-8">
+        <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <i data-lucide="images" class="w-5 h-5 text-blue-500"></i> Uploaded Images
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for img in event_images %}
+            <div class="relative group rounded-xl overflow-hidden shadow-md">
+                <img src="/static/{{ img.img_path }}"
+                     class="h-36 w-full object-cover cursor-pointer group-hover:scale-105 transition duration-300"
+                     onclick="openModal('/static/{{ img.img_path }}')">
+                <form method="POST" action="{{ url_for('events.delete_image', event_id=event.event_id, img_id=img.img_id) }}"
+                      onsubmit="return confirm('Delete this image?');"
+                      class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+                    <button class="bg-red-600 text-white text-xs px-2 py-1 rounded-lg shadow">
+                        <i data-lucide="trash-2" class="w-3 h-3"></i>
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal -->
+<div id="imageModal" class="fixed inset-0 bg-black/85 backdrop-blur hidden z-50 flex items-center justify-center" onclick="closeModal()">
+    <img id="modalImg" class="max-w-[90vw] max-h-[90vh] rounded-2xl shadow-2xl border-2 border-white/20">
+    <button onclick="closeModal()" class="absolute top-5 right-5 text-white text-3xl font-bold opacity-70 hover:opacity-100">✕</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openModal(src) { document.getElementById('modalImg').src = src; document.getElementById('imageModal').classList.remove('hidden'); }
+function closeModal() { document.getElementById('imageModal').classList.add('hidden'); }
+</script>
+{% endblock %}

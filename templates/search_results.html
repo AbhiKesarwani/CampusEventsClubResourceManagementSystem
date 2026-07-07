@@ -1,0 +1,132 @@
+{% extends 'layout.html' %}
+{% block title %}Search — CECRMS{% endblock %}
+{% block page_title %}Search{% endblock %}
+{% block content %}
+
+<div class="mb-6">
+    <h2 class="text-2xl font-extrabold text-gray-800 mb-1">Search Results</h2>
+    {% if q %}
+    <p class="text-sm text-gray-500">
+        {% if total > 0 %}
+        Found <strong class="text-indigo-700">{{ total }}</strong> result(s) for "<strong>{{ q }}</strong>"
+        {% else %}
+        No results found for "<strong>{{ q }}</strong>". Try a different keyword.
+        {% endif %}
+    </p>
+    {% endif %}
+</div>
+
+<!-- Search bar (large) -->
+<form action="{{ url_for('search.results') }}" method="GET"
+      class="glass rounded-2xl p-4 mb-8 flex gap-3 shadow-sm">
+    <div class="relative flex-1">
+        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+        <input type="text" name="q" value="{{ q }}"
+               placeholder="Search events, clubs, venues, resources…"
+               id="main-search-input"
+               class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 text-sm bg-white focus:ring-2 focus:ring-indigo-300 outline-none">
+    </div>
+    <button type="submit"
+            class="px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition shadow">
+        Search
+    </button>
+</form>
+
+{% if q %}
+
+<!-- ── Events ── -->
+{% if events %}
+<div class="mb-8">
+    <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <i data-lucide="calendar-days" class="w-5 h-5 text-indigo-500"></i> Events ({{ events|length }})
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {% for e in events %}
+        {% include 'components/event_card.html' %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Clubs ── -->
+{% if clubs %}
+<div class="mb-8">
+    <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <i data-lucide="users" class="w-5 h-5 text-blue-500"></i> Clubs ({{ clubs|length }})
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {% for c in clubs %}
+        <a href="{{ url_for('clubs.detail', club_id=c.club_id) }}"
+           class="glass rounded-2xl p-5 hover:scale-[1.025] hover:shadow-xl transition-all duration-300 block">
+            <div class="flex items-start gap-3">
+                {% if c.first_image %}
+                <img src="/static/{{ c.first_image }}" class="w-14 h-14 rounded-xl object-cover flex-shrink-0">
+                {% else %}
+                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="users" class="w-7 h-7 text-white/70"></i>
+                </div>
+                {% endif %}
+                <div class="min-w-0">
+                    <p class="font-bold text-gray-900 text-sm truncate">{{ c.club_name }}</p>
+                    <p class="text-xs text-indigo-600 font-medium">{{ c.coordinator_name or 'No coordinator' }}</p>
+                    <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ c.description or '—' }}</p>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Venues ── -->
+{% if venues %}
+<div class="mb-8">
+    <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <i data-lucide="building-2" class="w-5 h-5 text-emerald-500"></i> Venues ({{ venues|length }})
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for v in venues %}
+        <a href="{{ url_for('venues.detail', venue_id=v.venue_id) }}"
+           class="glass rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all block">
+            <p class="font-bold text-gray-900 text-sm">{{ v.venue_name }}</p>
+            {% if v.location %}<p class="text-xs text-indigo-600">📍 {{ v.location }}</p>{% endif %}
+            {% if v.capacity %}<p class="text-xs text-gray-500 mt-1">Cap: {{ v.capacity }}</p>{% endif %}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Resources ── -->
+{% if resources %}
+<div class="mb-8">
+    <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <i data-lucide="package" class="w-5 h-5 text-purple-500"></i> Resources ({{ resources|length }})
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for r in resources %}
+        <div class="glass rounded-xl p-4">
+            <p class="font-bold text-gray-900 text-sm">{{ r.resource_name }}</p>
+            <p class="text-xs text-gray-500 mt-1">Total: {{ r.total_quantity }}</p>
+            {% if r.description %}<p class="text-xs text-gray-400 mt-1 line-clamp-2">{{ r.description }}</p>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if total == 0 %}
+<div class="text-center py-20 glass rounded-2xl">
+    <i data-lucide="search-x" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+    <p class="text-gray-500 text-lg font-medium">Nothing found for "{{ q }}"</p>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('main-search-input')?.focus();
+</script>
+{% endblock %}

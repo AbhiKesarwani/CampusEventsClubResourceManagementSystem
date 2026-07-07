@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Verification — CECRMS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 50%, #f5f0ff 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+        }
+        .card {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.8);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 480px; width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .logo { font-size: 0.875rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; margin-bottom: 32px; }
+        .icon-wrap {
+            width: 72px; height: 72px; border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .valid   .icon-wrap { background: linear-gradient(135deg, #10b981, #059669); }
+        .invalid .icon-wrap { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 14px; border-radius: 99px;
+            font-size: 0.75rem; font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .badge-valid   { background: #d1fae5; color: #047857; }
+        .badge-invalid { background: #fee2e2; color: #b91c1c; }
+        h1 { font-size: 1.5rem; font-weight: 800; color: #1e293b; line-height: 1.2; }
+        .meta-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 12px; margin: 28px 0; text-align: left;
+        }
+        .meta-item { background: #f8fafc; border-radius: 12px; padding: 12px 14px; }
+        .meta-label { font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta-value { font-size: 0.875rem; font-weight: 600; color: #334155; margin-top: 2px; }
+        .cert-id { font-size: 0.75rem; color: #94a3b8; margin-top: 8px; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff; font-weight: 700; font-size: 0.875rem;
+            padding: 10px 20px; border-radius: 10px;
+            text-decoration: none; margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card {% if valid %}valid{% else %}invalid{% endif %}">
+        <p class="logo">CECRMS · Certificate Verification</p>
+
+        <div class="icon-wrap">
+            {% if valid %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"
+                 fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            {% else %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"
+                 fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            {% endif %}
+        </div>
+
+        {% if valid and cert %}
+        <span class="badge badge-valid">✓ Verified Certificate</span>
+        <h1>{{ cert.event_title }}</h1>
+
+        <div class="meta-grid">
+            <div class="meta-item">
+                <div class="meta-label">Student</div>
+                <div class="meta-value">{{ cert.student_name }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Event Date</div>
+                <div class="meta-value">{{ cert.event_date.strftime('%d %b %Y') if cert.event_date else 'N/A' }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Organised by</div>
+                <div class="meta-value">{{ cert.club_name or 'Campus' }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Issued on</div>
+                <div class="meta-value">{{ cert.issue_date.strftime('%d %b %Y') if cert.issue_date else 'N/A' }}</div>
+            </div>
+        </div>
+
+        <p class="cert-id">Certificate ID: #{{ cert.cert_id }}</p>
+
+        {% else %}
+        <span class="badge badge-invalid">✗ Not Found</span>
+        <h1>Certificate Not Found</h1>
+        <p style="color:#64748b; font-size:0.875rem; margin-top:16px;">
+            This certificate ID does not exist or has been revoked.
+        </p>
+        {% endif %}
+
+        <a href="/" class="btn">← Back to CECRMS</a>
+    </div>
+</body>
+</html>

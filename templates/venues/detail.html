@@ -1,0 +1,48 @@
+{% extends 'layout.html' %}
+{% block title %}{{ venue.venue_name }} — CECRMS{% endblock %}
+{% block page_title %}Venue Detail{% endblock %}
+{% block content %}
+{% set role = session.get('role','student') %}
+<div class="max-w-2xl mx-auto">
+    <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
+        <a href="{{ url_for('venues.list_venues') }}" class="hover:text-indigo-600">Venues</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <span class="text-gray-800">{{ venue.venue_name }}</span>
+    </nav>
+    <div class="glass rounded-2xl p-8 shadow-lg">
+        <div class="flex items-start justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-extrabold text-gray-900">{{ venue.venue_name }}</h1>
+                {% if venue.location %}<p class="text-indigo-600 font-medium mt-1 text-sm">📍 {{ venue.location }}</p>{% endif %}
+            </div>
+            {% if role == 'admin' %}
+            <div class="flex gap-2">
+                <a href="{{ url_for('venues.edit', venue_id=venue.venue_id) }}"
+                   class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 text-amber-700 font-semibold text-sm hover:bg-amber-200 transition">
+                    <i data-lucide="pencil" class="w-4 h-4"></i> Edit
+                </a>
+                <form method="POST" action="{{ url_for('venues.delete', venue_id=venue.venue_id) }}" onsubmit="return confirm('Delete?');">
+                    <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-100 text-red-700 font-semibold text-sm hover:bg-red-200 transition">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Delete
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        <div class="space-y-3 text-sm">
+            {% if venue.capacity %}
+            <div class="flex justify-between bg-white/60 px-4 py-3 rounded-xl">
+                <span class="font-semibold text-gray-700">Capacity</span>
+                <span class="font-bold text-gray-900">{{ venue.capacity }} people</span>
+            </div>
+            {% endif %}
+            {% if venue.type %}
+            <div class="flex justify-between bg-white/60 px-4 py-3 rounded-xl">
+                <span class="font-semibold text-gray-700">Type</span>
+                <span class="font-bold text-gray-900">{{ venue.type }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

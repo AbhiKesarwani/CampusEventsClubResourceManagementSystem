@@ -1,0 +1,332 @@
+{% extends 'layout.html' %}
+{% block title %}{{ event.title }} — CECRMS{% endblock %}
+{% block page_title %}{{ event.title }}{% endblock %}
+
+{% block content %}
+{% set role = session.get('role', 'student') %}
+<div class="anim-fade" style="max-width:1100px;margin:0 auto;">
+
+{# ── HERO BANNER ── #}
+<div style="position:relative;height:340px;border-radius:var(--radius-xl);overflow:hidden;margin-bottom:20px;" class="card">
+    {% if event_images %}
+    <img src="{{ url_for('static', filename=event_images[0].img_path) }}"
+         style="width:100%;height:100%;object-fit:cover;display:block;" alt="{{ event.title }}">
+    {% else %}
+    <div style="width:100%;height:100%;background:linear-gradient(135deg,#0f2027 0%,#203a43 40%,#2c5364 100%);display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="calendar-days" style="width:80px;height:80px;color:rgba(16,185,129,0.3);"></i>
+    </div>
+    {% endif %}
+
+    <!-- Dark gradient overlay -->
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(13,17,23,0.2) 0%,rgba(13,17,23,0.85) 100%);"></div>
+
+    <!-- Date badge -->
+    {% if event.date %}
+    <div style="position:absolute;top:18px;right:18px;background:rgba(13,17,23,0.8);border:1px solid var(--border);backdrop-filter:blur(8px);padding:10px 14px;border-radius:12px;text-align:center;">
+        <p style="font-size:1.6rem;font-weight:900;color:var(--emerald);line-height:1;">{{ event.date.strftime('%d') if event.date else '' }}</p>
+        <p style="font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">{{ event.date.strftime('%b %Y') if event.date else '' }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Title + Actions overlay -->
+    <div style="position:absolute;bottom:0;left:0;right:0;padding:24px 28px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+        <div>
+            <p style="font-size:0.75rem;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:5px;margin-bottom:6px;">
+                <i data-lucide="users" style="width:12px;height:12px;"></i>
+                {{ event.club_name }}
+            </p>
+            <h1 style="font-size:1.8rem;font-weight:900;color:#fff;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,0.6);" class="line-clamp-2">{{ event.title }}</h1>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            {% if event.registration_link %}
+            <a href="{{ event.registration_link }}" target="_blank" rel="noopener"
+               class="btn btn-primary" style="box-shadow:0 4px 20px var(--emerald-glow);">
+                <i data-lucide="external-link" style="width:15px;height:15px;"></i>
+                Register Now
+            </a>
+            {% endif %}
+
+            {% if role == 'student' %}
+            <a href="{{ url_for('attendance.show_qr', event_id=event.event_id) }}"
+               class="btn btn-secondary btn-sm">
+                <i data-lucide="qr-code" style="width:14px;height:14px;"></i>
+                My QR
+            </a>
+            {% endif %}
+
+            {% if role in ('admin','club_admin') %}
+            <a href="{{ url_for('events.edit', event_id=event.event_id) }}"
+               class="btn btn-amber btn-sm">
+                <i data-lucide="pencil" style="width:14px;height:14px;"></i> Edit
+            </a>
+            <a href="{{ url_for('attendance.scan', event_id=event.event_id) }}"
+               class="btn btn-secondary btn-sm">
+                <i data-lucide="scan-line" style="width:14px;height:14px;"></i> Scan
+            </a>
+            {% endif %}
+
+            {% if role == 'admin' %}
+            <form method="POST" action="{{ url_for('events.delete', event_id=event.event_id) }}"
+                  onsubmit="return confirm('Delete this event?')">
+                <button class="btn btn-danger btn-sm" type="submit">
+                    <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# ── MAIN GRID ── #}
+<div style="display:grid;grid-template-columns:1fr 300px;gap:20px;" class="event-layout">
+
+    <!-- LEFT -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+        {# Description #}
+        {% if event.description %}
+        <div class="card" style="padding:24px;">
+            <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+                <i data-lucide="info" style="width:14px;height:14px;color:var(--blue);"></i> About this Event
+            </h2>
+            <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.8;">{{ event.description }}</p>
+        </div>
+        {% endif %}
+
+        {# Registration CTA (prominent banner) #}
+        {% if event.registration_link %}
+        <div style="padding:20px 24px;background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08));border:1px solid rgba(16,185,129,0.3);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div>
+                <p style="font-weight:700;color:var(--emerald);font-size:0.95rem;margin-bottom:4px;">🎯 Registrations Open</p>
+                <p style="font-size:0.8rem;color:var(--text-muted);">Sign up via Google Form to secure your spot at this event.</p>
+            </div>
+            <a href="{{ event.registration_link }}" target="_blank"
+               class="btn btn-primary" style="flex-shrink:0;">
+                <i data-lucide="external-link" style="width:15px;height:15px;"></i>
+                Open Registration Form
+            </a>
+        </div>
+        {% endif %}
+
+        {# Resources Used #}
+        {% if event_resources %}
+        <div class="card" style="padding:24px;">
+            <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+                <i data-lucide="package" style="width:14px;height:14px;color:var(--purple);"></i> Resources Used
+            </h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;">
+                {% for r in event_resources %}
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-hover);border-radius:8px;border:1px solid var(--border);">
+                    <span style="font-size:0.82rem;color:var(--text);">{{ r.resource_name }}</span>
+                    <span style="font-size:0.8rem;font-weight:700;color:var(--purple);background:var(--purple-dim);padding:2px 8px;border-radius:99px;">×{{ r.quantity }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Gallery #}
+        {% if event_images|length > 1 %}
+        <div class="card" style="padding:24px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;">
+                    <i data-lucide="images" style="width:14px;height:14px;color:var(--blue);"></i>
+                    Gallery
+                    <span style="font-weight:500;color:var(--text-subtle);font-size:0.75rem;">({{ event_images|length }} images)</span>
+                </h2>
+                <a href="{{ url_for('events.download_gallery_zip', event_id=event.event_id) }}"
+                   class="btn btn-secondary btn-xs">
+                    <i data-lucide="archive" style="width:12px;height:12px;"></i>
+                    Download All (ZIP)
+                </a>
+            </div>
+
+            <div class="gallery-grid">
+                {% for img in event_images %}
+                <div class="gallery-item">
+                    <img src="{{ url_for('static', filename=img.img_path) }}"
+                         alt="Event image {{ loop.index }}"
+                         onclick="openLightbox(this.src)">
+                    <div class="gallery-overlay">
+                        <button onclick="openLightbox('{{ url_for('static', filename=img.img_path) }}')"
+                                style="width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;">
+                            <i data-lucide="zoom-in" style="width:14px;height:14px;"></i>
+                        </button>
+                        <a href="{{ url_for('events.download_image', event_id=event.event_id, img_id=img.img_id) }}"
+                           style="width:30px;height:30px;border-radius:6px;background:rgba(16,185,129,0.7);border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;text-decoration:none;"
+                           onclick="event.stopPropagation()">
+                            <i data-lucide="download" style="width:14px;height:14px;"></i>
+                        </a>
+                        {% if role in ('admin','club_admin') %}
+                        <form method="POST"
+                              action="{{ url_for('events.delete_image', event_id=event.event_id, img_id=img.img_id) }}"
+                              onclick="event.stopPropagation()"
+                              onsubmit="return confirm('Delete this image?')">
+                            <button type="submit"
+                                    style="width:30px;height:30px;border-radius:6px;background:rgba(248,81,73,0.7);border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;">
+                                <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Certificate (student) #}
+        {% if role == 'student' %}
+        <div style="padding:20px 24px;background:linear-gradient(135deg,rgba(167,139,250,0.1),rgba(124,58,237,0.06));border:1px solid rgba(167,139,250,0.3);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div>
+                <p style="font-weight:700;color:var(--purple);font-size:0.95rem;margin-bottom:4px;">🏆 Participation Certificate</p>
+                <p style="font-size:0.8rem;color:var(--text-muted);">Attend this event and generate your certificate of participation.</p>
+            </div>
+            <form method="POST" action="{{ url_for('certificates.self_generate', event_id=event.event_id) }}" style="flex-shrink:0;">
+                <button class="btn" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(167,139,250,0.4);">
+                    <i data-lucide="award" style="width:15px;height:15px;"></i>
+                    Generate Certificate
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        {# Related Events #}
+        {% if related_events %}
+        <div class="card" style="padding:24px;">
+            <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;display:flex;align-items:center;gap:6px;">
+                <i data-lucide="sparkles" style="width:14px;height:14px;color:var(--emerald);"></i>
+                More from {{ event.club_name }}
+            </h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+                {% for r in related_events %}
+                <a href="{{ url_for('events.detail', event_id=r.event_id) }}"
+                   class="card card-hover" style="padding:12px;text-decoration:none;display:block;">
+                    {% if r.first_image %}
+                    <img src="{{ url_for('static', filename=r.first_image) }}"
+                         style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:10px;" alt="{{ r.title }}">
+                    {% else %}
+                    <div style="width:100%;height:90px;border-radius:8px;background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(88,166,255,0.15));display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                        <i data-lucide="calendar" style="width:24px;height:24px;color:var(--text-subtle);"></i>
+                    </div>
+                    {% endif %}
+                    <p style="font-size:0.85rem;font-weight:700;color:var(--text);" class="line-clamp-2">{{ r.title }}</p>
+                    {% if r.date %}
+                    <p style="font-size:0.73rem;color:var(--text-muted);margin-top:4px;">
+                        {{ r.date.strftime('%d %b %Y') if r.date else '' }}
+                    </p>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div><!-- /left -->
+
+    <!-- RIGHT SIDEBAR -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+        {# Event Details Card #}
+        <div class="card" style="padding:20px;">
+            <h2 style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;">Event Info</h2>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                {% if event.date %}
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="calendar" style="width:15px;height:15px;color:var(--emerald);"></i>
+                    </div>
+                    <div>
+                        <p style="font-size:0.7rem;color:var(--text-subtle);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Date</p>
+                        <p style="font-size:0.85rem;color:var(--text);font-weight:600;">{{ event.date.strftime('%A, %d %B %Y') if event.date else '—' }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if event.start_time %}
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:rgba(88,166,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="clock" style="width:15px;height:15px;color:var(--blue);"></i>
+                    </div>
+                    <div>
+                        <p style="font-size:0.7rem;color:var(--text-subtle);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Time</p>
+                        <p style="font-size:0.85rem;color:var(--text);font-weight:600;">{{ event.start_time }} – {{ event.end_time }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if event.venue_name %}
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,158,11,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="map-pin" style="width:15px;height:15px;color:var(--amber);"></i>
+                    </div>
+                    <div>
+                        <p style="font-size:0.7rem;color:var(--text-subtle);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Venue</p>
+                        <p style="font-size:0.85rem;color:var(--text);font-weight:600;">{{ event.venue_name }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if event.event_lead %}
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:rgba(167,139,250,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="user" style="width:15px;height:15px;color:var(--purple);"></i>
+                    </div>
+                    <div>
+                        <p style="font-size:0.7rem;color:var(--text-subtle);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Event Lead</p>
+                        <p style="font-size:0.85rem;color:var(--text);font-weight:600;">{{ event.event_lead }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if event.contact_no %}
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="phone" style="width:15px;height:15px;color:var(--emerald);"></i>
+                    </div>
+                    <div>
+                        <p style="font-size:0.7rem;color:var(--text-subtle);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Contact</p>
+                        <p style="font-size:0.85rem;color:var(--text);font-weight:600;">{{ event.contact_no }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Organiser Card #}
+        <a href="{{ url_for('clubs.detail', club_id=event.club_id) }}"
+           class="card card-hover" style="padding:20px;text-decoration:none;display:block;">
+            <h2 style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Organiser</h2>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--emerald),#059669);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:white;flex-shrink:0;">
+                    {{ event.club_name[0]|upper }}
+                </div>
+                <div style="min-width:0;">
+                    <p style="font-weight:700;color:var(--text);font-size:0.9rem;" class="truncate">{{ event.club_name }}</p>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;" class="line-clamp-2">{{ event.club_description or 'Club organiser' }}</p>
+                </div>
+            </div>
+        </a>
+
+        {# Downloads #}
+        {% if event_images %}
+        <div class="card" style="padding:20px;border-color:rgba(16,185,129,0.3);">
+            <h2 style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Downloads</h2>
+            <a href="{{ url_for('events.download_gallery_zip', event_id=event.event_id) }}"
+               class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">
+                <i data-lucide="archive" style="width:14px;height:14px;"></i>
+                All Photos (ZIP)
+            </a>
+            <p style="font-size:0.72rem;color:var(--text-muted);margin-top:8px;text-align:center;">
+                {{ event_images|length }} image(s) available
+            </p>
+        </div>
+        {% endif %}
+
+    </div><!-- /right -->
+
+</div><!-- /grid -->
+</div>
+{% endblock %}

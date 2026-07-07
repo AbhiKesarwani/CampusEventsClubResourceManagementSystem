@@ -1,0 +1,51 @@
+{% extends 'layout.html' %}
+{% block title %}My Certificates — CECRMS{% endblock %}
+{% block page_title %}Certificates{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h2 class="text-2xl font-extrabold text-gray-800">My Certificates</h2>
+        <p class="text-sm text-gray-500 mt-1">Certificates earned for events you attended</p>
+    </div>
+    <i data-lucide="award" class="w-8 h-8 text-purple-500"></i>
+</div>
+
+{% if certificates %}
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    {% for cert in certificates %}
+    <div class="glass rounded-2xl p-6 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex flex-col">
+        <!-- Icon -->
+        <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-4">
+            <i data-lucide="award" class="w-8 h-8 text-purple-600"></i>
+        </div>
+
+        <h3 class="text-base font-bold text-gray-900 leading-snug mb-1">{{ cert.event_title }}</h3>
+        <p class="text-xs text-gray-500 mb-1 flex items-center gap-1">
+            <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Event Date: {{ cert.event_date }}
+        </p>
+        <p class="text-xs text-indigo-600 font-medium mb-4 flex items-center gap-1">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Issued: {{ cert.issue_date }}
+        </p>
+
+        <div class="mt-auto flex gap-2">
+            <a href="{{ url_for('certificates.download', cert_id=cert.cert_id) }}"
+               class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-semibold hover:bg-purple-700 transition shadow">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Download
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-20 glass rounded-2xl">
+    <i data-lucide="award" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+    <h3 class="text-lg font-bold text-gray-500 mb-2">No certificates yet</h3>
+    <p class="text-gray-400 text-sm">Mark attendance at events to earn certificates.</p>
+    <a href="{{ url_for('events.list_events', upcoming=1) }}"
+       class="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition">
+        Browse Upcoming Events
+    </a>
+</div>
+{% endif %}
+{% endblock %}

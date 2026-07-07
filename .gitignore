@@ -1,0 +1,21 @@
+# Cache files (cace)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+dbmsenv/
+env/
+venv/
+
+# Environment variables
+.env
+
+# Video files
+*.mp4
+DBMS Project Video - Made with Clipchamp.mp4
+
+# OS and IDE files
+.vscode/
+.idea/
+.DS_Store

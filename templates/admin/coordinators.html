@@ -1,0 +1,219 @@
+{% extends 'layout.html' %}
+{% block title %}Club Coordinators — CECRMS{% endblock %}
+{% block page_title %}Club Coordinators{% endblock %}
+
+{% block content %}
+<div class="anim-fade" style="max-width:1200px;margin:0 auto;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <h1 style="font-size:1.5rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;border-radius:10px;background:var(--emerald-dim);display:flex;align-items:center;justify-content:center;">
+                    <i data-lucide="user-cog" style="width:18px;height:18px;color:var(--emerald);"></i>
+                </div>
+                Club Coordinators
+            </h1>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">Assign and manage club coordinators from one place.</p>
+        </div>
+        <a href="{{ url_for('admin.coordinator_directory') }}" class="btn btn-secondary">
+            <i data-lucide="table" style="width:14px;height:14px;"></i>
+            Directory View
+        </a>
+    </div>
+
+    <!-- Two-panel layout -->
+    <div style="display:grid;grid-template-columns:340px 1fr;gap:20px;" class="coordinator-layout">
+
+        <!-- LEFT: Club List -->
+        <div class="card" style="padding:0;overflow:hidden;">
+            <div style="padding:16px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <h2 style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;">Clubs</h2>
+                <span class="chip" style="font-size:0.7rem;">{{ clubs|length }}</span>
+            </div>
+            <div style="max-height:600px;overflow-y:auto;padding:8px;">
+                {% for c in clubs %}
+                <div class="club-select-item {% if not c.coordinator_name %}unassigned-club{% endif %}"
+                     data-club-id="{{ c.club_id }}"
+                     data-club-name="{{ c.club_name }}"
+                     data-coordinator-id="{{ c.coordinator_id or '' }}"
+                     data-coordinator-name="{{ c.coordinator_name or '' }}"
+                     data-coordinator-email="{{ c.coordinator_email or '' }}"
+                     onclick="selectClub(this)"
+                     style="padding:12px;border-radius:var(--radius-md);cursor:pointer;transition:var(--transition);margin-bottom:4px;border:1px solid transparent;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        {% if c.first_image %}
+                        <img src="{{ url_for('static', filename=c.first_image) }}"
+                             style="width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;" alt="">
+                        {% else %}
+                        <div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,var(--emerald-dim),rgba(88,166,255,0.15));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i data-lucide="shield" style="width:16px;height:16px;color:var(--emerald);"></i>
+                        </div>
+                        {% endif %}
+                        <div style="min-width:0;flex:1;">
+                            <p style="font-size:0.85rem;font-weight:700;color:var(--text);" class="truncate">{{ c.club_name }}</p>
+                            {% if c.coordinator_name %}
+                            <p style="font-size:0.72rem;color:var(--emerald);display:flex;align-items:center;gap:4px;margin-top:2px;">
+                                <i data-lucide="user-check" style="width:10px;height:10px;"></i>
+                                {{ c.coordinator_name }}
+                            </p>
+                            {% else %}
+                            <p style="font-size:0.72rem;color:var(--amber);display:flex;align-items:center;gap:4px;margin-top:2px;">
+                                <i data-lucide="alert-circle" style="width:10px;height:10px;"></i>
+                                No coordinator
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- RIGHT: Assignment Panel -->
+        <div>
+            <!-- Empty state (before selection) -->
+            <div id="assign-empty" class="card" style="padding:60px 40px;text-align:center;">
+                <div class="empty-state-icon" style="margin:0 auto 16px;">
+                    <i data-lucide="mouse-pointer-click" style="width:24px;height:24px;"></i>
+                </div>
+                <h3 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px;">Select a Club</h3>
+                <p style="font-size:0.85rem;color:var(--text-muted);">Click on a club from the list to assign or change its coordinator.</p>
+            </div>
+
+            <!-- Assignment form (shown after selection) -->
+            <div id="assign-panel" style="display:none;" class="card" style="padding:0;">
+
+                <!-- Selected club info -->
+                <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
+                    <p style="font-size:0.7rem;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Selected Club</p>
+                    <h3 id="selected-club-name" style="font-size:1.2rem;font-weight:800;color:var(--text);"></h3>
+                    <div id="current-coordinator" style="margin-top:10px;"></div>
+                </div>
+
+                <!-- Assign form -->
+                <form method="POST" action="{{ url_for('admin.assign') }}" style="padding:24px;">
+                    <input type="hidden" name="club_id" id="assign-club-id">
+
+                    <div class="form-group">
+                        <label class="form-label">Choose Coordinator</label>
+                        <select name="user_id" id="assign-user-select" class="form-input" required>
+                            <option value="">— Select a student —</option>
+                            {% for u in users %}
+                            <option value="{{ u.user_id }}"
+                                    data-name="{{ u.name }}"
+                                    data-email="{{ u.email }}"
+                                    data-role="{{ u.role }}">
+                                {{ u.name }} — {{ u.email }} ({{ u.role }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Preview of selected user -->
+                    <div id="user-preview" style="display:none;padding:14px;background:var(--bg-hover);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:16px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div id="preview-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--emerald),#059669);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:white;flex-shrink:0;"></div>
+                            <div style="min-width:0;">
+                                <p id="preview-name" style="font-weight:700;color:var(--text);font-size:0.9rem;" class="truncate"></p>
+                                <p id="preview-email" style="font-size:0.78rem;color:var(--text-muted);" class="truncate"></p>
+                                <span id="preview-role" class="role-badge" style="margin-top:4px;display:inline-block;"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="assign-btn">
+                        <i data-lucide="user-check" style="width:15px;height:15px;"></i>
+                        Assign Coordinator
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div><!-- /grid -->
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .club-select-item:hover { background: var(--bg-hover); }
+    .club-select-item.selected {
+        background: var(--emerald-dim) !important;
+        border-color: var(--emerald) !important;
+    }
+    @media (max-width: 768px) {
+        .coordinator-layout { grid-template-columns: 1fr !important; }
+    }
+</style>
+<script>
+let selectedClubEl = null;
+
+function selectClub(el) {
+    // Deselect previous
+    if (selectedClubEl) selectedClubEl.classList.remove('selected');
+    el.classList.add('selected');
+    selectedClubEl = el;
+
+    const clubId   = el.dataset.clubId;
+    const clubName = el.dataset.clubName;
+    const coordId    = el.dataset.coordinatorId;
+    const coordName  = el.dataset.coordinatorName;
+    const coordEmail = el.dataset.coordinatorEmail;
+
+    // Show panel
+    document.getElementById('assign-empty').style.display = 'none';
+    const panel = document.getElementById('assign-panel');
+    panel.style.display = 'block';
+
+    // Fill data
+    document.getElementById('selected-club-name').textContent = clubName;
+    document.getElementById('assign-club-id').value = clubId;
+
+    // Current coordinator
+    const coordDiv = document.getElementById('current-coordinator');
+    if (coordId) {
+        coordDiv.innerHTML = `
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg-hover);border-radius:var(--radius-md);border:1px solid var(--border);">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;color:white;flex-shrink:0;">
+                    ${coordName[0]}
+                </div>
+                <div style="min-width:0;flex:1;">
+                    <p style="font-size:0.85rem;font-weight:700;color:var(--text);">${coordName}</p>
+                    <p style="font-size:0.75rem;color:var(--text-muted);">${coordEmail}</p>
+                </div>
+                <span class="role-badge role-club_admin">Current</span>
+            </div>
+        `;
+    } else {
+        coordDiv.innerHTML = `
+            <div style="padding:12px;background:var(--amber-dim);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius-md);font-size:0.82rem;color:var(--amber);display:flex;align-items:center;gap:8px;">
+                <i data-lucide="alert-circle" style="width:14px;height:14px;flex-shrink:0;"></i>
+                No coordinator assigned
+            </div>
+        `;
+    }
+    lucide.createIcons();
+}
+
+// User select preview
+document.getElementById('assign-user-select').addEventListener('change', function() {
+    const opt = this.selectedOptions[0];
+    const preview = document.getElementById('user-preview');
+    if (!opt.value) { preview.style.display = 'none'; return; }
+
+    const name  = opt.dataset.name;
+    const email = opt.dataset.email;
+    const role  = opt.dataset.role;
+
+    document.getElementById('preview-avatar').textContent = name[0].toUpperCase();
+    document.getElementById('preview-name').textContent   = name;
+    document.getElementById('preview-email').textContent  = email;
+    const badge = document.getElementById('preview-role');
+    badge.textContent = role.replace('_', ' ');
+    badge.className = `role-badge role-${role}`;
+
+    preview.style.display = 'block';
+});
+</script>
+{% endblock %}

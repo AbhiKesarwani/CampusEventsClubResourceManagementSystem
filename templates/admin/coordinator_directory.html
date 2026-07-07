@@ -1,0 +1,126 @@
+{% extends 'layout.html' %}
+{% block title %}Coordinator Directory — CECRMS{% endblock %}
+{% block page_title %}Coordinator Directory{% endblock %}
+
+{% block content %}
+<div class="anim-fade" style="max-width:1100px;margin:0 auto;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <h1 style="font-size:1.5rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;border-radius:10px;background:var(--purple-dim);display:flex;align-items:center;justify-content:center;">
+                    <i data-lucide="table" style="width:18px;height:18px;color:var(--purple);"></i>
+                </div>
+                Coordinator Directory
+            </h1>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">All clubs and their assigned coordinators.</p>
+        </div>
+        <a href="{{ url_for('admin.coordinators') }}" class="btn btn-primary">
+            <i data-lucide="user-cog" style="width:14px;height:14px;"></i>
+            Manage Coordinators
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="card" style="overflow:hidden;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Club</th>
+                    <th>Coordinator</th>
+                    <th>Email</th>
+                    <th>Assigned Date</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in directory %}
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--emerald-dim),rgba(88,166,255,0.1));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;color:var(--emerald);flex-shrink:0;">
+                                {{ item.club_name[0]|upper }}
+                            </div>
+                            <span style="font-weight:600;">{{ item.club_name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if item.coordinator_name %}
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.72rem;color:white;flex-shrink:0;">
+                                {{ item.coordinator_name[0]|upper }}
+                            </div>
+                            <span>{{ item.coordinator_name }}</span>
+                        </div>
+                        {% else %}
+                        <span style="color:var(--text-subtle);font-style:italic;">Unassigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.coordinator_email %}
+                        <span style="color:var(--text-muted);">{{ item.coordinator_email }}</span>
+                        {% else %}
+                        <span style="color:var(--text-subtle);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.assigned_at %}
+                        <span style="color:var(--text-muted);font-size:0.82rem;">
+                            {{ item.assigned_at.strftime('%d %b %Y') if item.assigned_at else '—' }}
+                        </span>
+                        {% else %}
+                        <span style="color:var(--text-subtle);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.coordinator_id %}
+                        <span class="chip" style="background:var(--emerald-dim);color:var(--emerald);border-color:rgba(16,185,129,0.3);">
+                            <i data-lucide="check" style="width:10px;height:10px;"></i> Assigned
+                        </span>
+                        {% else %}
+                        <span class="chip" style="background:var(--amber-dim);color:var(--amber);border-color:rgba(245,158,11,0.3);">
+                            <i data-lucide="alert-circle" style="width:10px;height:10px;"></i> Unassigned
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right;">
+                        <div style="display:flex;gap:6px;justify-content:flex-end;">
+                            <a href="{{ url_for('clubs.detail', club_id=item.club_id) }}"
+                               class="btn btn-secondary btn-xs" title="View Club">
+                                <i data-lucide="eye" style="width:12px;height:12px;"></i>
+                            </a>
+                            <a href="{{ url_for('admin.coordinators') }}"
+                               class="btn btn-amber btn-xs" title="Change Coordinator">
+                                <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i>
+                            </a>
+                            {% if item.coordinator_id %}
+                            <form method="POST" action="{{ url_for('admin.remove', club_id=item.club_id) }}"
+                                  onsubmit="return confirm('Remove coordinator from {{ item.club_name }}?')"
+                                  style="display:inline;">
+                                <button class="btn btn-danger btn-xs" type="submit" title="Remove Coordinator">
+                                    <i data-lucide="user-minus" style="width:12px;height:12px;"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if not directory %}
+        <div class="empty-state" style="padding:60px 20px;">
+            <div class="empty-state-icon" style="margin:0 auto 14px;">
+                <i data-lucide="users" style="width:24px;height:24px;"></i>
+            </div>
+            <p style="font-size:0.9rem;font-weight:600;">No clubs found</p>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">Create clubs first, then assign coordinators.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
