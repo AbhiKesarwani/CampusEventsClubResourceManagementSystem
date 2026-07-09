@@ -170,20 +170,36 @@ def get_clubs_for_select() -> list[dict]:
         if conn: conn.close()
 
 
-def set_club_coordinator(club_id: int, user_id: int | None) -> None:
-    """Update a club's coordinator_id and record the assignment timestamp."""
+def set_club_coordinator(club_id: int, user_id: int | None,
+                         assigned_by_id: int | None = None) -> None:
+    """Update a club's coordinator, assignment timestamp, and assigning admin.
+
+    Args:
+        club_id:        The club to update.
+        user_id:        The new coordinator's user_id, or None to clear.
+        assigned_by_id: The admin user_id who is making the assignment,
+                        or None when clearing.
+    """
     conn = cur = None
     try:
         conn = get_db_connection()
         cur  = conn.cursor()
         if user_id is not None:
             cur.execute(
-                "UPDATE clubs SET coordinator_id=%s, assigned_at=NOW() WHERE club_id=%s",
-                (user_id, club_id)
+                """UPDATE clubs
+                   SET coordinator_id = %s,
+                       assigned_at    = NOW(),
+                       assigned_by    = %s
+                   WHERE club_id = %s""",
+                (user_id, assigned_by_id, club_id)
             )
         else:
             cur.execute(
-                "UPDATE clubs SET coordinator_id=NULL, assigned_at=NULL WHERE club_id=%s",
+                """UPDATE clubs
+                   SET coordinator_id = NULL,
+                       assigned_at    = NULL,
+                       assigned_by    = NULL
+                   WHERE club_id = %s""",
                 (club_id,)
             )
         conn.commit()
@@ -196,19 +212,24 @@ def set_club_coordinator(club_id: int, user_id: int | None) -> None:
 
 
 def get_coordinator_directory() -> list[dict]:
-    """Return all clubs that have a coordinator assigned, with user details."""
+    """Return ALL clubs with coordinator info, including assigning admin name."""
     conn = cur = None
     try:
         conn = get_db_connection()
         cur  = conn.cursor(dictionary=True)
         cur.execute("""
-            SELECT c.club_id, c.club_name, c.assigned_at,
-                   u.user_id AS coordinator_id,
-                   u.name    AS coordinator_name,
-                   u.email   AS coordinator_email,
-                   u.role    AS coordinator_role
+            SELECT
+                c.club_id,
+                c.club_name,
+                c.assigned_at,
+                c.coordinator_id,
+                u.name    AS coordinator_name,
+                u.email   AS coordinator_email,
+                u.role    AS coordinator_role,
+                ab.name   AS assigned_by_name
             FROM clubs c
-            LEFT JOIN users u ON c.coordinator_id = u.user_id
+            LEFT JOIN users u  ON c.coordinator_id = u.user_id
+            LEFT JOIN users ab ON c.assigned_by     = ab.user_id
             ORDER BY c.club_name ASC
         """)
         return cur.fetchall()

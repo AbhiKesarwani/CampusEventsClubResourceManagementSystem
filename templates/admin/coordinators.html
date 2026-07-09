@@ -3,9 +3,9 @@
 {% block page_title %}Club Coordinators{% endblock %}
 
 {% block content %}
-<div class="anim-fade" style="max-width:1200px;margin:0 auto;">
+<div class="anim-fade" style="max-width:1300px;margin:0 auto;">
 
-    <!-- Header -->
+    <!-- ══ Page Header ══════════════════════════════════════════════════════ -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
         <div>
             <h1 style="font-size:1.5rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:10px;">
@@ -14,52 +14,76 @@
                 </div>
                 Club Coordinators
             </h1>
-            <p style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">Assign and manage club coordinators from one place.</p>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">
+                Assign, change, and remove club coordinators from one place.
+            </p>
         </div>
-        <a href="{{ url_for('admin.coordinator_directory') }}" class="btn btn-secondary">
-            <i data-lucide="table" style="width:14px;height:14px;"></i>
-            Directory View
-        </a>
+        <!-- Stats chips -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            {% set assigned_count = directory|selectattr('coordinator_id')|list|length %}
+            {% set unassigned_count = directory|length - assigned_count %}
+            <span class="chip" style="background:var(--emerald-dim);color:var(--emerald);border-color:rgba(16,185,129,0.3);">
+                <i data-lucide="check-circle" style="width:11px;height:11px;"></i>
+                {{ assigned_count }} Assigned
+            </span>
+            <span class="chip" style="background:var(--amber-dim);color:var(--amber);border-color:rgba(245,158,11,0.3);">
+                <i data-lucide="alert-circle" style="width:11px;height:11px;"></i>
+                {{ unassigned_count }} Unassigned
+            </span>
+        </div>
     </div>
 
-    <!-- Two-panel layout -->
-    <div style="display:grid;grid-template-columns:340px 1fr;gap:20px;" class="coordinator-layout">
+    <!-- ══ ASSIGN PANEL ═════════════════════════════════════════════════════ -->
+    <div style="display:grid;grid-template-columns:320px 1fr;gap:20px;margin-bottom:28px;" class="coord-assign-grid">
 
-        <!-- LEFT: Club List -->
-        <div class="card" style="padding:0;overflow:hidden;">
-            <div style="padding:16px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-                <h2 style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;">Clubs</h2>
-                <span class="chip" style="font-size:0.7rem;">{{ clubs|length }}</span>
+        <!-- LEFT: Club list -->
+        <div class="card" style="padding:0;overflow:hidden;height:fit-content;max-height:560px;display:flex;flex-direction:column;">
+            <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+                <h2 style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;">
+                    Clubs
+                </h2>
+                <span class="chip" style="font-size:0.68rem;">{{ clubs|length }}</span>
             </div>
-            <div style="max-height:600px;overflow-y:auto;padding:8px;">
+            <!-- Club search -->
+            <div style="padding:10px;border-bottom:1px solid var(--border);flex-shrink:0;">
+                <div style="position:relative;">
+                    <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-subtle);pointer-events:none;"></i>
+                    <input type="text" id="club-search-input" placeholder="Filter clubs…"
+                           oninput="filterClubs(this.value)"
+                           style="width:100%;padding:8px 10px 8px 32px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-md);font-size:0.8rem;color:var(--text);outline:none;box-sizing:border-box;">
+                </div>
+            </div>
+            <div id="club-list" style="overflow-y:auto;flex:1;padding:6px;">
                 {% for c in clubs %}
-                <div class="club-select-item {% if not c.coordinator_name %}unassigned-club{% endif %}"
+                <div class="club-select-item {% if not c.coordinator_id %}unassigned-club{% endif %}"
+                     id="club-item-{{ c.club_id }}"
                      data-club-id="{{ c.club_id }}"
                      data-club-name="{{ c.club_name }}"
                      data-coordinator-id="{{ c.coordinator_id or '' }}"
                      data-coordinator-name="{{ c.coordinator_name or '' }}"
                      data-coordinator-email="{{ c.coordinator_email or '' }}"
+                     data-search="{{ c.club_name|lower }}"
                      onclick="selectClub(this)"
-                     style="padding:12px;border-radius:var(--radius-md);cursor:pointer;transition:var(--transition);margin-bottom:4px;border:1px solid transparent;">
+                     style="padding:10px 12px;border-radius:var(--radius-md);cursor:pointer;transition:var(--transition);margin-bottom:3px;border:1px solid transparent;">
                     <div style="display:flex;align-items:center;gap:10px;">
                         {% if c.first_image %}
                         <img src="{{ url_for('static', filename=c.first_image) }}"
-                             style="width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;" alt="">
+                             style="width:34px;height:34px;border-radius:7px;object-fit:cover;flex-shrink:0;" alt="">
                         {% else %}
-                        <div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,var(--emerald-dim),rgba(88,166,255,0.15));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <i data-lucide="shield" style="width:16px;height:16px;color:var(--emerald);"></i>
+                        <div style="width:34px;height:34px;border-radius:7px;background:linear-gradient(135deg,var(--emerald-dim),rgba(88,166,255,0.15));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;font-size:0.82rem;color:var(--emerald);">
+                            {{ c.club_name[0]|upper }}
                         </div>
                         {% endif %}
                         <div style="min-width:0;flex:1;">
-                            <p style="font-size:0.85rem;font-weight:700;color:var(--text);" class="truncate">{{ c.club_name }}</p>
+                            <p style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.club_name }}</p>
                             {% if c.coordinator_name %}
-                            <p style="font-size:0.72rem;color:var(--emerald);display:flex;align-items:center;gap:4px;margin-top:2px;">
-                                <i data-lucide="user-check" style="width:10px;height:10px;"></i>
+                            <p style="font-size:0.7rem;color:var(--emerald);display:flex;align-items:center;gap:3px;margin-top:1px;">
+                                <i data-lucide="user-check" style="width:9px;height:9px;flex-shrink:0;"></i>
                                 {{ c.coordinator_name }}
                             </p>
                             {% else %}
-                            <p style="font-size:0.72rem;color:var(--amber);display:flex;align-items:center;gap:4px;margin-top:2px;">
-                                <i data-lucide="alert-circle" style="width:10px;height:10px;"></i>
+                            <p style="font-size:0.7rem;color:var(--amber);display:flex;align-items:center;gap:3px;margin-top:1px;">
+                                <i data-lucide="alert-circle" style="width:9px;height:9px;flex-shrink:0;"></i>
                                 No coordinator
                             </p>
                             {% endif %}
@@ -70,7 +94,7 @@
             </div>
         </div>
 
-        <!-- RIGHT: Assignment Panel -->
+        <!-- RIGHT: Assignment panel -->
         <div>
             <!-- Empty state (before selection) -->
             <div id="assign-empty" class="card" style="padding:60px 40px;text-align:center;">
@@ -78,51 +102,73 @@
                     <i data-lucide="mouse-pointer-click" style="width:24px;height:24px;"></i>
                 </div>
                 <h3 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px;">Select a Club</h3>
-                <p style="font-size:0.85rem;color:var(--text-muted);">Click on a club from the list to assign or change its coordinator.</p>
+                <p style="font-size:0.85rem;color:var(--text-muted);">
+                    Click on a club from the list to assign or change its coordinator.
+                </p>
             </div>
 
             <!-- Assignment form (shown after selection) -->
             <div id="assign-panel" style="display:none;" class="card" style="padding:0;">
 
                 <!-- Selected club info -->
-                <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
-                    <p style="font-size:0.7rem;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Selected Club</p>
-                    <h3 id="selected-club-name" style="font-size:1.2rem;font-weight:800;color:var(--text);"></h3>
+                <div style="padding:18px 22px;border-bottom:1px solid var(--border);">
+                    <p style="font-size:0.68rem;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Selected Club</p>
+                    <h3 id="selected-club-name" style="font-size:1.15rem;font-weight:800;color:var(--text);"></h3>
                     <div id="current-coordinator" style="margin-top:10px;"></div>
                 </div>
 
                 <!-- Assign form -->
-                <form method="POST" action="{{ url_for('admin.assign') }}" style="padding:24px;">
+                <form method="POST" action="{{ url_for('admin.assign') }}" style="padding:22px;" id="assign-form">
                     <input type="hidden" name="club_id" id="assign-club-id">
 
-                    <div class="form-group">
-                        <label class="form-label">Choose Coordinator</label>
-                        <select name="user_id" id="assign-user-select" class="form-input" required>
-                            <option value="">— Select a student —</option>
-                            {% for u in users %}
-                            <option value="{{ u.user_id }}"
-                                    data-name="{{ u.name }}"
-                                    data-email="{{ u.email }}"
-                                    data-role="{{ u.role }}">
-                                {{ u.name }} — {{ u.email }} ({{ u.role }})
-                            </option>
-                            {% endfor %}
-                        </select>
+                    <div class="form-group" style="margin-bottom:14px;">
+                        <label class="form-label" style="margin-bottom:6px;display:block;">
+                            Search Student / Coordinator
+                        </label>
+                        <!-- Live search input -->
+                        <div style="position:relative;">
+                            <i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-subtle);pointer-events:none;z-index:1;"></i>
+                            <input type="text" id="user-search-input"
+                                   placeholder="Type name or email to search…"
+                                   autocomplete="off"
+                                   oninput="searchUsers(this.value)"
+                                   style="width:100%;padding:10px 12px 10px 34px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-md);font-size:0.85rem;color:var(--text);outline:none;box-sizing:border-box;transition:var(--transition);">
+                        </div>
+
+                        <!-- Dropdown results -->
+                        <div id="user-search-results"
+                             style="display:none;position:relative;z-index:200;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,0.35);max-height:220px;overflow-y:auto;">
+                        </div>
+
+                        <!-- Hidden actual field sent with form -->
+                        <input type="hidden" name="user_id" id="assign-user-id" required>
                     </div>
 
                     <!-- Preview of selected user -->
-                    <div id="user-preview" style="display:none;padding:14px;background:var(--bg-hover);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:16px;">
+                    <div id="user-preview"
+                         style="display:none;padding:14px;background:var(--bg-hover);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:16px;">
                         <div style="display:flex;align-items:center;gap:12px;">
-                            <div id="preview-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--emerald),#059669);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:white;flex-shrink:0;"></div>
-                            <div style="min-width:0;">
-                                <p id="preview-name" style="font-weight:700;color:var(--text);font-size:0.9rem;" class="truncate"></p>
-                                <p id="preview-email" style="font-size:0.78rem;color:var(--text-muted);" class="truncate"></p>
+                            <div id="preview-avatar"
+                                 style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--emerald),#059669);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:white;flex-shrink:0;"></div>
+                            <div style="min-width:0;flex:1;">
+                                <p id="preview-name" style="font-weight:700;color:var(--text);font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></p>
+                                <p id="preview-email" style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></p>
                                 <span id="preview-role" class="role-badge" style="margin-top:4px;display:inline-block;"></span>
                             </div>
+                            <button type="button" onclick="clearUserSelection()"
+                                    style="background:none;border:none;cursor:pointer;color:var(--text-subtle);padding:4px;" title="Clear selection">
+                                <i data-lucide="x" style="width:14px;height:14px;"></i>
+                            </button>
+                        </div>
+                        <!-- Warning if already a coordinator of another club -->
+                        <div id="preview-warning" style="display:none;margin-top:10px;padding:8px 12px;background:var(--amber-dim);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius-sm);font-size:0.78rem;color:var(--amber);display:flex;align-items:center;gap:6px;">
+                            <i data-lucide="alert-triangle" style="width:13px;height:13px;flex-shrink:0;"></i>
+                            <span id="preview-warning-text"></span>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="assign-btn">
+                    <button type="submit" class="btn btn-primary"
+                            style="width:100%;justify-content:center;padding:12px;" id="assign-btn" disabled>
                         <i data-lucide="user-check" style="width:15px;height:15px;"></i>
                         Assign Coordinator
                     </button>
@@ -130,90 +176,385 @@
             </div>
         </div>
 
-    </div><!-- /grid -->
+    </div><!-- /assign grid -->
 
-</div>
+    <!-- ══ DIRECTORY TABLE ═══════════════════════════════════════════════════ -->
+    <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+            <h2 style="font-size:1rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                <i data-lucide="table" style="width:16px;height:16px;color:var(--purple);"></i>
+                Coordinator Directory
+            </h2>
+            <!-- Table search -->
+            <div style="position:relative;">
+                <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text-subtle);pointer-events:none;"></i>
+                <input type="text" id="dir-search" placeholder="Filter directory…"
+                       oninput="filterDirectory(this.value)"
+                       style="padding:7px 10px 7px 30px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-md);font-size:0.8rem;color:var(--text);outline:none;width:220px;">
+            </div>
+        </div>
+
+        <div class="card" style="overflow:hidden;">
+            <table class="data-table" id="dir-table">
+                <thead>
+                    <tr>
+                        <th>Club</th>
+                        <th>Coordinator</th>
+                        <th>Email</th>
+                        <th>Assigned Date</th>
+                        <th>Assigned By</th>
+                        <th>Status</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in directory %}
+                    <tr class="dir-row"
+                        data-search="{{ item.club_name|lower }} {{ (item.coordinator_name or '')|lower }} {{ (item.coordinator_email or '')|lower }}">
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,var(--emerald-dim),rgba(88,166,255,0.1));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.8rem;color:var(--emerald);flex-shrink:0;">
+                                    {{ item.club_name[0]|upper }}
+                                </div>
+                                <span style="font-weight:600;font-size:0.87rem;">{{ item.club_name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if item.coordinator_name %}
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;color:white;flex-shrink:0;">
+                                    {{ item.coordinator_name[0]|upper }}
+                                </div>
+                                <span style="font-size:0.87rem;">{{ item.coordinator_name }}</span>
+                            </div>
+                            {% else %}
+                            <span style="color:var(--text-subtle);font-style:italic;font-size:0.85rem;">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.coordinator_email %}
+                            <span style="color:var(--text-muted);font-size:0.82rem;">{{ item.coordinator_email }}</span>
+                            {% else %}
+                            <span style="color:var(--text-subtle);">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.assigned_at %}
+                            <span style="color:var(--text-muted);font-size:0.82rem;">
+                                {{ item.assigned_at.strftime('%d %b %Y') }}
+                            </span>
+                            {% else %}
+                            <span style="color:var(--text-subtle);">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.assigned_by_name %}
+                            <span style="font-size:0.82rem;color:var(--text-muted);">{{ item.assigned_by_name }}</span>
+                            {% else %}
+                            <span style="color:var(--text-subtle);">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.coordinator_id %}
+                            <span class="chip" style="background:var(--emerald-dim);color:var(--emerald);border-color:rgba(16,185,129,0.3);font-size:0.7rem;">
+                                <i data-lucide="check" style="width:9px;height:9px;"></i> Assigned
+                            </span>
+                            {% else %}
+                            <span class="chip" style="background:var(--amber-dim);color:var(--amber);border-color:rgba(245,158,11,0.3);font-size:0.7rem;">
+                                <i data-lucide="alert-circle" style="width:9px;height:9px;"></i> Unassigned
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:right;">
+                            <div style="display:flex;gap:5px;justify-content:flex-end;">
+                                <!-- View Club -->
+                                <a href="{{ url_for('clubs.detail', club_id=item.club_id) }}"
+                                   class="btn btn-secondary btn-xs" title="View Club">
+                                    <i data-lucide="eye" style="width:11px;height:11px;"></i>
+                                </a>
+                                <!-- Change Coordinator (scroll to assign panel, preselect club) -->
+                                <button type="button"
+                                        class="btn btn-amber btn-xs"
+                                        title="Change Coordinator"
+                                        onclick="changeCoordinator('{{ item.club_id }}')">
+                                    <i data-lucide="refresh-cw" style="width:11px;height:11px;"></i>
+                                </button>
+                                <!-- Remove Coordinator -->
+                                {% if item.coordinator_id %}
+                                <form method="POST"
+                                      action="{{ url_for('admin.remove', club_id=item.club_id) }}"
+                                      onsubmit="return confirm('Remove {{ item.coordinator_name }} from {{ item.club_name }}? They will revert to Student role.')"
+                                      style="display:inline;">
+                                    <button class="btn btn-danger btn-xs" type="submit" title="Remove Coordinator">
+                                        <i data-lucide="user-minus" style="width:11px;height:11px;"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Empty state -->
+            {% if not directory %}
+            <div class="empty-state" style="padding:60px 20px;">
+                <div class="empty-state-icon" style="margin:0 auto 14px;">
+                    <i data-lucide="users" style="width:24px;height:24px;"></i>
+                </div>
+                <p style="font-size:0.9rem;font-weight:600;">No clubs found</p>
+                <p style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">
+                    Create clubs first, then assign coordinators.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- No-results row (shown by JS when filter matches nothing) -->
+            <div id="dir-no-results" style="display:none;padding:40px 20px;text-align:center;">
+                <i data-lucide="search-x" style="width:24px;height:24px;color:var(--text-subtle);margin-bottom:8px;"></i>
+                <p style="font-size:0.85rem;color:var(--text-muted);">No clubs match your search.</p>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /page -->
 {% endblock %}
 
 {% block scripts %}
 <style>
-    .club-select-item:hover { background: var(--bg-hover); }
-    .club-select-item.selected {
-        background: var(--emerald-dim) !important;
-        border-color: var(--emerald) !important;
-    }
-    @media (max-width: 768px) {
-        .coordinator-layout { grid-template-columns: 1fr !important; }
-    }
+/* ── Club list ──────────────────────────────────────────────────────────── */
+.club-select-item:hover { background: var(--bg-hover); }
+.club-select-item.selected {
+    background: var(--emerald-dim) !important;
+    border-color: var(--emerald) !important;
+}
+/* ── Search input focus ─────────────────────────────────────────────────── */
+#user-search-input:focus {
+    border-color: var(--emerald);
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+}
+/* ── User search result rows ────────────────────────────────────────────── */
+.user-result-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border);
+}
+.user-result-item:last-child { border-bottom: none; }
+.user-result-item:hover { background: var(--bg-hover); }
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .coord-assign-grid { grid-template-columns: 1fr !important; }
+}
 </style>
+
 <script>
-let selectedClubEl = null;
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════════════════════ */
+let selectedClubEl   = null;
+let searchDebounce   = null;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CLUB LIST — filter & select
+═══════════════════════════════════════════════════════════════════════════ */
+function filterClubs(q) {
+    const term = q.toLowerCase();
+    document.querySelectorAll('.club-select-item').forEach(el => {
+        const match = el.dataset.search.includes(term);
+        el.style.display = match ? '' : 'none';
+    });
+}
 
 function selectClub(el) {
-    // Deselect previous
     if (selectedClubEl) selectedClubEl.classList.remove('selected');
     el.classList.add('selected');
     selectedClubEl = el;
 
-    const clubId   = el.dataset.clubId;
-    const clubName = el.dataset.clubName;
-    const coordId    = el.dataset.coordinatorId;
-    const coordName  = el.dataset.coordinatorName;
-    const coordEmail = el.dataset.coordinatorEmail;
+    const clubId      = el.dataset.clubId;
+    const clubName    = el.dataset.clubName;
+    const coordId     = el.dataset.coordinatorId;
+    const coordName   = el.dataset.coordinatorName;
+    const coordEmail  = el.dataset.coordinatorEmail;
 
     // Show panel
     document.getElementById('assign-empty').style.display = 'none';
-    const panel = document.getElementById('assign-panel');
-    panel.style.display = 'block';
+    document.getElementById('assign-panel').style.display = 'block';
 
-    // Fill data
+    // Fill club info
     document.getElementById('selected-club-name').textContent = clubName;
     document.getElementById('assign-club-id').value = clubId;
 
-    // Current coordinator
+    // Clear user search
+    clearUserSelection();
+
+    // Current coordinator card
     const coordDiv = document.getElementById('current-coordinator');
     if (coordId) {
         coordDiv.innerHTML = `
             <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg-hover);border-radius:var(--radius-md);border:1px solid var(--border);">
-                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;color:white;flex-shrink:0;">
-                    ${coordName[0]}
+                <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.88rem;color:white;flex-shrink:0;">
+                    ${coordName[0].toUpperCase()}
                 </div>
                 <div style="min-width:0;flex:1;">
                     <p style="font-size:0.85rem;font-weight:700;color:var(--text);">${coordName}</p>
                     <p style="font-size:0.75rem;color:var(--text-muted);">${coordEmail}</p>
                 </div>
-                <span class="role-badge role-club_admin">Current</span>
-            </div>
-        `;
+                <span class="chip" style="background:var(--emerald-dim);color:var(--emerald);border-color:rgba(16,185,129,0.3);font-size:0.7rem;">Current</span>
+            </div>`;
     } else {
         coordDiv.innerHTML = `
-            <div style="padding:12px;background:var(--amber-dim);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius-md);font-size:0.82rem;color:var(--amber);display:flex;align-items:center;gap:8px;">
+            <div style="padding:10px 14px;background:var(--amber-dim);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius-md);font-size:0.82rem;color:var(--amber);display:flex;align-items:center;gap:8px;">
                 <i data-lucide="alert-circle" style="width:14px;height:14px;flex-shrink:0;"></i>
-                No coordinator assigned
-            </div>
-        `;
+                No coordinator assigned to this club yet.
+            </div>`;
     }
     lucide.createIcons();
 }
 
-// User select preview
-document.getElementById('assign-user-select').addEventListener('change', function() {
-    const opt = this.selectedOptions[0];
-    const preview = document.getElementById('user-preview');
-    if (!opt.value) { preview.style.display = 'none'; return; }
+/* ═══════════════════════════════════════════════════════════════════════════
+   USER SEARCH (AJAX, debounced)
+═══════════════════════════════════════════════════════════════════════════ */
+function searchUsers(q) {
+    clearTimeout(searchDebounce);
+    const resultsBox = document.getElementById('user-search-results');
 
-    const name  = opt.dataset.name;
-    const email = opt.dataset.email;
-    const role  = opt.dataset.role;
+    if (q.length < 2) {
+        resultsBox.style.display = 'none';
+        resultsBox.innerHTML = '';
+        return;
+    }
 
+    searchDebounce = setTimeout(() => {
+        fetch(`{{ url_for('admin.search_users_json') }}?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(users => renderSearchResults(users, q))
+            .catch(() => {
+                resultsBox.innerHTML = '<p style="padding:12px;font-size:0.82rem;color:var(--text-muted);">Search failed. Try again.</p>';
+                resultsBox.style.display = 'block';
+            });
+    }, 260);
+}
+
+function renderSearchResults(users, q) {
+    const box = document.getElementById('user-search-results');
+    if (!users.length) {
+        box.innerHTML = `<p style="padding:12px;font-size:0.82rem;color:var(--text-muted);display:flex;align-items:center;gap:8px;">
+            <i data-lucide="search-x" style="width:14px;height:14px;"></i>
+            No users found for "<strong>${q}</strong>"
+        </p>`;
+        box.style.display = 'block';
+        lucide.createIcons();
+        return;
+    }
+
+    box.innerHTML = users.map(u => {
+        const initials = u.name[0].toUpperCase();
+        const roleBadge = u.role.replace('_', ' ');
+        const badgeColor = u.role === 'club_admin'
+            ? 'var(--blue)' : 'var(--text-muted)';
+        const alreadyCoord = u.club_id ? ` · <em style="color:var(--amber);">Coords club #${u.club_id}</em>` : '';
+        return `
+        <div class="user-result-item" onclick="selectUser(${u.user_id}, '${escapeStr(u.name)}', '${escapeStr(u.email)}', '${u.role}', ${u.club_id || 'null'})">
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--emerald),#059669);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;color:white;flex-shrink:0;">${initials}</div>
+            <div style="min-width:0;flex:1;">
+                <p style="font-size:0.85rem;font-weight:600;color:var(--text);">${u.name}</p>
+                <p style="font-size:0.75rem;color:var(--text-muted);">${u.email}${alreadyCoord}</p>
+            </div>
+            <span style="font-size:0.7rem;color:${badgeColor};white-space:nowrap;">${roleBadge}</span>
+        </div>`;
+    }).join('');
+    box.style.display = 'block';
+}
+
+function escapeStr(s) {
+    return s.replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+function selectUser(userId, name, email, role, clubId) {
+    // Fill hidden input
+    document.getElementById('assign-user-id').value = userId;
+
+    // Fill search box as confirmation
+    document.getElementById('user-search-input').value = `${name} — ${email}`;
+
+    // Hide dropdown
+    const box = document.getElementById('user-search-results');
+    box.style.display = 'none';
+    box.innerHTML = '';
+
+    // Show preview
     document.getElementById('preview-avatar').textContent = name[0].toUpperCase();
     document.getElementById('preview-name').textContent   = name;
     document.getElementById('preview-email').textContent  = email;
     const badge = document.getElementById('preview-role');
     badge.textContent = role.replace('_', ' ');
-    badge.className = `role-badge role-${role}`;
+    badge.className   = `role-badge role-${role}`;
+    document.getElementById('user-preview').style.display = 'block';
 
-    preview.style.display = 'block';
+    // Warning if already a coordinator of another club
+    const currentClubId = parseInt(document.getElementById('assign-club-id').value);
+    const warnDiv  = document.getElementById('preview-warning');
+    const warnText = document.getElementById('preview-warning-text');
+    if (clubId && clubId !== currentClubId) {
+        warnText.textContent = `${name} currently coordinates club #${clubId}. That assignment will be cleared automatically.`;
+        warnDiv.style.display = 'flex';
+    } else {
+        warnDiv.style.display = 'none';
+    }
+
+    // Enable submit
+    document.getElementById('assign-btn').disabled = false;
+
+    lucide.createIcons();
+}
+
+function clearUserSelection() {
+    document.getElementById('assign-user-id').value = '';
+    document.getElementById('user-search-input').value = '';
+    document.getElementById('user-search-results').style.display = 'none';
+    document.getElementById('user-search-results').innerHTML = '';
+    document.getElementById('user-preview').style.display = 'none';
+    document.getElementById('preview-warning').style.display = 'none';
+    document.getElementById('assign-btn').disabled = true;
+}
+
+/* Close search dropdown when clicking outside */
+document.addEventListener('click', function(e) {
+    const input = document.getElementById('user-search-input');
+    const box   = document.getElementById('user-search-results');
+    if (box && !box.contains(e.target) && e.target !== input) {
+        box.style.display = 'none';
+    }
 });
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DIRECTORY TABLE — filter & change shortcut
+═══════════════════════════════════════════════════════════════════════════ */
+function filterDirectory(q) {
+    const term  = q.toLowerCase();
+    let   shown = 0;
+    document.querySelectorAll('.dir-row').forEach(row => {
+        const match = row.dataset.search.includes(term);
+        row.style.display = match ? '' : 'none';
+        if (match) shown++;
+    });
+    document.getElementById('dir-no-results').style.display = shown === 0 ? 'block' : 'none';
+}
+
+function changeCoordinator(clubId) {
+    /* Scroll to the top assign panel and pre-select the club item */
+    const el = document.getElementById(`club-item-${clubId}`);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => { selectClub(el); }, 350);
+    } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
 </script>
 {% endblock %}

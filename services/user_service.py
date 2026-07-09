@@ -103,13 +103,45 @@ def remove_coordinator(user_id: int) -> None:
 
 
 def get_students_for_select() -> list[dict]:
-    """Return all users (any role) for coordinator selection."""
+    """Return all non-admin users for coordinator selection.
+
+    Excludes admins (cannot be assigned as coordinators).
+    Includes club_admin and student roles.
+    """
     conn = cur = None
     try:
         conn = get_db_connection()
         cur  = conn.cursor(dictionary=True)
         cur.execute(
-            "SELECT user_id, name, email, role, club_id FROM users ORDER BY name"
+            """SELECT user_id, name, email, role, club_id
+               FROM users
+               WHERE role != 'admin'
+               ORDER BY name"""
+        )
+        return cur.fetchall()
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+
+def search_users_for_coordinator(query: str) -> list[dict]:
+    """Search non-admin users by name or email (AJAX endpoint).
+
+    Returns up to 20 matches.
+    """
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor(dictionary=True)
+        like = f"%{query}%"
+        cur.execute(
+            """SELECT user_id, name, email, role, club_id
+               FROM users
+               WHERE role != 'admin'
+                 AND (name LIKE %s OR email LIKE %s)
+               ORDER BY name
+               LIMIT 20""",
+            (like, like)
         )
         return cur.fetchall()
     finally:
