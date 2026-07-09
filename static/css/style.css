@@ -8,20 +8,20 @@
 /* ── CSS Custom Properties ── */
 :root {
   /* Backgrounds */
-  --bg:          #0d1117;
-  --bg-2:        #161b22;
-  --bg-card:     #1c2128;
-  --bg-hover:    #21262d;
-  --bg-elevated: #2d333b;
+  --bg:          #0B0F14;
+  --bg-2:        #121821;
+  --bg-card:     #1B2430;
+  --bg-hover:    #222D3D;
+  --bg-elevated: #2A3649;
 
   /* Borders */
-  --border:      #30363d;
-  --border-muted:#21262d;
+  --border:      #2D3846;
+  --border-muted:#1F2937;
 
   /* Text */
-  --text:        #e6edf3;
-  --text-muted:  #7d8590;
-  --text-subtle: #484f58;
+  --text:        #F8FAFC;
+  --text-muted:  #94A3B8;
+  --text-subtle: #64748B;
 
   /* Accents */
   --emerald:     #10b981;
@@ -29,49 +29,49 @@
   --emerald-glow:rgba(16,185,129,0.3);
   --amber:       #f59e0b;
   --amber-dim:   rgba(245,158,11,0.15);
-  --purple:      #a78bfa;
-  --purple-dim:  rgba(167,139,250,0.15);
-  --red:         #f85149;
-  --red-dim:     rgba(248,81,73,0.15);
-  --blue:        #58a6ff;
-  --blue-dim:    rgba(88,166,255,0.15);
+  --purple:      #8b5cf6;
+  --purple-dim:  rgba(139,92,246,0.15);
+  --red:         #ef4444;
+  --red-dim:     rgba(239,68,68,0.15);
+  --blue:        #64748b; /* Replaced blue with slate as secondary */
+  --blue-dim:    rgba(100,116,139,0.15);
 
   /* Sidebar */
-  --sidebar-w:   220px;
-  --sidebar-collapsed: 56px;
-  --nav-h:       60px;
+  --sidebar-w:   240px;
+  --sidebar-collapsed: 72px;
+  --nav-h:       64px;
 
   /* Shadows */
-  --shadow-sm:   0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md:   0 4px 16px rgba(0,0,0,0.4);
-  --shadow-lg:   0 8px 32px rgba(0,0,0,0.5);
-  --shadow-glow: 0 0 20px rgba(16,185,129,0.2);
-  --shadow-card: 0 0 0 1px var(--border), 0 4px 16px rgba(0,0,0,0.3);
+  --shadow-sm:   0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg:   0 10px 30px rgba(0,0,0,0.6);
+  --shadow-glow: 0 0 24px rgba(16,185,129,0.25);
+  --shadow-card: 0 0 0 1px var(--border), 0 8px 24px rgba(0,0,0,0.4);
 
   /* Radius */
-  --radius-sm:   6px;
-  --radius-md:   10px;
-  --radius-lg:   14px;
-  --radius-xl:   20px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
 
   /* Transitions */
-  --transition:  all 0.15s ease;
-  --transition-slow: all 0.3s ease;
+  --transition:  all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Light theme overrides */
+/* Light theme overrides (kept for compatibility if user toggles, but dark is default) */
 html:not(.dark) {
-  --bg:          #f6f8fa;
-  --bg-2:        #ffffff;
-  --bg-card:     #ffffff;
-  --bg-hover:    #f3f4f6;
-  --bg-elevated: #ffffff;
-  --border:      #d0d7de;
-  --border-muted:#e8eaed;
-  --text:        #1f2328;
-  --text-muted:  #636c76;
-  --text-subtle: #9198a1;
-  --shadow-card: 0 0 0 1px var(--border), 0 2px 8px rgba(0,0,0,0.08);
+  --bg:          #F8FAFC;
+  --bg-2:        #FFFFFF;
+  --bg-card:     #FFFFFF;
+  --bg-hover:    #F1F5F9;
+  --bg-elevated: #FFFFFF;
+  --border:      #E2E8F0;
+  --border-muted:#F1F5F9;
+  --text:        #0F172A;
+  --text-muted:  #475569;
+  --text-subtle: #94A3B8;
+  --shadow-card: 0 0 0 1px var(--border), 0 4px 12px rgba(0,0,0,0.05);
 }
 
 /* ── Base Reset ── */

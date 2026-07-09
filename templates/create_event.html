@@ -3,16 +3,16 @@
 
 <h2 class="page-title text-center animate-fade-in">Create Event</h2>
 
-<div class="glass soft-shadow-lg p-10 rounded-2xl max-w-3xl mx-auto animate-slide-up">
+<div class="bg-brand-surface border border-white/5 backdrop-blur-md soft-shadow-lg p-10 rounded-2xl max-w-3xl mx-auto animate-slide-up">
 
     <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 gap-7">
 
         <!-- SECTION: Basic Info -->
-        <h3 class="text-xl font-bold text-gray-800">Event Details</h3>
+        <h3 class="text-xl font-bold text-gray-100">Event Details</h3>
 
         <!-- Club -->
         <div class="space-y-2">
-            <label class="font-semibold text-gray-700">Select Club</label>
+            <label class="font-semibold text-gray-600">Select Club</label>
             <select name="club_id" class="input-box">
                 {% for c in clubs %}
                 <option value="{{ c.club_id }}">{{ c.club_name }}</option>
@@ -22,12 +22,12 @@
 
         <!-- Images -->
         <div class="space-y-2">
-            <label class="font-semibold text-gray-700">Event Images</label>
+            <label class="font-semibold text-gray-600">Event Images</label>
 
-            <label class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 
-                           rounded-xl py-6 cursor-pointer bg-white/40 hover:bg-white/60 transition">
+            <label class="flex flex-col items-center justify-center border-2 border-dashed border-brand-border 
+                           rounded-xl py-6 cursor-pointer bg-brand-surface text-white/40 hover:bg-brand-surface text-white/60 transition">
 
-                <span class="text-gray-600">Click to upload images</span>
+                <span class="text-gray-500">Click to upload images</span>
                 <input type="file" name="event_images" multiple accept="image/*" class="hidden" id="uploadInput">
 
             </label>
@@ -37,34 +37,34 @@
 
         <!-- Title -->
         <div class="space-y-2">
-            <label class="font-semibold text-gray-700">Event Title</label>
+            <label class="font-semibold text-gray-600">Event Title</label>
             <input name="title" class="input-box" placeholder="Enter event name">
         </div>
 
         <!-- Description -->
         <div class="space-y-2">
-            <label class="font-semibold text-gray-700">Description</label>
+            <label class="font-semibold text-gray-600">Description</label>
             <textarea name="description" class="input-box h-32" placeholder="Short event description"></textarea>
         </div>
 
         <!-- Event Lead -->
         <div class="space-y-2">
-            <label class="font-semibold text-gray-700">Event Lead</label>
+            <label class="font-semibold text-gray-600">Event Lead</label>
             <input name="event_lead" class="input-box" placeholder="Lead name">
         </div>
 
         <!-- Contact -->
         <div class="space-y-2">
-            <label class="font-semibold text-gray-700">Contact Number</label>
+            <label class="font-semibold text-gray-600">Contact Number</label>
             <input name="contact_no" class="input-box" placeholder="Phone number">
         </div>
 
         <!-- SECTION: Scheduling -->
-        <h3 class="text-xl font-bold text-gray-800 pt-4">Schedule & Venue</h3>
+        <h3 class="text-xl font-bold text-gray-100 pt-4">Schedule & Venue</h3>
 
         <!-- Venue -->
         <div class="space-y-2">
-            <label class="font-semibold text-gray-700">Select Venue</label>
+            <label class="font-semibold text-gray-600">Select Venue</label>
             <select name="venue_id" class="input-box">
                 {% for v in venues %}
                 <option value="{{ v.venue_id }}">{{ v.venue_name }}</option>
@@ -74,41 +74,41 @@
 
         <!-- Date -->
         <div class="space-y-2">
-            <label class="font-semibold text-gray-700">Date</label>
+            <label class="font-semibold text-gray-600">Date</label>
             <input type="date" name="date" class="input-box">
         </div>
 
         <!-- Time -->
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label class="font-semibold text-gray-700">Start Time</label>
+                <label class="font-semibold text-gray-600">Start Time</label>
                 <input type="time" name="start_time" class="input-box">
             </div>
 
             <div>
-                <label class="font-semibold text-gray-700">End Time</label>
+                <label class="font-semibold text-gray-600">End Time</label>
                 <input type="time" name="end_time" class="input-box">
             </div>
         </div>
 
         <!-- Registration Link -->
         <div class="space-y-2">
-            <label class="font-semibold text-gray-700">Google Form Link</label>
+            <label class="font-semibold text-gray-600">Google Form Link</label>
             <input name="registration_link" class="input-box" placeholder="Paste registration link">
         </div>
 
         <!-- SECTION: Resources -->
-        <h3 class="text-xl font-bold text-gray-800 pt-4">Resources Required</h3>
+        <h3 class="text-xl font-bold text-gray-100 pt-4">Resources Required</h3>
 
         <div class="space-y-3">
             {% for r in resources %}
-            <div class="flex items-center gap-3 bg-white/50 px-4 py-3 rounded-xl soft-shadow transition
-                        hover:scale-[1.01] hover:bg-white/80">
+            <div class="flex items-center gap-3 bg-brand-surface text-white/50 px-4 py-3 rounded-xl soft-shadow transition
+                        hover:scale-[1.01] hover:bg-brand-surface text-white/80">
 
                 <input type="checkbox" name="resource_id" value="{{ r.resource_id }}"
                        class="h-4 w-4 rounded border-gray-400">
 
-                <span class="text-gray-800">
+                <span class="text-gray-100">
                     {{ r.resource_name }}
                     <span class="text-gray-500 text-sm">(Available: {{ r.total_quantity }})</span>
                 </span>

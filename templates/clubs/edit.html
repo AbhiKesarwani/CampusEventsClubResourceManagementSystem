@@ -6,48 +6,48 @@
 
 <div class="max-w-3xl mx-auto">
     <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('clubs.list_clubs') }}" class="hover:text-indigo-600">Clubs</a>
+        <a href="{{ url_for('clubs.list_clubs') }}" class="hover:text-emerald-500">Clubs</a>
         <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <a href="{{ url_for('clubs.detail', club_id=club.club_id) }}" class="hover:text-indigo-600">{{ club.club_name }}</a>
+        <a href="{{ url_for('clubs.detail', club_id=club.club_id) }}" class="hover:text-emerald-500">{{ club.club_name }}</a>
         <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-800">Edit</span>
+        <span class="text-gray-100">Edit</span>
     </nav>
 
-    <div class="glass rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-gray-900 mb-6">Edit: {{ club.club_name }}</h2>
+    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+        <h2 class="text-xl font-bold text-white mb-6">Edit: {{ club.club_name }}</h2>
 
         <form method="POST" enctype="multipart/form-data" class="space-y-5">
 
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Club Name</label>
+                <label class="block text-sm font-semibold text-gray-600">Club Name</label>
                 <input name="club_name" value="{{ club.club_name }}"
-                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
             </div>
 
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Description</label>
+                <label class="block text-sm font-semibold text-gray-600">Description</label>
                 <textarea name="description" rows="4"
-                          class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white resize-none">{{ club.description or '' }}</textarea>
+                          class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white resize-none">{{ club.description or '' }}</textarea>
             </div>
 
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">
+                <label class="block text-sm font-semibold text-gray-600">
                     Club Admin Email
-                    <span class="text-xs font-normal text-gray-400 ml-1">(club_admin matching this email can manage this club)</span>
+                    <span class="text-xs font-normal text-gray-500 ml-1">(club_admin matching this email can manage this club)</span>
                 </label>
                 <input name="club_email" type="email" value="{{ club.club_email or '' }}"
                        placeholder="e.g. aaghaz@gmail.com"
-                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
             </div>
 
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Upload More Images</label>
+                <label class="block text-sm font-semibold text-gray-600">Upload More Images</label>
                 <input type="file" name="club_images" multiple accept=".jpg,.jpeg,.png,.gif,.webp"
-                       class="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                       class="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-indigo-100">
             </div>
 
             <button type="submit"
-                    class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition shadow-lg">
+                    class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow-lg">
                 Save Changes
             </button>
         </form>
@@ -56,7 +56,7 @@
     <!-- Existing Images -->
     {% if club_images %}
     <div class="mt-8">
-        <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 class="text-base font-bold text-gray-100 mb-4 flex items-center gap-2">
             <i data-lucide="images" class="w-5 h-5 text-blue-500"></i> Uploaded Images
         </h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

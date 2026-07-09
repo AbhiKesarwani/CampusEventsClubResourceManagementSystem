@@ -3,37 +3,37 @@
 
 <h2 class="page-title text-center">{{ venue.venue_name }}</h2>
 
-<div class="glass soft-shadow-lg p-8 rounded-2xl max-w-4xl mx-auto hover-up">
+<div class="bg-brand-surface border border-white/5 backdrop-blur-md soft-shadow-lg p-8 rounded-2xl max-w-4xl mx-auto hover-up">
 
     <!-- Header with Icon -->
     <div class="flex items-center justify-between mb-6">
-        <h3 class="text-2xl font-bold text-gray-800">{{ venue.venue_name }}</h3>
+        <h3 class="text-2xl font-bold text-gray-100">{{ venue.venue_name }}</h3>
         <div class="bg-blue-100 p-3 rounded-xl soft-shadow">
             <i data-lucide="building-2" class="w-7 h-7 text-blue-600"></i>
         </div>
     </div>
 
     <!-- Venue Info -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-gray-700 text-lg">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-gray-600 text-lg">
 
         <p>
-            <b class="text-gray-900">Location:</b>
+            <b class="text-white">Location:</b>
             {{ venue.location or "Not provided" }}
         </p>
 
         <p>
-            <b class="text-gray-900">Capacity:</b>
+            <b class="text-white">Capacity:</b>
             {{ venue.capacity or "N/A" }}
         </p>
 
         <p>
-            <b class="text-gray-900">Type:</b>
+            <b class="text-white">Type:</b>
             {{ venue.type or "General Space" }}
         </p>
 
         <p class="col-span-2">
-            <b class="text-gray-900">Description:</b><br>
-            <span class="text-gray-700">{{ venue.description or "No description available" }}</span>
+            <b class="text-white">Description:</b><br>
+            <span class="text-gray-600">{{ venue.description or "No description available" }}</span>
         </p>
     </div>
 
@@ -59,7 +59,7 @@
         <img id="venueModalImg" class="max-w-[90%] max-h-[90%] rounded-2xl soft-shadow-lg">
 
         <button onclick="closeVenueModal()"
-                class="absolute top-6 right-6 text-white text-3xl font-bold hover:text-gray-300">✕</button>
+                class="absolute top-6 right-6 text-white text-3xl font-bold hover:text-gray-600">✕</button>
     </div>
 
     <script>

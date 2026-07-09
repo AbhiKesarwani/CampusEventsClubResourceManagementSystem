@@ -8,12 +8,12 @@
     <!-- Header -->
     <div class="flex items-center gap-4">
         <a href="{{ url_for('clubs.detail', club_id=club.club_id) }}"
-           class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-500">
+           class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-brand-card transition text-gray-500">
             <i data-lucide="arrow-left" class="w-5 h-5"></i>
         </a>
         <div>
-            <h1 class="text-2xl font-extrabold text-slate-800 dark:text-slate-100">{{ club.club_name }}</h1>
-            <p class="text-sm text-slate-500 mt-0.5">{{ members|length }} member{{ 's' if members|length != 1 }}</p>
+            <h1 class="text-2xl font-extrabold text-white text-white">{{ club.club_name }}</h1>
+            <p class="text-sm text-gray-500 mt-0.5">{{ members|length }} member{{ 's' if members|length != 1 }}</p>
         </div>
         {% if can_manage %}
         <a href="{{ url_for('clubs.membership_requests', club_id=club.club_id) }}"
@@ -31,17 +31,17 @@
     <!-- Leadership -->
     {% if leadership %}
     <div>
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Leadership</h2>
+        <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Leadership</h2>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {% for m in leadership %}
-            <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-4 text-center">
+            <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-4 text-center">
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600
                             flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
                     {{ m.name[0]|upper }}
                 </div>
-                <p class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ m.name }}</p>
+                <p class="text-sm font-bold text-white text-white truncate">{{ m.name }}</p>
                 <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold
-                             bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                             bg-indigo-100 dark:bg-indigo-900/40 text-emerald-400 dark:text-indigo-300">
                     {{ m.position }}
                 </span>
                 {% if can_manage %}
@@ -70,17 +70,17 @@
     <!-- Core Team -->
     {% if core_team %}
     <div>
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Core Team</h2>
+        <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Core Team</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {% for m in core_team %}
-            <div class="glass-card dark:bg-slate-800/70 rounded-xl p-4 flex items-center gap-3">
+            <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-xl p-4 flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500
                             flex items-center justify-center text-white font-bold flex-shrink-0">
                     {{ m.name[0]|upper }}
                 </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{{ m.name }}</p>
-                    <p class="text-xs text-slate-400">{{ m.position }}</p>
+                    <p class="text-sm font-semibold text-white text-gray-100 truncate">{{ m.name }}</p>
+                    <p class="text-xs text-gray-500">{{ m.position }}</p>
                 </div>
                 {% if can_manage %}
                 <form method="POST" action="{{ url_for('clubs.member_remove', club_id=club.club_id, user_id=m.user_id) }}"
@@ -99,8 +99,8 @@
     <!-- Members -->
     {% if reg_members %}
     <div>
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Members ({{ reg_members|length }})</h2>
-        <div class="glass-card dark:bg-slate-800/70 rounded-2xl divide-y divide-slate-100 dark:divide-slate-700">
+        <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Members ({{ reg_members|length }})</h2>
+        <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl divide-y divide-slate-100 dark:divide-slate-700">
             {% for m in reg_members %}
             <div class="flex items-center gap-3 px-4 py-3">
                 <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40
@@ -108,8 +108,8 @@
                     {{ m.name[0]|upper }}
                 </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{{ m.name }}</p>
-                    <p class="text-xs text-slate-400">{{ m.email }}</p>
+                    <p class="text-sm font-semibold text-gray-100 text-gray-100 truncate">{{ m.name }}</p>
+                    <p class="text-xs text-gray-500">{{ m.email }}</p>
                 </div>
                 <span class="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
                              font-semibold px-2 py-0.5 rounded-full">Member</span>
@@ -139,15 +139,15 @@
     {% if not members %}
     <div class="text-center py-16">
         <i data-lucide="users" class="w-12 h-12 text-slate-300 mx-auto mb-3"></i>
-        <p class="text-slate-500 font-medium">No members yet</p>
+        <p class="text-gray-500 font-medium">No members yet</p>
     </div>
     {% endif %}
 
     <!-- Add Member (admin/club_admin only) -->
     {% if can_manage and non_members %}
-    <div class="glass-card dark:bg-slate-800/70 rounded-2xl p-5">
-        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
-            <i data-lucide="user-plus" class="w-4 h-4 text-indigo-500"></i>
+    <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
+        <h3 class="text-sm font-bold text-gray-100 text-gray-100 mb-4 flex items-center gap-2">
+            <i data-lucide="user-plus" class="w-4 h-4 text-emerald-500"></i>
             Add Member
         </h3>
         <form method="POST" action="{{ url_for('clubs.member_add', club_id=club.club_id) }}"

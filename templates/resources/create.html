@@ -4,32 +4,32 @@
 {% block content %}
 <div class="max-w-xl mx-auto">
     <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('resources.list_resources') }}" class="hover:text-indigo-600">Resources</a>
+        <a href="{{ url_for('resources.list_resources') }}" class="hover:text-emerald-500">Resources</a>
         <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-800">Create</span>
+        <span class="text-gray-100">Create</span>
     </nav>
-    <div class="glass rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <i data-lucide="plus-square" class="w-5 h-5 text-indigo-600"></i> New Resource
+    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <i data-lucide="plus-square" class="w-5 h-5 text-emerald-500"></i> New Resource
         </h2>
         <form method="POST" class="space-y-5">
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Resource Name <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-semibold text-gray-600">Resource Name <span class="text-red-500">*</span></label>
                 <input name="resource_name" required placeholder="e.g. Projector"
-                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
             </div>
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Total Quantity <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-semibold text-gray-600">Total Quantity <span class="text-red-500">*</span></label>
                 <input type="number" name="total_quantity" min="1" required placeholder="10"
-                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
             </div>
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Description</label>
+                <label class="block text-sm font-semibold text-gray-600">Description</label>
                 <textarea name="description" rows="3" placeholder="Optional description…"
-                          class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white resize-none"></textarea>
+                          class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white resize-none"></textarea>
             </div>
             <button type="submit"
-                    class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition shadow-lg">
+                    class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow-lg">
                 Add Resource
             </button>
         </form>

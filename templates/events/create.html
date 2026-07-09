@@ -7,14 +7,14 @@
 
 <div class="max-w-3xl mx-auto">
     <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('events.list_events') }}" class="hover:text-indigo-600">Events</a>
+        <a href="{{ url_for('events.list_events') }}" class="hover:text-emerald-500">Events</a>
         <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-800 font-medium">Create Event</span>
+        <span class="text-gray-100 font-medium">Create Event</span>
     </nav>
 
-    <div class="glass rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i> New Event
+    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-500"></i> New Event
         </h2>
 
         <form method="POST" enctype="multipart/form-data" class="space-y-6">
@@ -22,8 +22,8 @@
             <!-- Club selector (admin only) -->
             {% if role == 'admin' %}
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Club <span class="text-red-500">*</span></label>
-                <select name="club_id" required class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                <label class="block text-sm font-semibold text-gray-600">Club <span class="text-red-500">*</span></label>
+                <select name="club_id" required class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                     <option value="">Select a club…</option>
                     {% for c in clubs %}
                     <option value="{{ c.club_id }}">{{ c.club_name }}</option>
@@ -36,37 +36,37 @@
 
             <!-- Title -->
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Event Title <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-semibold text-gray-600">Event Title <span class="text-red-500">*</span></label>
                 <input name="title" required placeholder="Enter event name"
-                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
             </div>
 
             <!-- Description -->
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Description</label>
+                <label class="block text-sm font-semibold text-gray-600">Description</label>
                 <textarea name="description" rows="4" placeholder="Describe the event…"
-                          class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white resize-none"></textarea>
+                          class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white resize-none"></textarea>
             </div>
 
             <!-- Lead + Contact -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Event Lead</label>
+                    <label class="block text-sm font-semibold text-gray-600">Event Lead</label>
                     <input name="event_lead" placeholder="Name of event lead"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Contact Number</label>
+                    <label class="block text-sm font-semibold text-gray-600">Contact Number</label>
                     <input name="contact_no" placeholder="Phone number"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
             </div>
 
             <!-- Venue + Date -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Venue</label>
-                    <select name="venue_id" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                    <label class="block text-sm font-semibold text-gray-600">Venue</label>
+                    <select name="venue_id" class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                         <option value="">No venue</option>
                         {% for v in venues %}
                         <option value="{{ v.venue_id }}">{{ v.venue_name }}</option>
@@ -74,43 +74,43 @@
                     </select>
                 </div>
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Date <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-600">Date <span class="text-red-500">*</span></label>
                     <input type="date" name="date" required
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
             </div>
 
             <!-- Time -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Start Time</label>
+                    <label class="block text-sm font-semibold text-gray-600">Start Time</label>
                     <input type="time" name="start_time"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">End Time</label>
+                    <label class="block text-sm font-semibold text-gray-600">End Time</label>
                     <input type="time" name="end_time"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
             </div>
 
             <!-- Registration Link -->
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Google Form Registration Link</label>
+                <label class="block text-sm font-semibold text-gray-600">Google Form Registration Link</label>
                 <input name="registration_link" placeholder="https://forms.gle/…"
-                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
-                <p class="text-xs text-gray-400">Students will be redirected to this Google Form to register.</p>
+                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                <p class="text-xs text-gray-500">Students will be redirected to this Google Form to register.</p>
             </div>
 
             <!-- Images -->
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Event Images</label>
+                <label class="block text-sm font-semibold text-gray-600">Event Images</label>
                 <label class="flex flex-col items-center justify-center border-2 border-dashed border-indigo-200
-                              rounded-xl py-8 cursor-pointer bg-indigo-50/50 hover:bg-indigo-50 transition"
+                              rounded-xl py-8 cursor-pointer bg-emerald-500/10/50 hover:bg-emerald-500/10 transition"
                        for="event_images_input">
                     <i data-lucide="upload-cloud" class="w-10 h-10 text-indigo-400 mb-2"></i>
-                    <span class="text-sm text-indigo-600 font-medium">Click to upload</span>
-                    <span class="text-xs text-gray-400 mt-1">JPG, PNG, GIF, WebP — max 5 MB each</span>
+                    <span class="text-sm text-emerald-500 font-medium">Click to upload</span>
+                    <span class="text-xs text-gray-500 mt-1">JPG, PNG, GIF, WebP — max 5 MB each</span>
                     <input type="file" name="event_images" id="event_images_input"
                            multiple accept=".jpg,.jpeg,.png,.gif,.webp" class="hidden">
                 </label>
@@ -118,8 +118,8 @@
             </div>
 
             <button type="submit"
-                    class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold text-base
-                           hover:bg-indigo-700 transition shadow-lg hover:shadow-xl">
+                    class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold text-base
+                           hover:bg-emerald-700 transition shadow-lg hover:shadow-xl">
                 🚀 Create Event
             </button>
         </form>

@@ -9,7 +9,7 @@
     href     — Optional link
 #}
 {% set colors = {
-    'indigo': {'bg': 'bg-indigo-50', 'icon': 'text-indigo-600', 'blob': 'bg-indigo-100', 'val': 'text-indigo-700'},
+    'indigo': {'bg': 'bg-emerald-500/10', 'icon': 'text-emerald-500', 'blob': 'bg-indigo-100', 'val': 'text-emerald-400'},
     'blue':   {'bg': 'bg-blue-50',   'icon': 'text-blue-600',   'blob': 'bg-blue-100',   'val': 'text-blue-700'},
     'green':  {'bg': 'bg-emerald-50','icon': 'text-emerald-600','blob': 'bg-emerald-100','val': 'text-emerald-700'},
     'amber':  {'bg': 'bg-amber-50',  'icon': 'text-amber-600',  'blob': 'bg-amber-100',  'val': 'text-amber-700'},
@@ -21,7 +21,7 @@
 {% if href %}
 <a href="{{ href }}" class="block">
 {% endif %}
-<div class="glass rounded-2xl p-5 flex items-center gap-4
+<div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-5 flex items-center gap-4
             hover:scale-[1.03] hover:shadow-xl transition-all duration-300
             {{ c['bg'] }} border border-white/60">
     <div class="{{ c['blob'] }} rounded-xl p-3 flex-shrink-0">

@@ -11,7 +11,7 @@
 </div>
 
 <!-- Resources Table -->
-<div class="glass soft-shadow-lg rounded-2xl p-6 overflow-x-auto backdrop-blur">
+<div class="bg-brand-surface border border-white/5 backdrop-blur-md soft-shadow-lg rounded-2xl p-6 overflow-x-auto backdrop-blur">
 
     <table class="modern-table w-full">
         <thead>
@@ -27,8 +27,8 @@
             {% for r in resources %}
             <tr class="hover-row">
                 <td class="font-semibold">{{ r.resource_name }}</td>
-                <td class="text-gray-700">{{ r.total_quantity }}</td>
-                <td class="text-gray-600 text-sm max-w-sm">
+                <td class="text-gray-600">{{ r.total_quantity }}</td>
+                <td class="text-gray-500 text-sm max-w-sm">
                     {{ r.description if r.description else "—" }}
                 </td>
                 <td class="flex gap-3 py-2">

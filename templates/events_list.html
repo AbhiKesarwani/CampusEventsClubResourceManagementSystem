@@ -16,7 +16,7 @@
 
     {% for e in events %}
 
-    <div class="glass soft-shadow-lg rounded-2xl overflow-hidden
+    <div class="bg-brand-surface border border-white/5 backdrop-blur-md soft-shadow-lg rounded-2xl overflow-hidden
                 hover:scale-[1.03] hover:shadow-2xl transition-all duration-300 cursor-pointer">
 
         <!-- Event Image -->
@@ -38,9 +38,9 @@
             <p class="card-sub mt-1">{{ e.club_name }}</p>
 
             <!-- Details -->
-            <div class="mt-4 space-y-1 text-gray-700 text-sm">
-                <p><b class="font-medium text-gray-900">Date:</b> {{ e.date }}</p>
-                <p><b class="font-medium text-gray-900">Venue:</b> {{ e.venue_name }}</p>
+            <div class="mt-4 space-y-1 text-gray-600 text-sm">
+                <p><b class="font-medium text-white">Date:</b> {{ e.date }}</p>
+                <p><b class="font-medium text-white">Venue:</b> {{ e.venue_name }}</p>
             </div>
 
             <!-- Buttons -->

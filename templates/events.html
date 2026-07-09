@@ -2,7 +2,7 @@
 {% block content %}
 
 <div class="flex justify-between items-center mb-4">
-    <h2 class="text-2xl font-bold text-gray-700">Events</h2>
+    <h2 class="text-2xl font-bold text-gray-600">Events</h2>
 
     <a href="/events/create" 
        class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition flex items-center gap-2">
@@ -10,9 +10,9 @@
     </a>
 </div>
 
-<div class="glass p-4 rounded-xl shadow overflow-x-auto">
+<div class="bg-brand-surface border border-white/5 backdrop-blur-md p-4 rounded-xl shadow overflow-x-auto">
     <table class="w-full">
-        <tr class="bg-gray-50 border-b">
+        <tr class="bg-brand-hover border-b">
             <th class="p-3">Title</th>
             <th class="p-3">Date</th>
             <th class="p-3">Club</th>
@@ -20,7 +20,7 @@
         </tr>
 
         {% for e in events %}
-        <tr class="border-b hover:bg-gray-50 transition">
+        <tr class="border-b hover:bg-brand-hover transition">
             <td class="p-3">{{ e.title }}</td>
             <td class="p-3">{{ e.date }}</td>
             <td class="p-3">{{ e.club_name }}</td>

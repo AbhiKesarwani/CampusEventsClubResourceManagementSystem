@@ -3,7 +3,7 @@
 
 <h2 class="page-title text-center mb-8">Edit Event</h2>
 
-<div class="glass p-8 rounded-2xl max-w-5xl mx-auto soft-shadow-lg">
+<div class="bg-brand-surface border border-white/5 backdrop-blur-md p-8 rounded-2xl max-w-5xl mx-auto soft-shadow-lg">
 
     <!-- ===== EVENT EDIT FORM ===== -->
     <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -13,7 +13,7 @@
 
             <!-- Club -->
             <div>
-                <label class="font-semibold text-gray-700">Select Club</label>
+                <label class="font-semibold text-gray-600">Select Club</label>
                 <select name="club_id" class="input-box">
                     {% for c in clubs %}
                     <option value="{{ c.club_id }}"
@@ -26,19 +26,19 @@
 
             <!-- Title -->
             <div>
-                <label class="font-semibold text-gray-700">Event Title</label>
+                <label class="font-semibold text-gray-600">Event Title</label>
                 <input name="title" value="{{ event.title }}" class="input-box">
             </div>
 
             <!-- Lead -->
             <div>
-                <label class="font-semibold text-gray-700">Event Lead</label>
+                <label class="font-semibold text-gray-600">Event Lead</label>
                 <input name="event_lead" value="{{ event.event_lead }}" class="input-box">
             </div>
 
             <!-- Contact -->
             <div>
-                <label class="font-semibold text-gray-700">Contact</label>
+                <label class="font-semibold text-gray-600">Contact</label>
                 <input name="contact_no" value="{{ event.contact_no }}" class="input-box">
             </div>
         </div>
@@ -48,7 +48,7 @@
 
             <!-- Venue -->
             <div>
-                <label class="font-semibold text-gray-700">Venue</label>
+                <label class="font-semibold text-gray-600">Venue</label>
                 <select name="venue_id" class="input-box">
                     {% for v in venues %}
                     <option value="{{ v.venue_id }}"
@@ -61,39 +61,39 @@
 
             <!-- Date -->
             <div>
-                <label class="font-semibold text-gray-700">Date</label>
+                <label class="font-semibold text-gray-600">Date</label>
                 <input type="date" name="date" value="{{ event.date }}" class="input-box">
             </div>
 
             <!-- Time -->
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="font-semibold text-gray-700">Start Time</label>
+                    <label class="font-semibold text-gray-600">Start Time</label>
                     <input type="time" name="start_time" value="{{ event.start_time }}" class="input-box">
                 </div>
                 <div>
-                    <label class="font-semibold text-gray-700">End Time</label>
+                    <label class="font-semibold text-gray-600">End Time</label>
                     <input type="time" name="end_time" value="{{ event.end_time }}" class="input-box">
                 </div>
             </div>
 
             <!-- Registration Link -->
             <div>
-                <label class="font-semibold text-gray-700">Google Form Link</label>
+                <label class="font-semibold text-gray-600">Google Form Link</label>
                 <input name="registration_link" value="{{ event.registration_link }}" class="input-box">
             </div>
         </div>
 
         <!-- Description (full width) -->
         <div class="md:col-span-2">
-            <label class="font-semibold text-gray-700">Description</label>
+            <label class="font-semibold text-gray-600">Description</label>
             <textarea name="description" class="input-box h-32">{{ event.description }}</textarea>
         </div>
 
         <!-- Upload New Images -->
         <div class="md:col-span-2">
-            <label class="font-semibold text-gray-700">Upload More Images</label>
-            <input type="file" name="event_images" multiple accept="image/*" class="input-box bg-white">
+            <label class="font-semibold text-gray-600">Upload More Images</label>
+            <input type="file" name="event_images" multiple accept="image/*" class="input-box bg-brand-surface text-white">
             <p class="text-xs text-gray-500 mt-1">You may upload multiple images.</p>
         </div>
 
@@ -146,7 +146,7 @@
     <img id="modalImage" class="max-w-[85%] max-h-[85%] rounded-2xl border border-white/20">
 
     <button onclick="closeImageModal()"
-            class="absolute top-6 right-6 text-white text-3xl font-bold hover:text-gray-300">
+            class="absolute top-6 right-6 text-white text-3xl font-bold hover:text-gray-600">
         ✕
     </button>
 </div>

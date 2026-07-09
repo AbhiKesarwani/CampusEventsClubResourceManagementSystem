@@ -7,15 +7,15 @@
 
 <div class="max-w-4xl mx-auto">
     <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('events.list_events') }}" class="hover:text-indigo-600">Events</a>
+        <a href="{{ url_for('events.list_events') }}" class="hover:text-emerald-500">Events</a>
         <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <a href="{{ url_for('events.detail', event_id=event.event_id) }}" class="hover:text-indigo-600 truncate">{{ event.title }}</a>
+        <a href="{{ url_for('events.detail', event_id=event.event_id) }}" class="hover:text-emerald-500 truncate">{{ event.title }}</a>
         <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-800 font-medium">Edit</span>
+        <span class="text-gray-100 font-medium">Edit</span>
     </nav>
 
-    <div class="glass rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-gray-900 mb-6">Edit: {{ event.title }}</h2>
+    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+        <h2 class="text-xl font-bold text-white mb-6">Edit: {{ event.title }}</h2>
 
         <form method="POST" enctype="multipart/form-data">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -23,8 +23,8 @@
                 <!-- Club (admin only) -->
                 {% if role == 'admin' %}
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Club</label>
-                    <select name="club_id" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                    <label class="block text-sm font-semibold text-gray-600">Club</label>
+                    <select name="club_id" class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                         {% for c in clubs %}
                         <option value="{{ c.club_id }}" {% if c.club_id == event.club_id %}selected{% endif %}>{{ c.club_name }}</option>
                         {% endfor %}
@@ -34,27 +34,27 @@
 
                 <!-- Title -->
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Title</label>
+                    <label class="block text-sm font-semibold text-gray-600">Title</label>
                     <input name="title" value="{{ event.title }}"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
 
                 <!-- Lead + Contact -->
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Event Lead</label>
+                    <label class="block text-sm font-semibold text-gray-600">Event Lead</label>
                     <input name="event_lead" value="{{ event.event_lead or '' }}"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Contact</label>
+                    <label class="block text-sm font-semibold text-gray-600">Contact</label>
                     <input name="contact_no" value="{{ event.contact_no or '' }}"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
 
                 <!-- Venue + Date -->
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Venue</label>
-                    <select name="venue_id" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                    <label class="block text-sm font-semibold text-gray-600">Venue</label>
+                    <select name="venue_id" class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                         <option value="">No venue</option>
                         {% for v in venues %}
                         <option value="{{ v.venue_id }}" {% if v.venue_id == event.venue_id %}selected{% endif %}>{{ v.venue_name }}</option>
@@ -62,49 +62,49 @@
                     </select>
                 </div>
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Date</label>
+                    <label class="block text-sm font-semibold text-gray-600">Date</label>
                     <input type="date" name="date" value="{{ event.date }}"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
 
                 <!-- Time -->
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Start Time</label>
+                    <label class="block text-sm font-semibold text-gray-600">Start Time</label>
                     <input type="time" name="start_time" value="{{ event.start_time }}"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">End Time</label>
+                    <label class="block text-sm font-semibold text-gray-600">End Time</label>
                     <input type="time" name="end_time" value="{{ event.end_time }}"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
 
                 <!-- Registration Link -->
                 <div class="md:col-span-2 space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Google Form Link</label>
+                    <label class="block text-sm font-semibold text-gray-600">Google Form Link</label>
                     <input name="registration_link" value="{{ event.registration_link or '' }}"
-                           class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                 </div>
 
                 <!-- Description -->
                 <div class="md:col-span-2 space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Description</label>
+                    <label class="block text-sm font-semibold text-gray-600">Description</label>
                     <textarea name="description" rows="4"
-                              class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white resize-none">{{ event.description or '' }}</textarea>
+                              class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white resize-none">{{ event.description or '' }}</textarea>
                 </div>
 
                 <!-- Upload More Images -->
                 <div class="md:col-span-2 space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Upload More Images</label>
+                    <label class="block text-sm font-semibold text-gray-600">Upload More Images</label>
                     <input type="file" name="event_images" multiple accept=".jpg,.jpeg,.png,.gif,.webp"
-                           class="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                    <p class="text-xs text-gray-400">Max 5 MB each · JPG, PNG, GIF, WebP</p>
+                           class="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-indigo-100">
+                    <p class="text-xs text-gray-500">Max 5 MB each · JPG, PNG, GIF, WebP</p>
                 </div>
 
                 <!-- Submit -->
                 <div class="md:col-span-2">
                     <button type="submit"
-                            class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition shadow-lg">
+                            class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow-lg">
                         Save Changes
                     </button>
                 </div>
@@ -115,7 +115,7 @@
     <!-- Existing Images -->
     {% if event_images %}
     <div class="mt-8">
-        <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 class="text-base font-bold text-gray-100 mb-4 flex items-center gap-2">
             <i data-lucide="images" class="w-5 h-5 text-blue-500"></i> Uploaded Images
         </h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

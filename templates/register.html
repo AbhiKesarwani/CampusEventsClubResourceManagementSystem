@@ -11,22 +11,22 @@
     <style>
         * { font-family: 'Inter', sans-serif; }
         body { background: linear-gradient(135deg, #1e1b4b, #312e81, #1e3a5f); min-height: 100vh; }
-        .glass { background: rgba(255,255,255,0.90); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8); }
+        .bg-brand-surface border border-white/5 backdrop-blur-md { background: rgba(255,255,255,0.90); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8); }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-2xl mb-4 backdrop-blur-sm border border-white/30">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-brand-surface text-white/20 rounded-2xl mb-4 backdrop-blur-sm border border-white/30">
                 <i data-lucide="graduation-cap" class="w-9 h-9 text-white"></i>
             </div>
             <h1 class="text-3xl font-extrabold text-white">CECRMS</h1>
             <p class="text-indigo-300 text-sm mt-1">Create Your Account</p>
         </div>
 
-        <div class="glass rounded-3xl p-8 shadow-2xl">
-            <h2 class="text-xl font-bold text-gray-900 mb-6">Join CECRMS 🎓</h2>
+        <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-3xl p-8 shadow-2xl">
+            <h2 class="text-xl font-bold text-white mb-6">Join CECRMS 🎓</h2>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -44,37 +44,37 @@
             <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-5">
 
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Full Name <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-600">Full Name <span class="text-red-500">*</span></label>
                     <div class="relative">
-                        <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
                         <input type="text" name="name" required placeholder="Your full name"
-                               class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white"
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border border-brand-border text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white"
                                id="reg-name">
                     </div>
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Email <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-600">Email <span class="text-red-500">*</span></label>
                     <div class="relative">
-                        <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
                         <input type="email" name="email" required placeholder="you@college.edu"
-                               class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border border-brand-border text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                     </div>
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Phone</label>
+                    <label class="block text-sm font-semibold text-gray-600">Phone</label>
                     <div class="relative">
-                        <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
                         <input type="tel" name="phone" placeholder="+91 99999 99999"
-                               class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border border-brand-border text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                     </div>
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Club (optional)</label>
+                    <label class="block text-sm font-semibold text-gray-600">Club (optional)</label>
                     <select name="club_id"
-                            class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                            class="w-full rounded-xl border border-brand-border px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                         <option value="">No club</option>
                         {% for c in clubs %}
                         <option value="{{ c.club_id }}">{{ c.club_name }}</option>
@@ -83,14 +83,14 @@
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-700">Password <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-600">Password <span class="text-red-500">*</span></label>
                     <div class="relative">
-                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
                         <input type="password" name="password" required placeholder="Min 6 characters"
-                               class="w-full pl-11 pr-12 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white"
+                               class="w-full pl-11 pr-12 py-3 rounded-xl border border-brand-border text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white"
                                id="reg-password">
                         <button type="button" onclick="togglePw()"
-                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-500">
                             <i data-lucide="eye" class="w-4 h-4" id="eye-icon"></i>
                         </button>
                     </div>
@@ -104,9 +104,9 @@
                 </button>
             </form>
 
-            <p class="mt-6 text-center text-sm text-gray-600">
+            <p class="mt-6 text-center text-sm text-gray-500">
                 Already have an account?
-                <a href="{{ url_for('auth.login') }}" class="text-indigo-600 font-semibold hover:underline">Sign in</a>
+                <a href="{{ url_for('auth.login') }}" class="text-emerald-500 font-semibold hover:underline">Sign in</a>
             </p>
         </div>
     </div>

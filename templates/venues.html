@@ -11,7 +11,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
     {% for v in venues %}
-    <div class="glass soft-shadow-lg p-6 rounded-2xl hover:scale-[1.02] hover-up transition cursor-pointer">
+    <div class="bg-brand-surface border border-white/5 backdrop-blur-md soft-shadow-lg p-6 rounded-2xl hover:scale-[1.02] hover-up transition cursor-pointer">
 
         <!-- Top Section -->
         <div class="flex justify-between items-center">
@@ -26,19 +26,19 @@
             {% if v.location %}
                 {{ v.location }}
             {% else %}
-                <span class="text-gray-400">No location given</span>
+                <span class="text-gray-500">No location given</span>
             {% endif %}
         </p>
 
         <!-- Details -->
-        <div class="mt-5 text-gray-700 text-sm space-y-2">
-            <div class="flex justify-between bg-white/50 p-2 rounded-lg soft-shadow">
-                <span><b class="text-gray-900">Capacity:</b></span>
+        <div class="mt-5 text-gray-600 text-sm space-y-2">
+            <div class="flex justify-between bg-brand-surface text-white/50 p-2 rounded-lg soft-shadow">
+                <span><b class="text-white">Capacity:</b></span>
                 <span>{{ v.capacity or "N/A" }}</span>
             </div>
 
-            <div class="flex justify-between bg-white/50 p-2 rounded-lg soft-shadow">
-                <span><b class="text-gray-900">Type:</b></span>
+            <div class="flex justify-between bg-brand-surface text-white/50 p-2 rounded-lg soft-shadow">
+                <span><b class="text-white">Type:</b></span>
                 <span>{{ v.type or "General Space" }}</span>
             </div>
         </div>

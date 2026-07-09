@@ -32,30 +32,26 @@
 
         /* ── Left Hero ── */
         .hero-side {
-            flex: 1;
+            width: 65%;
             min-height: 100vh;
-            background: linear-gradient(135deg, #0d1117 0%, #0f2027 40%, #0d1117 100%);
+            background: linear-gradient(135deg, rgba(11,15,20,0.85) 0%, rgba(18,24,33,0.95) 100%),
+                        url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80') center/cover;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 60px;
+            padding: 80px;
             position: relative;
             overflow: hidden;
         }
 
-        /* Animated orbs */
-        .orb {
+        /* Animated gradient overlay */
+        .hero-side::before {
+            content: '';
             position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            animation: orb-float linear infinite;
-            pointer-events: none;
-        }
-        @keyframes orb-float {
-            0%   { transform: translate(0,0) scale(1); }
-            33%  { transform: translate(30px,-20px) scale(1.05); }
-            66%  { transform: translate(-20px,15px) scale(0.95); }
-            100% { transform: translate(0,0) scale(1); }
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(16,185,129,0.15), transparent 50%),
+                        radial-gradient(circle at bottom left, rgba(245,158,11,0.1), transparent 50%);
+            z-index: 1;
         }
 
         /* Floating shapes */
@@ -76,25 +72,32 @@
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(rgba(16,185,129,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(16,185,129,0.04) 1px, transparent 1px);
-            background-size: 60px 60px;
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 2;
         }
 
         /* Stats */
         .stat-pill {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 12px 20px;
-            background: rgba(28,33,40,0.7);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            backdrop-filter: blur(12px);
+            gap: 12px;
+            padding: 16px 24px;
+            background: rgba(18,24,33,0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        .stat-pill:hover {
+            transform: translateY(-5px);
+            background: rgba(27,36,48,0.7);
         }
         .stat-pill-icon {
-            width: 36px; height: 36px;
-            border-radius: 8px;
+            width: 44px; height: 44px;
+            border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
         }
 
@@ -113,16 +116,18 @@
 
         /* ── Right Panel ── */
         .login-side {
-            width: 440px;
+            width: 35%;
             min-height: 100vh;
-            background: var(--bg-2);
-            border-left: 1px solid var(--border);
+            background: rgba(11,15,20,0.95);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255,255,255,0.05);
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 48px 40px;
+            padding: 40px;
             position: relative;
             flex-shrink: 0;
+            box-shadow: -20px 0 40px rgba(0,0,0,0.5);
         }
 
         /* Glass card effect on login panel */
@@ -240,35 +245,35 @@
     <div class="float-shape" style="width:80px;height:80px;bottom:15%;right:20%;animation-duration:20s;animation-direction:reverse;border-color:rgba(88,166,255,0.15);"></div>
 
     <!-- Content -->
-    <div style="position:relative;z-index:10;max-width:500px;">
+    <div style="position:relative;z-index:10;max-width:600px;">
 
         <!-- Logo -->
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:48px;">
-            <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;animation:glow-pulse 3s ease infinite;">
-                <i data-lucide="graduation-cap" style="width:24px;height:24px;color:white;"></i>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:60px;">
+            <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--emerald),#059669);display:flex;align-items:center;justify-content:center;box-shadow: 0 8px 24px rgba(16,185,129,0.4);">
+                <i data-lucide="graduation-cap" style="width:28px;height:28px;color:white;"></i>
             </div>
             <div>
-                <h1 style="font-size:1.5rem;font-weight:900;color:var(--text);line-height:1;">CECRMS</h1>
-                <p style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Campus Event & Club Resource Management</p>
+                <h1 style="font-size:1.8rem;font-weight:900;color:var(--text);line-height:1;letter-spacing:-0.02em;">CECRMS</h1>
+                <p style="font-size:0.85rem;font-weight:500;color:var(--text-muted);margin-top:4px;">Campus Event & Club Resource Management</p>
             </div>
         </div>
 
         <!-- Headline -->
-        <h2 style="font-size:2.8rem;font-weight:900;color:var(--text);line-height:1.15;margin-bottom:16px;">
-            Your campus,<br>
-            <span style="background:linear-gradient(135deg,#10b981,#58a6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                organized.
+        <h2 style="font-size:3.5rem;font-weight:900;color:var(--text);line-height:1.1;margin-bottom:20px;letter-spacing:-0.03em;">
+            Manage Campus Life <br>
+            <span style="background:linear-gradient(135deg,var(--emerald),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                Smarter.
             </span>
         </h2>
-        <p style="font-size:1rem;color:var(--text-muted);margin-bottom:40px;line-height:1.7;">
-            Manage events, coordinate clubs, track resources and celebrate achievements — all in one platform.
+        <p style="font-size:1.1rem;color:var(--text-muted);margin-bottom:48px;line-height:1.6;font-weight:400;max-width:500px;">
+            The all-in-one platform for students, coordinators, and administrators to organize, discover, and celebrate campus activities.
         </p>
 
         <!-- Stats row -->
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px;">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:0;">
             <div class="stat-pill">
                 <div class="stat-pill-icon" style="background:rgba(16,185,129,0.15);">
-                    <i data-lucide="users" style="width:16px;height:16px;color:#10b981;"></i>
+                    <i data-lucide="users" style="width:20px;height:20px;color:var(--emerald);"></i>
                 </div>
                 <div>
                     <div class="stat-num">50+</div>
@@ -276,8 +281,8 @@
                 </div>
             </div>
             <div class="stat-pill">
-                <div class="stat-pill-icon" style="background:rgba(88,166,255,0.15);">
-                    <i data-lucide="calendar-days" style="width:16px;height:16px;color:#58a6ff;"></i>
+                <div class="stat-pill-icon" style="background:rgba(245,158,11,0.15);">
+                    <i data-lucide="calendar-days" style="width:20px;height:20px;color:var(--amber);"></i>
                 </div>
                 <div>
                     <div class="stat-num">500+</div>
@@ -285,23 +290,17 @@
                 </div>
             </div>
             <div class="stat-pill">
-                <div class="stat-pill-icon" style="background:rgba(167,139,250,0.15);">
-                    <i data-lucide="graduation-cap" style="width:16px;height:16px;color:#a78bfa;"></i>
+                <div class="stat-pill-icon" style="background:rgba(139,92,246,0.15);">
+                    <i data-lucide="graduation-cap" style="width:20px;height:20px;color:#a78bfa;"></i>
                 </div>
                 <div>
-                    <div class="stat-num">1000+</div>
-                    <div class="stat-desc">Students</div>
+                    <div class="stat-num">2000+</div>
+                    <div class="stat-desc">Engaged Students</div>
                 </div>
             </div>
         </div>
 
-        <!-- Feature list -->
-        <div style="display:flex;flex-direction:column;gap:10px;">
-            <div class="feature-item"><div class="feature-dot"></div>Seamless event registration & attendance</div>
-            <div class="feature-item"><div class="feature-dot"></div>QR-code attendance with instant certificates</div>
-            <div class="feature-item"><div class="feature-dot"></div>Resource & venue management for clubs</div>
-            <div class="feature-item"><div class="feature-dot"></div>AI-powered event recommendations</div>
-        </div>
+
     </div>
 </div>
 
@@ -317,9 +316,9 @@
     </div>
 
     <!-- Heading -->
-    <div style="margin-bottom:28px;">
-        <h2 style="font-size:1.6rem;font-weight:800;color:var(--text);margin-bottom:6px;">Welcome back</h2>
-        <p style="font-size:0.875rem;color:var(--text-muted);">Sign in to your campus account</p>
+    <div style="margin-bottom:32px;">
+        <h2 style="font-size:1.8rem;font-weight:800;color:var(--text);margin-bottom:8px;letter-spacing:-0.02em;">Welcome back</h2>
+        <p style="font-size:0.95rem;color:var(--text-muted);">Sign in to your campus account to continue</p>
     </div>
 
     <!-- Flash messages -->

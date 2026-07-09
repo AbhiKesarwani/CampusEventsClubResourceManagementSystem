@@ -4,20 +4,20 @@
 {% block content %}
 <div class="max-w-xl mx-auto">
     <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('resources.list_resources') }}" class="hover:text-indigo-600">Resources</a>
+        <a href="{{ url_for('resources.list_resources') }}" class="hover:text-emerald-500">Resources</a>
         <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-800">Request</span>
+        <span class="text-gray-100">Request</span>
     </nav>
-    <div class="glass rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
             <i data-lucide="package-plus" class="w-5 h-5 text-purple-600"></i> Request a Resource
         </h2>
         <form method="POST" class="space-y-5">
 
             {% if session.get('role') == 'admin' and clubs %}
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Club</label>
-                <select name="club_id" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                <label class="block text-sm font-semibold text-gray-600">Club</label>
+                <select name="club_id" class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                     {% for c in clubs %}
                     <option value="{{ c.club_id }}">{{ c.club_name }}</option>
                     {% endfor %}
@@ -26,8 +26,8 @@
             {% endif %}
 
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Event <span class="text-red-500">*</span></label>
-                <select name="event_id" required class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                <label class="block text-sm font-semibold text-gray-600">Event <span class="text-red-500">*</span></label>
+                <select name="event_id" required class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                     <option value="">Select an event…</option>
                     {% for e in events %}
                     <option value="{{ e.event_id }}">{{ e.title }} ({{ e.date }})</option>
@@ -36,8 +36,8 @@
             </div>
 
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Resource <span class="text-red-500">*</span></label>
-                <select name="resource_id" required class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                <label class="block text-sm font-semibold text-gray-600">Resource <span class="text-red-500">*</span></label>
+                <select name="resource_id" required class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
                     <option value="">Select a resource…</option>
                     {% for r in resources %}
                     <option value="{{ r.resource_id }}">{{ r.resource_name }} ({{ r.available }} available)</option>
@@ -46,9 +46,9 @@
             </div>
 
             <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Quantity <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-semibold text-gray-600">Quantity <span class="text-red-500">*</span></label>
                 <input type="number" name="quantity" min="1" required placeholder="1"
-                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-300 outline-none bg-white">
+                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
             </div>
 
             <p class="text-xs text-gray-500 bg-amber-50 border border-amber-100 rounded-xl p-3">

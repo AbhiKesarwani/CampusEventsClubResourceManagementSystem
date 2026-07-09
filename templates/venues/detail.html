@@ -5,15 +5,15 @@
 {% set role = session.get('role','student') %}
 <div class="max-w-2xl mx-auto">
     <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('venues.list_venues') }}" class="hover:text-indigo-600">Venues</a>
+        <a href="{{ url_for('venues.list_venues') }}" class="hover:text-emerald-500">Venues</a>
         <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-800">{{ venue.venue_name }}</span>
+        <span class="text-gray-100">{{ venue.venue_name }}</span>
     </nav>
-    <div class="glass rounded-2xl p-8 shadow-lg">
+    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
         <div class="flex items-start justify-between mb-6">
             <div>
-                <h1 class="text-2xl font-extrabold text-gray-900">{{ venue.venue_name }}</h1>
-                {% if venue.location %}<p class="text-indigo-600 font-medium mt-1 text-sm">📍 {{ venue.location }}</p>{% endif %}
+                <h1 class="text-2xl font-extrabold text-white">{{ venue.venue_name }}</h1>
+                {% if venue.location %}<p class="text-emerald-500 font-medium mt-1 text-sm">📍 {{ venue.location }}</p>{% endif %}
             </div>
             {% if role == 'admin' %}
             <div class="flex gap-2">
@@ -31,15 +31,15 @@
         </div>
         <div class="space-y-3 text-sm">
             {% if venue.capacity %}
-            <div class="flex justify-between bg-white/60 px-4 py-3 rounded-xl">
-                <span class="font-semibold text-gray-700">Capacity</span>
-                <span class="font-bold text-gray-900">{{ venue.capacity }} people</span>
+            <div class="flex justify-between bg-brand-surface text-white/60 px-4 py-3 rounded-xl">
+                <span class="font-semibold text-gray-600">Capacity</span>
+                <span class="font-bold text-white">{{ venue.capacity }} people</span>
             </div>
             {% endif %}
             {% if venue.type %}
-            <div class="flex justify-between bg-white/60 px-4 py-3 rounded-xl">
-                <span class="font-semibold text-gray-700">Type</span>
-                <span class="font-bold text-gray-900">{{ venue.type }}</span>
+            <div class="flex justify-between bg-brand-surface text-white/60 px-4 py-3 rounded-xl">
+                <span class="font-semibold text-gray-600">Type</span>
+                <span class="font-bold text-white">{{ venue.type }}</span>
             </div>
             {% endif %}
         </div>
