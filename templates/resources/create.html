@@ -1,37 +1,52 @@
 {% extends 'layout.html' %}
 {% block title %}Add Resource — CECRMS{% endblock %}
 {% block page_title %}Add Resource{% endblock %}
+
 {% block content %}
-<div class="max-w-xl mx-auto">
-    <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('resources.list_resources') }}" class="hover:text-emerald-500">Resources</a>
-        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-100">Create</span>
-    </nav>
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <i data-lucide="plus-square" class="w-5 h-5 text-emerald-500"></i> New Resource
-        </h2>
-        <form method="POST" class="space-y-5">
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Resource Name <span class="text-red-500">*</span></label>
-                <input name="resource_name" required placeholder="e.g. Projector"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+<div class="page-content anim-fade" style="max-width:640px;">
+
+    <a href="{{ url_for('resources.list_resources') }}"
+       class="inline-flex items-center gap-2 text-sm mb-6 hover-text-primary transition-colors"
+       style="color:var(--text-muted);">
+        <i data-lucide="arrow-left" style="width:13px;height:13px;"></i>
+        Back to Resources
+    </a>
+
+    <div class="card p-6">
+        <h1 class="page-title mb-5" style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="plus-square" style="width:18px;height:18px;color:var(--emerald);"></i>
+            New Resource
+        </h1>
+
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">Resource Name <span style="color:var(--red);">*</span></label>
+                <input name="resource_name" required placeholder="e.g. Projector, Microphone"
+                       class="form-input">
             </div>
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Total Quantity <span class="text-red-500">*</span></label>
+
+            <div class="form-group">
+                <label class="form-label">Total Quantity <span style="color:var(--red);">*</span></label>
                 <input type="number" name="total_quantity" min="1" required placeholder="10"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                       class="form-input">
+                <p class="form-hint">Total units available for allocation across all events.</p>
             </div>
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Description</label>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
                 <textarea name="description" rows="3" placeholder="Optional description…"
-                          class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white resize-none"></textarea>
+                          class="form-input"></textarea>
             </div>
-            <button type="submit"
-                    class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow-lg">
-                Add Resource
-            </button>
+
+            <div class="flex gap-3">
+                <button type="submit" class="btn btn-primary flex-1 justify-center">
+                    <i data-lucide="plus" style="width:14px;height:14px;"></i>
+                    Add Resource
+                </button>
+                <a href="{{ url_for('resources.list_resources') }}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
         </form>
     </div>
 </div>

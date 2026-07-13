@@ -1,137 +1,148 @@
 {% extends 'layout.html' %}
+{% block title %}Create Event — CECRMS{% endblock %}
+{% block page_title %}Create Event{% endblock %}
+
 {% block content %}
+<div class="page-content anim-fade" style="max-width:760px;">
 
-<h2 class="page-title text-center animate-fade-in">Create Event</h2>
+    <a href="{{ url_for('events.list_events') }}"
+       class="inline-flex items-center gap-2 text-sm mb-6 transition-colors"
+       style="color:var(--text-muted);">
+        <i data-lucide="arrow-left" style="width:13px;height:13px;"></i>
+        Back to Events
+    </a>
 
-<div class="bg-brand-surface border border-white/5 backdrop-blur-md soft-shadow-lg p-10 rounded-2xl max-w-3xl mx-auto animate-slide-up">
-
-    <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 gap-7">
-
-        <!-- SECTION: Basic Info -->
-        <h3 class="text-xl font-bold text-gray-100">Event Details</h3>
-
-        <!-- Club -->
-        <div class="space-y-2">
-            <label class="font-semibold text-gray-600">Select Club</label>
-            <select name="club_id" class="input-box">
-                {% for c in clubs %}
-                <option value="{{ c.club_id }}">{{ c.club_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Images -->
-        <div class="space-y-2">
-            <label class="font-semibold text-gray-600">Event Images</label>
-
-            <label class="flex flex-col items-center justify-center border-2 border-dashed border-brand-border 
-                           rounded-xl py-6 cursor-pointer bg-brand-surface text-white/40 hover:bg-brand-surface text-white/60 transition">
-
-                <span class="text-gray-500">Click to upload images</span>
-                <input type="file" name="event_images" multiple accept="image/*" class="hidden" id="uploadInput">
-
-            </label>
-
-            <p class="text-xs text-gray-500">You can upload multiple photos.</p>
-        </div>
-
-        <!-- Title -->
-        <div class="space-y-2">
-            <label class="font-semibold text-gray-600">Event Title</label>
-            <input name="title" class="input-box" placeholder="Enter event name">
-        </div>
-
-        <!-- Description -->
-        <div class="space-y-2">
-            <label class="font-semibold text-gray-600">Description</label>
-            <textarea name="description" class="input-box h-32" placeholder="Short event description"></textarea>
-        </div>
-
-        <!-- Event Lead -->
-        <div class="space-y-2">
-            <label class="font-semibold text-gray-600">Event Lead</label>
-            <input name="event_lead" class="input-box" placeholder="Lead name">
-        </div>
-
-        <!-- Contact -->
-        <div class="space-y-2">
-            <label class="font-semibold text-gray-600">Contact Number</label>
-            <input name="contact_no" class="input-box" placeholder="Phone number">
-        </div>
-
-        <!-- SECTION: Scheduling -->
-        <h3 class="text-xl font-bold text-gray-100 pt-4">Schedule & Venue</h3>
-
-        <!-- Venue -->
-        <div class="space-y-2">
-            <label class="font-semibold text-gray-600">Select Venue</label>
-            <select name="venue_id" class="input-box">
-                {% for v in venues %}
-                <option value="{{ v.venue_id }}">{{ v.venue_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Date -->
-        <div class="space-y-2">
-            <label class="font-semibold text-gray-600">Date</label>
-            <input type="date" name="date" class="input-box">
-        </div>
-
-        <!-- Time -->
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="font-semibold text-gray-600">Start Time</label>
-                <input type="time" name="start_time" class="input-box">
-            </div>
-
-            <div>
-                <label class="font-semibold text-gray-600">End Time</label>
-                <input type="time" name="end_time" class="input-box">
-            </div>
-        </div>
-
-        <!-- Registration Link -->
-        <div class="space-y-2">
-            <label class="font-semibold text-gray-600">Google Form Link</label>
-            <input name="registration_link" class="input-box" placeholder="Paste registration link">
-        </div>
-
-        <!-- SECTION: Resources -->
-        <h3 class="text-xl font-bold text-gray-100 pt-4">Resources Required</h3>
-
-        <div class="space-y-3">
-            {% for r in resources %}
-            <div class="flex items-center gap-3 bg-brand-surface text-white/50 px-4 py-3 rounded-xl soft-shadow transition
-                        hover:scale-[1.01] hover:bg-brand-surface text-white/80">
-
-                <input type="checkbox" name="resource_id" value="{{ r.resource_id }}"
-                       class="h-4 w-4 rounded border-gray-400">
-
-                <span class="text-gray-100">
-                    {{ r.resource_name }}
-                    <span class="text-gray-500 text-sm">(Available: {{ r.total_quantity }})</span>
-                </span>
-
-                <input type="number" min="1"
-                       name="quantity_{{ r.resource_id }}"
-                       placeholder="Qty"
-                       class="ml-auto w-24 p-2 border rounded-lg">
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- Submit Button -->
-        <button class="btn-primary w-full py-3 mt-4 shadow-lg hover:shadow-xl transition">
+    <div class="card p-6">
+        <h1 class="page-title mb-5" style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="calendar-plus" style="width:18px;height:18px;color:var(--emerald);"></i>
             Create Event
-        </button>
+        </h1>
 
-    </form>
+        <form method="POST" enctype="multipart/form-data">
+
+            <!-- Section: Basic Info -->
+            <p class="section-label mb-3">Event Details</p>
+
+            <div class="form-group">
+                <label class="form-label">Club <span style="color:var(--red);">*</span></label>
+                <select name="club_id" class="form-input" required>
+                    {% for c in clubs %}
+                    <option value="{{ c.club_id }}">{{ c.club_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Event Title <span style="color:var(--red);">*</span></label>
+                <input name="title" class="form-input" placeholder="e.g. Annual Tech Fest 2025" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" rows="4" class="form-input"
+                          placeholder="Describe what the event is about…"></textarea>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Event Lead</label>
+                    <input name="event_lead" class="form-input" placeholder="Organizer name">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Contact Number</label>
+                    <input name="contact_no" class="form-input" placeholder="Phone number">
+                </div>
+            </div>
+
+            <!-- Section: Scheduling -->
+            <p class="section-label mb-3 mt-2">Schedule &amp; Venue</p>
+
+            <div class="form-group">
+                <label class="form-label">Venue</label>
+                <select name="venue_id" class="form-input">
+                    <option value="">— No Venue —</option>
+                    {% for v in venues %}
+                    <option value="{{ v.venue_id }}">{{ v.venue_name }}{% if v.location %} · {{ v.location }}{% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-input">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" name="start_time" class="form-input">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">End Time</label>
+                    <input type="time" name="end_time" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Registration Link (Google Form)</label>
+                <input name="registration_link" class="form-input"
+                       placeholder="https://forms.gle/…">
+            </div>
+
+            <!-- Event Images -->
+            <div class="form-group">
+                <label class="form-label">Event Images</label>
+                <label style="cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px;border-radius:var(--radius-lg);border:2px dashed var(--border);background:var(--bg-hover);transition:border-color 0.2s;"
+                       id="evt-upload-label">
+                    <i data-lucide="image-plus" style="width:24px;height:24px;color:var(--emerald);"></i>
+                    <span style="font-size:0.8rem;font-weight:600;color:var(--emerald);">Click to upload images</span>
+                    <span style="font-size:0.7rem;color:var(--text-subtle);">Multiple files allowed</span>
+                    <input type="file" name="event_images" multiple accept="image/*"
+                           class="hidden" id="evt-upload-input" onchange="updateEvtLabel(this)">
+                </label>
+                <p class="form-hint" id="evt-file-count"></p>
+            </div>
+
+            <!-- Resources -->
+            {% if resources %}
+            <p class="section-label mb-3 mt-2">Resources Required</p>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+                {% for r in resources %}
+                <div style="display:flex;align-items:center;gap:10px;background:var(--bg-hover);padding:10px 12px;border-radius:var(--radius);border:1px solid var(--border-muted);">
+                    <input type="checkbox" name="resource_id" value="{{ r.resource_id }}"
+                           style="width:15px;height:15px;accent-color:var(--emerald);flex-shrink:0;">
+                    <span style="flex:1;font-size:0.83rem;color:var(--text);">
+                        {{ r.resource_name }}
+                        <span style="font-size:0.72rem;color:var(--text-subtle);">({{ r.total_quantity }} available)</span>
+                    </span>
+                    <input type="number" min="1" name="quantity_{{ r.resource_id }}"
+                           placeholder="Qty"
+                           class="form-input" style="width:80px;margin-bottom:0;padding:5px 8px;">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="flex gap-3">
+                <button type="submit" class="btn btn-primary flex-1 justify-center">
+                    <i data-lucide="plus" style="width:14px;height:14px;"></i>
+                    Create Event
+                </button>
+                <a href="{{ url_for('events.list_events') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+
+        </form>
+    </div>
 </div>
+{% endblock %}
 
-<!-- JS to make label clickable -->
+{% block scripts %}
 <script>
-document.querySelector("label[for='uploadInput']");
+function updateEvtLabel(input) {
+    const count = input.files.length;
+    const label = document.getElementById('evt-file-count');
+    if (label) label.textContent = count ? `${count} image${count !== 1 ? 's' : ''} selected` : '';
+    const zone = document.getElementById('evt-upload-label');
+    if (zone) zone.style.borderColor = count ? 'var(--emerald)' : 'var(--border)';
+}
 </script>
-
 {% endblock %}

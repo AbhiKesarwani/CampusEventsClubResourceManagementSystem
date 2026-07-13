@@ -48,22 +48,14 @@
             </a>
             {% endif %}
 
-            {% if role == 'student' %}
-            <a href="{{ url_for('attendance.show_qr', event_id=event.event_id) }}"
-               class="btn btn-secondary btn-sm">
-                <i data-lucide="qr-code" style="width:14px;height:14px;"></i>
-                My QR
-            </a>
-            {% endif %}
-
             {% if role in ('admin','club_admin') %}
             <a href="{{ url_for('events.edit', event_id=event.event_id) }}"
                class="btn btn-amber btn-sm">
                 <i data-lucide="pencil" style="width:14px;height:14px;"></i> Edit
             </a>
-            <a href="{{ url_for('attendance.scan', event_id=event.event_id) }}"
+            <a href="{{ url_for('attendance.show_code', event_id=event.event_id) }}"
                class="btn btn-secondary btn-sm">
-                <i data-lucide="scan-line" style="width:14px;height:14px;"></i> Scan
+                <i data-lucide="key-round" style="width:14px;height:14px;"></i> Attendance
             </a>
             {% endif %}
 

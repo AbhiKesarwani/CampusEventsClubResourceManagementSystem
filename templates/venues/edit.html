@@ -1,42 +1,56 @@
 {% extends 'layout.html' %}
 {% block title %}Edit Venue — CECRMS{% endblock %}
 {% block page_title %}Edit Venue{% endblock %}
+
 {% block content %}
-<div class="max-w-xl mx-auto">
-    <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('venues.list_venues') }}" class="hover:text-emerald-500">Venues</a>
-        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-100">Edit {{ venue.venue_name }}</span>
-    </nav>
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-white mb-6">Edit Venue</h2>
-        <form method="POST" class="space-y-5">
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Venue Name</label>
+<div class="page-content anim-fade" style="max-width:640px;">
+
+    <a href="{{ url_for('venues.list_venues') }}"
+       class="inline-flex items-center gap-2 text-sm mb-6 transition-colors"
+       style="color:var(--text-muted);">
+        <i data-lucide="arrow-left" style="width:13px;height:13px;"></i>
+        Back to Venues
+    </a>
+
+    <div class="card p-6">
+        <h1 class="page-title mb-5" style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="pencil" style="width:18px;height:18px;color:var(--amber);"></i>
+            Edit — {{ venue.venue_name }}
+        </h1>
+
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">Venue Name</label>
                 <input name="venue_name" value="{{ venue.venue_name }}"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                       class="form-input" required>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-600">Capacity</label>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Capacity</label>
                     <input type="number" name="capacity" value="{{ venue.capacity or '' }}"
-                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                           class="form-input">
                 </div>
-                <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-600">Type</label>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Type</label>
                     <input name="type" value="{{ venue.type or '' }}"
-                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                           class="form-input" placeholder="Auditorium / Lab / Hall">
                 </div>
             </div>
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Location</label>
+
+            <div class="form-group">
+                <label class="form-label">Location</label>
                 <input name="location" value="{{ venue.location or '' }}"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                       class="form-input">
             </div>
-            <button type="submit"
-                    class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow-lg">
-                Save Changes
-            </button>
+
+            <div class="flex gap-3">
+                <button type="submit" class="btn btn-primary flex-1 justify-center">
+                    <i data-lucide="save" style="width:14px;height:14px;"></i>
+                    Save Changes
+                </button>
+                <a href="{{ url_for('venues.list_venues') }}" class="btn btn-secondary">Cancel</a>
+            </div>
         </form>
     </div>
 </div>

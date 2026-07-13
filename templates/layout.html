@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CDN -->
+    <!-- Tailwind CDN (for utility classes used in templates) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -20,13 +20,14 @@
                 extend: {
                     colors: {
                         brand: {
-                            bg: '#0B0F14',
-                            surface: '#121821',
-                            card: '#1B2430',
+                            bg:      '#0B0F14',
+                            surface: '#0F1419',
+                            card:    '#161B22',
+                            hover:   '#1C2333',
+                            border:  'rgba(48,61,78,0.8)',
                             primary: '#10b981',
-                            secondary: '#64748b',
-                            accent: '#f59e0b',
-                            danger: '#ef4444'
+                            accent:  '#f59e0b',
+                            danger:  '#ef4444'
                         }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
@@ -49,18 +50,19 @@
      SIDEBAR
 ════════════════════════════════════════ -->
 <aside id="sidebar">
+    {% set role = session.get('role', 'student') %}
 
     <!-- Logo + Toggle -->
     <div class="logo-wrap">
         <div class="logo-icon flex-shrink-0">
-            <i data-lucide="graduation-cap" style="width:16px;height:16px;color:white;"></i>
+            <i data-lucide="graduation-cap" style="width:14px;height:14px;color:white;"></i>
         </div>
-        <div class="sidebar-brand-text min-w-0">
-            <p style="font-size:0.9rem;font-weight:800;color:var(--text);white-space:nowrap;">CECRMS</p>
-            <p style="font-size:0.65rem;color:var(--text-muted);white-space:nowrap;">Campus Platform</p>
+        <div class="sidebar-brand-text" style="min-width:0;flex:1;">
+            <p style="font-size:0.88rem;font-weight:800;color:var(--text);white-space:nowrap;line-height:1.2;">CECRMS</p>
+            <p style="font-size:0.62rem;color:var(--text-subtle);white-space:nowrap;">Campus Platform</p>
         </div>
-        <button id="sidebar-toggle-btn" onclick="toggleSidebar()" class="ml-auto" title="Collapse sidebar">
-            <i data-lucide="panel-left-close" style="width:14px;height:14px;"></i>
+        <button id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse sidebar">
+            <i data-lucide="panel-left-close" style="width:13px;height:13px;"></i>
         </button>
     </div>
 
@@ -68,11 +70,9 @@
     {% if session.get('user_id') %}
     <div class="sidebar-user">
         <div class="sidebar-avatar">{{ (session.get('name','U'))[0]|upper }}</div>
-        <div class="sidebar-user-info min-w-0">
-            <p style="font-size:0.8rem;font-weight:600;color:var(--text);" class="truncate">{{ session.get('name','User') }}</p>
-            <span class="role-badge role-{{ session.get('role','student') }}">
-                {{ session.get('role','student')|replace('_',' ')|title }}
-            </span>
+        <div class="sidebar-user-info" style="min-width:0;flex:1;">
+            <p class="truncate" style="font-size:0.78rem;font-weight:600;color:var(--text);">{{ session.get('name','User') }}</p>
+            <span class="role-badge role-{{ role }}">{{ role|replace('_',' ')|title }}</span>
         </div>
     </div>
     {% endif %}
@@ -80,7 +80,8 @@
     <!-- Navigation -->
     <nav class="sidebar-nav">
 
-        <p class="sidebar-section sidebar-label">Main</p>
+        <!-- ── MAIN (all roles) ── -->
+        <p class="sidebar-section">Main</p>
 
         <a href="{{ url_for('dashboard.index') }}"
            class="sidebar-link {% if active=='dashboard' %}active-nav{% endif %}">
@@ -106,9 +107,15 @@
             <span class="sidebar-label">For You</span>
         </a>
 
-        <!-- Student only -->
-        {% if session.get('role') == 'student' %}
-        <p class="sidebar-section sidebar-label">My Space</p>
+        <!-- ── MY SPACE (student only) ── -->
+        {% if role == 'student' %}
+        <p class="sidebar-section">My Space</p>
+
+        <a href="{{ url_for('attendance.my_attendance') }}"
+           class="sidebar-link {% if active=='attendance' %}active-nav{% endif %}">
+            <i data-lucide="check-circle" class="sidebar-icon"></i>
+            <span class="sidebar-label">My Attendance</span>
+        </a>
 
         <a href="{{ url_for('certificates.my_certificates') }}"
            class="sidebar-link {% if active=='certificates' %}active-nav{% endif %}">
@@ -117,27 +124,46 @@
         </a>
         {% endif %}
 
-        <!-- Club Admin only -->
-        {% if session.get('role') == 'club_admin' %}
-        <p class="sidebar-section sidebar-label">My Club</p>
+        <!-- ── MY CLUB (club coordinator only) ── -->
+        {% if role == 'club_admin' %}
+        <p class="sidebar-section">My Club</p>
 
         {% if session.get('club_id') %}
         <a href="{{ url_for('clubs.detail', club_id=session['club_id']) }}"
-           class="sidebar-link">
+           class="sidebar-link {% if active=='my_club' %}active-nav{% endif %}">
             <i data-lucide="shield" class="sidebar-icon"></i>
             <span class="sidebar-label">My Club</span>
         </a>
+
         <a href="{{ url_for('clubs.members', club_id=session['club_id']) }}"
-           class="sidebar-link">
+           class="sidebar-link {% if active=='members' %}active-nav{% endif %}">
             <i data-lucide="users-2" class="sidebar-icon"></i>
             <span class="sidebar-label">Members</span>
         </a>
         {% endif %}
+
+        <a href="{{ url_for('events.list_events') }}"
+           class="sidebar-link {% if active=='my_events' %}active-nav{% endif %}">
+            <i data-lucide="calendar-check" class="sidebar-icon"></i>
+            <span class="sidebar-label">My Events</span>
+        </a>
+
+        <a href="{{ url_for('resources.submit_request') }}"
+           class="sidebar-link {% if active=='resource_request' %}active-nav{% endif %}">
+            <i data-lucide="package-plus" class="sidebar-icon"></i>
+            <span class="sidebar-label">Request Resources</span>
+        </a>
+
+        <a href="{{ url_for('resources.my_requests') }}"
+           class="sidebar-link {% if active=='resource_requests' %}active-nav{% endif %}">
+            <i data-lucide="inbox" class="sidebar-icon"></i>
+            <span class="sidebar-label">My Requests</span>
+        </a>
         {% endif %}
 
-        <!-- Admin only -->
-        {% if session.get('role') == 'admin' %}
-        <p class="sidebar-section sidebar-label">Management</p>
+        <!-- ── MANAGEMENT (admin only) ── -->
+        {% if role == 'admin' %}
+        <p class="sidebar-section">Management</p>
 
         <a href="{{ url_for('venues.list_venues') }}"
            class="sidebar-link {% if active=='venues' %}active-nav{% endif %}">
@@ -164,13 +190,15 @@
         </a>
         {% endif %}
 
-        <!-- Notifications (all roles) -->
+        <!-- ── Notifications (all roles) ── -->
+        <p class="sidebar-section">Account</p>
+
         <a href="{{ url_for('notifications.index') }}"
-           class="sidebar-link {% if active=='notifications' %}active-nav{% endif %}" style="margin-top:auto;">
+           class="sidebar-link {% if active=='notifications' %}active-nav{% endif %}">
             <i data-lucide="bell" class="sidebar-icon"></i>
             <span class="sidebar-label">Notifications</span>
             {% if unread_count > 0 %}
-            <span class="sidebar-badge">{{ unread_count }}</span>
+            <span class="sidebar-badge">{{ unread_count if unread_count < 99 else '99+' }}</span>
             {% endif %}
         </a>
 
@@ -205,25 +233,24 @@
         <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
             <!-- Mobile hamburger -->
             <button id="mobile-menu-btn" onclick="openMobileSidebar()"
-                    class="nav-icon-btn md:hidden" style="display:none;">
-                <i data-lucide="menu" style="width:18px;height:18px;"></i>
+                    class="nav-icon-btn" style="display:none;">
+                <i data-lucide="menu" style="width:17px;height:17px;"></i>
             </button>
 
             <!-- Page breadcrumb / title -->
             <div class="breadcrumb">
-                <a href="{{ url_for('dashboard.index') }}" style="color:var(--text-muted);text-decoration:none;">
+                <a href="{{ url_for('dashboard.index') }}" style="color:var(--text-subtle);text-decoration:none;display:flex;align-items:center;">
                     <i data-lucide="home" style="width:12px;height:12px;"></i>
                 </a>
                 {% block breadcrumb %}
-                <i data-lucide="chevron-right" style="width:12px;height:12px;color:var(--text-subtle);"></i>
+                <i data-lucide="chevron-right" style="width:11px;height:11px;color:var(--text-subtle);"></i>
                 <span class="current">{% block page_title %}CECRMS{% endblock %}</span>
                 {% endblock %}
             </div>
         </div>
 
         <!-- Center: Search -->
-        <form action="{{ url_for('search.results') }}" method="GET"
-              class="search-wrap hidden sm:block">
+        <form action="{{ url_for('search.results') }}" method="GET" class="search-wrap" style="display:none;" id="search-form">
             <i data-lucide="search" class="search-icon"></i>
             <input type="text" name="q"
                    value="{{ request.args.get('q', '') }}"
@@ -235,16 +262,15 @@
         <!-- Right: actions -->
         <div style="display:flex;align-items:center;gap:4px;">
 
-            <!-- Theme toggle -->
-            <button id="theme-toggle" onclick="toggleDark()" class="nav-icon-btn" title="Toggle theme">
-                <i data-lucide="sun" style="width:16px;height:16px;display:none;" id="icon-sun"></i>
-                <i data-lucide="moon" style="width:16px;height:16px;" id="icon-moon"></i>
+            <!-- Search toggle (mobile) -->
+            <button id="search-toggle-btn" class="nav-icon-btn" onclick="toggleSearch()" title="Search">
+                <i data-lucide="search" style="width:15px;height:15px;"></i>
             </button>
 
             <!-- Notifications -->
             {% if session.get('user_id') %}
-            <a href="{{ url_for('notifications.index') }}" class="nav-icon-btn">
-                <i data-lucide="bell" style="width:16px;height:16px;"></i>
+            <a href="{{ url_for('notifications.index') }}" class="nav-icon-btn" title="Notifications">
+                <i data-lucide="bell" style="width:15px;height:15px;"></i>
                 {% if unread_count > 0 %}
                 <span class="notif-dot"></span>
                 {% endif %}
@@ -254,8 +280,8 @@
             <!-- User chip -->
             {% if session.get('user_id') %}
             <div class="user-menu" style="margin-left:4px;">
-                <div class="hidden sm:block text-right">
-                    <p style="font-size:0.75rem;font-weight:600;color:var(--text);line-height:1.2;">{{ session.get('name','User') }}</p>
+                <div style="display:none;" id="user-name-area" class="text-right">
+                    <p style="font-size:0.73rem;font-weight:600;color:var(--text);line-height:1.2;">{{ session.get('name','User') }}</p>
                     <span class="role-badge role-{{ session.get('role','student') }}">{{ session.get('role')|replace('_',' ')|title }}</span>
                 </div>
                 <div class="user-avatar">{{ (session.get('name','U'))[0]|upper }}</div>
@@ -273,10 +299,10 @@
         {% for cat, msg in messages %}
         <div class="flash-item {{ cat }}" data-flash>
             <i data-lucide="{% if cat=='success' %}check-circle{% elif cat=='danger' %}x-circle{% elif cat=='warning' %}alert-triangle{% else %}info{% endif %}"
-               style="width:16px;height:16px;flex-shrink:0;color:{% if cat=='success' %}var(--emerald){% elif cat=='danger' %}var(--red){% elif cat=='warning' %}var(--amber){% else %}var(--blue){% endif %};"></i>
+               style="width:15px;height:15px;flex-shrink:0;color:{% if cat=='success' %}var(--emerald){% elif cat=='danger' %}var(--red){% elif cat=='warning' %}var(--amber){% else %}var(--blue){% endif %};"></i>
             <span>{{ msg }}</span>
-            <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;">
-                <i data-lucide="x" style="width:14px;height:14px;"></i>
+            <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-subtle);padding:2px;">
+                <i data-lucide="x" style="width:13px;height:13px;"></i>
             </button>
         </div>
         {% endfor %}
@@ -285,7 +311,7 @@
     </div>
 
     <!-- Page Content -->
-    <main class="flex-1 p-4 md:p-6 page-enter" style="min-width:0;">
+    <main class="page-enter" style="min-width:0;">
         {% block content %}{% endblock %}
     </main>
 
@@ -294,42 +320,51 @@
 <!-- ═══════════════════════════════════════
      BOTTOM NAV (mobile only)
 ════════════════════════════════════════ -->
+{% set role = session.get('role', 'student') %}
 <nav id="bottom-nav">
     <a href="{{ url_for('dashboard.index') }}"
        class="bnav-item {% if active=='dashboard' %}active{% endif %}">
-        <i data-lucide="layout-dashboard" style="width:20px;height:20px;"></i>
+        <i data-lucide="layout-dashboard" style="width:19px;height:19px;"></i>
         <span>Home</span>
     </a>
     <a href="{{ url_for('events.list_events') }}"
        class="bnav-item {% if active=='events' %}active{% endif %}">
-        <i data-lucide="calendar-days" style="width:20px;height:20px;"></i>
+        <i data-lucide="calendar-days" style="width:19px;height:19px;"></i>
         <span>Events</span>
     </a>
     <a href="{{ url_for('clubs.list_clubs') }}"
        class="bnav-item {% if active=='clubs' %}active{% endif %}">
-        <i data-lucide="users" style="width:20px;height:20px;"></i>
+        <i data-lucide="users" style="width:19px;height:19px;"></i>
         <span>Clubs</span>
     </a>
-    <a href="{{ url_for('search.results') }}" class="bnav-item">
-        <i data-lucide="search" style="width:20px;height:20px;"></i>
-        <span>Search</span>
+    {% if role == 'student' %}
+    <a href="{{ url_for('attendance.my_attendance') }}"
+       class="bnav-item {% if active=='attendance' %}active{% endif %}">
+        <i data-lucide="check-circle" style="width:19px;height:19px;"></i>
+        <span>Attendance</span>
     </a>
-    {% if session.get('role') == 'student' %}
-    <a href="{{ url_for('certificates.my_certificates') }}"
-       class="bnav-item {% if active=='certificates' %}active{% endif %}">
-        <i data-lucide="award" style="width:20px;height:20px;"></i>
-        <span>Certs</span>
+    {% elif role == 'club_admin' %}
+    <a href="{{ url_for('resources.submit_request') }}"
+       class="bnav-item {% if active=='resource_request' %}active{% endif %}">
+        <i data-lucide="package-plus" style="width:19px;height:19px;"></i>
+        <span>Request</span>
     </a>
     {% else %}
+    <a href="{{ url_for('resources.all_requests') }}"
+       class="bnav-item {% if active=='resource_requests' %}active{% endif %}">
+        <i data-lucide="inbox" style="width:19px;height:19px;"></i>
+        <span>Requests</span>
+    </a>
+    {% endif %}
+
     <a href="{{ url_for('notifications.index') }}"
        class="bnav-item {% if active=='notifications' %}active{% endif %}" style="position:relative;">
-        <i data-lucide="bell" style="width:20px;height:20px;"></i>
+        <i data-lucide="bell" style="width:19px;height:19px;"></i>
         {% if unread_count > 0 %}
-        <span style="position:absolute;top:4px;right:14px;width:7px;height:7px;background:var(--red);border-radius:50%;border:2px solid var(--bg-2);"></span>
+        <span style="position:absolute;top:4px;right:12px;width:7px;height:7px;background:var(--red);border-radius:50%;border:2px solid var(--bg-2);"></span>
         {% endif %}
         <span>Alerts</span>
     </a>
-    {% endif %}
 </nav>
 
 <!-- ═══════════════════════════════════════
@@ -337,7 +372,7 @@
 ════════════════════════════════════════ -->
 <div id="lightbox" style="display:none;" onclick="closeLightbox()">
     <button id="lightbox-close" onclick="closeLightbox()">
-        <i data-lucide="x" style="width:18px;height:18px;"></i>
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
     </button>
     <img id="lightbox-img" src="" alt="Preview" onclick="event.stopPropagation()">
 </div>
@@ -349,38 +384,18 @@
 // ── Icons ──
 lucide.createIcons();
 
-// ── Dark mode (default ON for new visitors) ──
+// ── Always dark — no toggle ──
+document.body.classList.add('dark');
+document.documentElement.classList.add('dark');
+
+// ── Show user name on desktop ──
 (function() {
-    const saved = localStorage.getItem('cecrms_theme');
-    if (saved === 'light') {
-        document.body.classList.remove('dark');
-        document.documentElement.classList.remove('dark');
-    } else {
-        document.body.classList.add('dark');
-        document.documentElement.classList.add('dark');
-    }
-    updateThemeIcons();
+    const nameArea = document.getElementById('user-name-area');
+    if (nameArea && window.innerWidth >= 640) nameArea.style.display = 'block';
+    window.addEventListener('resize', () => {
+        if (nameArea) nameArea.style.display = window.innerWidth >= 640 ? 'block' : 'none';
+    });
 })();
-
-function updateThemeIcons() {
-    const isDark = document.body.classList.contains('dark');
-    const sun  = document.getElementById('icon-sun');
-    const moon = document.getElementById('icon-moon');
-    if (isDark) {
-        sun?.style  && (sun.style.display = 'block');
-        moon?.style && (moon.style.display = 'none');
-    } else {
-        sun?.style  && (sun.style.display = 'none');
-        moon?.style && (moon.style.display = 'block');
-    }
-}
-
-function toggleDark() {
-    const isDark = document.body.classList.toggle('dark');
-    document.documentElement.classList.toggle('dark', isDark);
-    localStorage.setItem('cecrms_theme', isDark ? 'dark' : 'light');
-    updateThemeIcons();
-}
 
 // ── Sidebar (desktop collapse) ──
 (function() {
@@ -396,8 +411,8 @@ function toggleDark() {
 })();
 
 function toggleSidebar() {
-    const sb = document.getElementById('sidebar');
-    const mc = document.getElementById('main-content');
+    const sb  = document.getElementById('sidebar');
+    const mc  = document.getElementById('main-content');
     const btn = document.getElementById('sidebar-toggle-btn');
     if (!sb) return;
 
@@ -414,40 +429,77 @@ function toggleSidebar() {
 
 // ── Mobile sidebar ──
 function openMobileSidebar() {
-    const sb = document.getElementById('sidebar');
-    const ov = document.getElementById('sidebar-overlay');
-    sb?.classList.add('mobile-open');
-    ov?.classList.add('active');
+    document.getElementById('sidebar')?.classList.add('mobile-open');
+    document.getElementById('sidebar-overlay')?.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 function closeSidebar() {
-    const sb = document.getElementById('sidebar');
-    const ov = document.getElementById('sidebar-overlay');
-    sb?.classList.remove('mobile-open', 'translate-x-0');
-    ov?.classList.remove('active');
+    document.getElementById('sidebar')?.classList.remove('mobile-open');
+    document.getElementById('sidebar-overlay')?.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
-// Show mobile hamburger on small screens
+// ── Show mobile hamburger on small screens ──
 (function() {
     const btn = document.getElementById('mobile-menu-btn');
     if (btn && window.innerWidth < 768) btn.style.display = 'flex';
     window.addEventListener('resize', () => {
         if (btn) btn.style.display = window.innerWidth < 768 ? 'flex' : 'none';
+        // Close mobile sidebar on resize to desktop
+        if (window.innerWidth >= 768) closeSidebar();
+    });
+})();
+
+// ── Search toggle ──
+let _searchOpen = false;
+function toggleSearch() {
+    const form = document.getElementById('search-form');
+    const input = document.getElementById('global-search-input');
+    if (!form) return;
+    _searchOpen = !_searchOpen;
+    form.style.display = _searchOpen ? 'flex' : 'none';
+    if (_searchOpen) {
+        input?.focus();
+        // On desktop always show
+        if (window.innerWidth >= 640) {
+            form.style.display = 'flex';
+            _searchOpen = true;
+        }
+    }
+}
+
+// Show search bar on desktop always
+(function() {
+    const form = document.getElementById('search-form');
+    const btn  = document.getElementById('search-toggle-btn');
+    if (window.innerWidth >= 640) {
+        if (form) form.style.display = 'flex';
+        if (btn) btn.style.display = 'none';
+    }
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 640) {
+            if (form) form.style.display = 'flex';
+            if (btn) btn.style.display = 'none';
+        } else {
+            if (form && !_searchOpen) form.style.display = 'none';
+            if (btn) btn.style.display = 'flex';
+        }
     });
 })();
 
 // ── Auto-dismiss flash messages ──
 setTimeout(() => {
     document.querySelectorAll('[data-flash]').forEach(el => {
-        el.style.transition = 'opacity 0.5s, transform 0.5s';
+        el.style.transition = 'opacity 0.4s, transform 0.4s';
         el.style.opacity = '0';
-        el.style.transform = 'translateX(20px)';
-        setTimeout(() => el.remove(), 500);
+        el.style.transform = 'translateX(16px)';
+        setTimeout(() => el.remove(), 400);
     });
 }, 4500);
 
 // ── Lightbox ──
 function openLightbox(src) {
-    const lb = document.getElementById('lightbox');
+    const lb  = document.getElementById('lightbox');
     const img = document.getElementById('lightbox-img');
     if (lb && img) {
         img.src = src;
@@ -463,7 +515,7 @@ function closeLightbox() {
     }
 }
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'Escape') { closeLightbox(); closeSidebar(); }
 });
 
 // ── Animated counters ──
@@ -476,17 +528,13 @@ function animateCounters() {
             cur = Math.min(cur + step, target);
             el.textContent = cur.toLocaleString();
             if (cur >= target) clearInterval(timer);
-        }, 30);
+        }, 28);
     });
 }
 
-// Run counters when visible (IntersectionObserver)
 const counterObserver = new IntersectionObserver((entries) => {
     entries.forEach(e => {
-        if (e.isIntersecting) {
-            animateCounters();
-            counterObserver.disconnect();
-        }
+        if (e.isIntersecting) { animateCounters(); counterObserver.disconnect(); }
     });
 }, { threshold: 0.2 });
 const firstCounter = document.querySelector('[data-count]');
@@ -502,14 +550,27 @@ function showToast(message, type = 'info') {
     }
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    const icons = { success: 'check-circle', danger: 'x-circle', warning: 'alert-triangle', info: 'info' };
     const colors = { success: 'var(--emerald)', danger: 'var(--red)', warning: 'var(--amber)', info: 'var(--blue)' };
+    const icons  = { success: 'check-circle', danger: 'x-circle', warning: 'alert-triangle', info: 'info' };
     toast.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${colors[type]||colors.info}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="${colors[type]||colors.info}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             style="flex-shrink:0;"></svg>
         <span>${message}</span>`;
     container.appendChild(toast);
-    setTimeout(() => { toast.classList.add('toast-fade-out'); setTimeout(() => toast.remove(), 300); }, 3500);
+    setTimeout(() => {
+        toast.classList.add('toast-fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
 }
+
+// ── Image lazy-load skeleton ──
+document.querySelectorAll('img[loading="lazy"]').forEach(img => {
+    img.style.opacity = '0';
+    img.style.transition = 'opacity 0.3s';
+    img.addEventListener('load', () => { img.style.opacity = '1'; });
+    if (img.complete) img.style.opacity = '1';
+});
 </script>
 
 {% block scripts %}{% endblock %}

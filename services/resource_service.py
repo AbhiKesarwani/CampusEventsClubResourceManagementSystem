@@ -166,7 +166,7 @@ def count_pending_requests() -> int:
 
 
 def create_request(event_id: int, club_id: int, resource_id: int,
-                   quantity: int, requested_by: int) -> int:
+                   quantity: int, requested_by: int, reason: str = None) -> int:
     """Submit a resource request. Raises ValueError on over-allocation."""
     conn = cur = None
     try:
@@ -191,9 +191,9 @@ def create_request(event_id: int, club_id: int, resource_id: int,
         cur2 = conn.cursor()
         cur2.execute("""
             INSERT INTO resource_requests
-              (event_id, club_id, resource_id, quantity, requested_by)
-            VALUES (%s,%s,%s,%s,%s)
-        """, (event_id, club_id, resource_id, quantity, requested_by))
+              (event_id, club_id, resource_id, quantity, requested_by, reason)
+            VALUES (%s,%s,%s,%s,%s,%s)
+        """, (event_id, club_id, resource_id, quantity, requested_by, reason))
         conn.commit()
         return cur2.lastrowid
     except Exception:
@@ -210,10 +210,13 @@ def approve_request(request_id: int, reviewed_by: int) -> None:
     try:
         conn = get_db_connection()
         cur  = conn.cursor(dictionary=True)
-        cur.execute(
-            "SELECT * FROM resource_requests WHERE request_id=%s AND status='Pending'",
-            (request_id,)
-        )
+        cur.execute("""
+            SELECT rr.*, r.resource_name, e.title AS event_title
+            FROM resource_requests rr
+            JOIN resources r ON r.resource_id = rr.resource_id
+            JOIN events    e ON e.event_id     = rr.event_id
+            WHERE rr.request_id=%s AND rr.status='Pending'
+        """, (request_id,))
         req = cur.fetchone()
         if not req:
             raise ValueError("Request not found or already reviewed.")
@@ -244,6 +247,19 @@ def approve_request(request_id: int, reviewed_by: int) -> None:
             ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
         """, (req['event_id'], req['resource_id'], req['quantity']))
         conn.commit()
+
+        # Fire notification to requesting coordinator
+        try:
+            from services.notification_service import create_notification
+            create_notification(
+                user_id=req['requested_by'],
+                title='Resource Request Approved',
+                body=f"{req['quantity']}x {req['resource_name']} approved for '{req['event_title']}'.",
+                link='/resources/requests',
+                type='resource_approved'
+            )
+        except Exception:
+            pass  # Never let notification failure break the approval
     except Exception:
         if conn: conn.rollback()
         raise
@@ -256,12 +272,37 @@ def reject_request(request_id: int, reviewed_by: int) -> None:
     conn = cur = None
     try:
         conn = get_db_connection()
-        cur  = conn.cursor()
-        cur.execute(
+        cur  = conn.cursor(dictionary=True)
+        # Fetch request details for notification
+        cur.execute("""
+            SELECT rr.*, r.resource_name, e.title AS event_title
+            FROM resource_requests rr
+            JOIN resources r ON r.resource_id = rr.resource_id
+            JOIN events    e ON e.event_id     = rr.event_id
+            WHERE rr.request_id = %s
+        """, (request_id,))
+        req = cur.fetchone()
+
+        cur2 = conn.cursor()
+        cur2.execute(
             "UPDATE resource_requests SET status='Rejected', reviewed_by=%s, updated_at=NOW() WHERE request_id=%s",
             (reviewed_by, request_id)
         )
         conn.commit()
+
+        # Fire notification to requesting coordinator
+        if req:
+            try:
+                from services.notification_service import create_notification
+                create_notification(
+                    user_id=req['requested_by'],
+                    title='Resource Request Rejected',
+                    body=f"{req['quantity']}x {req['resource_name']} for '{req['event_title']}' was not approved.",
+                    link='/resources/requests',
+                    type='resource_rejected'
+                )
+            except Exception:
+                pass
     except Exception:
         if conn: conn.rollback()
         raise

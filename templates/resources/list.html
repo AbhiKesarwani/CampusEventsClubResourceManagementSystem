@@ -1,83 +1,115 @@
 {% extends 'layout.html' %}
 {% block title %}Resources — CECRMS{% endblock %}
 {% block page_title %}Resources{% endblock %}
+
 {% block content %}
 {% set role = session.get('role', 'student') %}
+<div class="page-content anim-fade">
 
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-    <h2 class="text-2xl font-extrabold text-gray-100">Resources</h2>
-    <div class="flex flex-wrap gap-2">
+    <!-- Header -->
+    <div class="section-header mb-6">
+        <div>
+            <h1 class="page-title">Resources</h1>
+            <p class="page-subtitle">{{ resources|length }} resource{{ 's' if resources|length != 1 else '' }} configured</p>
+        </div>
         {% if role == 'admin' %}
-        <a href="{{ url_for('resources.create') }}"
-           class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition shadow">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Resource
-        </a>
-        <a href="{{ url_for('resources.all_requests') }}"
-           class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition shadow">
-            <i data-lucide="inbox" class="w-4 h-4"></i> Requests
-        </a>
-        {% endif %}
-        {% if role in ('admin', 'club_admin') %}
-        <a href="{{ url_for('resources.submit_request') }}"
-           class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700 transition shadow">
-            <i data-lucide="package-plus" class="w-4 h-4"></i> Request Resource
-        </a>
+        <div class="flex gap-2">
+            <a href="{{ url_for('resources.all_requests') }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="inbox" style="width:13px;height:13px;"></i>
+                View Requests
+            </a>
+            <a href="{{ url_for('resources.create') }}" class="btn btn-primary btn-sm">
+                <i data-lucide="plus" style="width:13px;height:13px;"></i>
+                Add Resource
+            </a>
+        </div>
         {% endif %}
     </div>
-</div>
 
-<div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl shadow-sm overflow-hidden">
-    <table class="w-full text-sm">
-        <thead>
-            <tr class="bg-emerald-500/10/80 text-left">
-                <th class="px-6 py-4 font-semibold text-gray-600">Resource</th>
-                <th class="px-6 py-4 font-semibold text-gray-600">Total</th>
-                <th class="px-6 py-4 font-semibold text-gray-600">Allocated</th>
-                <th class="px-6 py-4 font-semibold text-gray-600">Available</th>
-                <th class="px-6 py-4 font-semibold text-gray-600">Description</th>
-                {% if role == 'admin' %}
-                <th class="px-6 py-4 font-semibold text-gray-600">Actions</th>
-                {% endif %}
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-            {% for r in resources %}
-            <tr class="hover:bg-emerald-500/10/30 transition">
-                <td class="px-6 py-4 font-semibold text-white">{{ r.resource_name }}</td>
-                <td class="px-6 py-4 text-gray-600">{{ r.total_quantity }}</td>
-                <td class="px-6 py-4 text-amber-600 font-medium">{{ r.allocated }}</td>
-                <td class="px-6 py-4">
-                    <span class="font-bold {% if r.available <= 0 %}text-red-600{% elif r.available < r.total_quantity * 0.3 %}text-amber-600{% else %}text-emerald-600{% endif %}">
-                        {{ r.available }}
-                    </span>
-                </td>
-                <td class="px-6 py-4 text-gray-500 max-w-xs truncate">{{ r.description or '—' }}</td>
-                {% if role == 'admin' %}
-                <td class="px-6 py-4">
-                    <div class="flex gap-2">
-                        <a href="{{ url_for('resources.edit', resource_id=r.resource_id) }}"
-                           class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 text-xs font-semibold hover:bg-amber-200 transition">
-                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
-                        </a>
-                        <form method="POST" action="{{ url_for('resources.delete', resource_id=r.resource_id) }}"
-                              onsubmit="return confirm('Delete this resource?');">
-                            <button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-100 text-red-700 text-xs font-semibold hover:bg-red-200 transition">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
-                            </button>
-                        </form>
-                    </div>
-                </td>
-                {% endif %}
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6" class="px-6 py-16 text-center text-gray-500">
-                    <i data-lucide="package" class="w-12 h-12 mx-auto mb-2 opacity-30"></i>
-                    No resources added yet.
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Resources Table -->
+    <div class="card" style="overflow:hidden;">
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Description</th>
+                        <th>Total</th>
+                        <th>Allocated</th>
+                        <th>Available</th>
+                        {% if role == 'admin' %}<th>Actions</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in resources %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <div class="stat-icon" style="width:28px;height:28px;background:var(--emerald-dim);margin:0;">
+                                    <i data-lucide="package" style="width:12px;height:12px;color:var(--emerald);"></i>
+                                </div>
+                                <span class="font-semibold">{{ r.resource_name }}</span>
+                            </div>
+                        </td>
+                        <td class="truncate" style="max-width:200px;color:var(--text-subtle);">
+                            {{ r.description or '—' }}
+                        </td>
+                        <td style="color:var(--text-muted);font-weight:600;">{{ r.total_quantity }}</td>
+                        <td>
+                            {% if r.allocated > 0 %}
+                            <span style="color:var(--amber);font-weight:600;">{{ r.allocated }}</span>
+                            {% else %}
+                            <span style="color:var(--text-subtle);">0</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set pct = (r.available / r.total_quantity * 100) if r.total_quantity > 0 else 0 %}
+                            <span class="font-bold" style="color:{% if r.available <= 0 %}var(--red){% elif pct < 30 %}var(--amber){% else %}var(--emerald){% endif %};">
+                                {{ r.available }}
+                            </span>
+                            <!-- Mini availability bar -->
+                            <div style="width:60px;height:4px;background:var(--border);border-radius:99px;margin-top:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:6px;">
+                                <div style="width:{{ [pct, 100]|min }}%;height:100%;background:{% if r.available <= 0 %}var(--red){% elif pct < 30 %}var(--amber){% else %}var(--emerald){% endif %};border-radius:99px;transition:width 0.3s;"></div>
+                            </div>
+                        </td>
+                        {% if role == 'admin' %}
+                        <td>
+                            <div class="flex gap-2">
+                                <a href="{{ url_for('resources.edit', resource_id=r.resource_id) }}"
+                                   class="btn btn-amber btn-xs">
+                                    <i data-lucide="pencil" style="width:11px;height:11px;"></i>
+                                    Edit
+                                </a>
+                                <form method="POST" action="{{ url_for('resources.delete', resource_id=r.resource_id) }}"
+                                      onsubmit="return confirm('Delete {{ r.resource_name }}? This cannot be undone.');">
+                                    <button type="submit" class="btn btn-danger btn-xs">
+                                        <i data-lucide="trash-2" style="width:11px;height:11px;"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="{{ '6' if role == 'admin' else '5' }}" class="text-center" style="padding:48px;">
+                            <div class="empty-state-icon mx-auto mb-3">
+                                <i data-lucide="package" style="width:22px;height:22px;"></i>
+                            </div>
+                            <p style="color:var(--text-muted);font-weight:600;">No resources configured</p>
+                            {% if role == 'admin' %}
+                            <a href="{{ url_for('resources.create') }}" class="btn btn-primary btn-sm mt-3">
+                                <i data-lucide="plus" style="width:13px;height:13px;"></i>
+                                Add First Resource
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'layout.html' %}
+{% block title %}Mark Attendance — {{ event.title }}{% endblock %}
+{% block page_title %}Mark Attendance{% endblock %}
+
+{% block content %}
+<div class="page-content anim-fade">
+
+    <!-- Back -->
+    <a href="{{ url_for('attendance.show_code', event_id=event.event_id) }}"
+       class="inline-flex items-center gap-2 text-sm mb-6 hover-text-primary transition-colors"
+       style="color:var(--text-muted);">
+        <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+        Back to Attendance Code
+    </a>
+
+    <!-- Event Header -->
+    <div class="section-header mb-6">
+        <div>
+            <h1 class="page-title">Mark Attendance</h1>
+            <p class="page-subtitle">{{ event.title }}</p>
+        </div>
+        <span class="chip">
+            <i data-lucide="users" style="width:12px;height:12px;"></i>
+            {{ attendance_records|length }} present
+        </span>
+    </div>
+
+    <div class="grid-2-1 gap-6">
+
+        <!-- Mark Attendance Form -->
+        <div class="card p-6">
+            <h3 class="font-bold text-base mb-5" style="color:var(--text);">
+                <i data-lucide="user-check" style="width:16px;height:16px;display:inline;vertical-align:middle;color:var(--emerald);margin-right:6px;"></i>
+                Enter Attendance Details
+            </h3>
+
+            <form method="POST" action="{{ url_for('attendance.mark', event_id=event.event_id) }}" id="mark-form">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i data-lucide="key-round" style="width:12px;height:12px;display:inline;"></i>
+                        Attendance Code
+                    </label>
+                    <input type="text" name="attendance_code"
+                           class="form-input"
+                           placeholder="e.g. AAG-483921"
+                           value="{{ event.attendance_code or '' }}"
+                           style="font-family:monospace;font-size:1rem;letter-spacing:0.05em;"
+                           autocomplete="off"
+                           required>
+                    <p class="text-xs mt-1" style="color:var(--text-subtle);">
+                        Enter the event's attendance code
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i data-lucide="user" style="width:12px;height:12px;display:inline;"></i>
+                        Student Email or Student ID
+                    </label>
+                    <input type="text" name="student_identifier"
+                           id="student-identifier"
+                           class="form-input"
+                           placeholder="student@example.com or 12345"
+                           autocomplete="off"
+                           required>
+                    <p class="text-xs mt-1" style="color:var(--text-subtle);">
+                        Enter the student's email address or numeric user ID
+                    </p>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full justify-center">
+                    <i data-lucide="check-circle" style="width:14px;height:14px;"></i>
+                    Mark Attendance
+                </button>
+            </form>
+
+            {% if event.attendance_code %}
+            <div class="mt-4 p-3 rounded-lg" style="background:var(--emerald-dim);border:1px solid var(--emerald-glow);">
+                <p class="text-xs font-semibold" style="color:var(--emerald);">
+                    <i data-lucide="key-round" style="width:12px;height:12px;display:inline;"></i>
+                    Active Code:
+                    <span style="font-family:monospace;letter-spacing:0.1em;">{{ event.attendance_code }}</span>
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Tips -->
+        <div class="card p-6">
+            <h3 class="font-bold text-sm mb-4" style="color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">
+                Quick Tips
+            </h3>
+            <ul class="space-y-3">
+                <li class="flex gap-2 text-sm" style="color:var(--text-muted);">
+                    <i data-lucide="mail" style="width:14px;height:14px;flex-shrink:0;color:var(--emerald);margin-top:2px;"></i>
+                    Use the student's registered <strong>email address</strong>
+                </li>
+                <li class="flex gap-2 text-sm" style="color:var(--text-muted);">
+                    <i data-lucide="hash" style="width:14px;height:14px;flex-shrink:0;color:var(--emerald);margin-top:2px;"></i>
+                    Or enter their <strong>numeric user ID</strong> (e.g. 42)
+                </li>
+                <li class="flex gap-2 text-sm" style="color:var(--text-muted);">
+                    <i data-lucide="key-round" style="width:14px;height:14px;flex-shrink:0;color:var(--amber);margin-top:2px;"></i>
+                    The attendance code is pre-filled from the event
+                </li>
+                <li class="flex gap-2 text-sm" style="color:var(--text-muted);">
+                    <i data-lucide="shield-check" style="width:14px;height:14px;flex-shrink:0;color:var(--emerald);margin-top:2px;"></i>
+                    System prevents duplicate attendance records
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Attendance Records -->
+    <div class="card mt-6">
+        <div class="p-5" style="border-bottom:1px solid var(--border);">
+            <div class="section-header">
+                <h3 class="font-bold text-base" style="color:var(--text);">
+                    <i data-lucide="list-checks" style="width:16px;height:16px;display:inline;vertical-align:middle;color:var(--emerald);"></i>
+                    Attendance List
+                </h3>
+                <span class="chip">{{ attendance_records|length }} marked</span>
+            </div>
+        </div>
+        {% if attendance_records %}
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student</th>
+                        <th>Email</th>
+                        <th>Marked At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rec in attendance_records %}
+                    <tr>
+                        <td style="color:var(--text-subtle);">{{ loop.index }}</td>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <div class="sidebar-avatar" style="width:28px;height:28px;font-size:0.7rem;background:linear-gradient(135deg,var(--emerald),#059669);">
+                                    {{ rec.name[0]|upper if rec.name else '?' }}
+                                </div>
+                                <span class="font-medium">{{ rec.name }}</span>
+                            </div>
+                        </td>
+                        <td style="color:var(--text-muted);">{{ rec.email }}</td>
+                        <td style="color:var(--text-muted);">
+                            {{ rec.scan_time | datetimeformat('%d %b %Y · %H:%M') if rec.scan_time else '—' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i data-lucide="user-x" style="width:24px;height:24px;"></i>
+            </div>
+            <p class="font-semibold" style="color:var(--text);">No attendance marked yet</p>
+            <p class="text-sm mt-1">Start marking attendance using the form above.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Focus student identifier field after page load
+document.getElementById('student-identifier')?.focus();
+</script>
+{% endblock %}

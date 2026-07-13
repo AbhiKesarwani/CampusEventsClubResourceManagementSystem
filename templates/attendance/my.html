@@ -1,0 +1,245 @@
+{% extends 'layout.html' %}
+{% block title %}My Attendance — CECRMS{% endblock %}
+{% block page_title %}My Attendance{% endblock %}
+
+{% block content %}
+<div class="page-content anim-fade">
+
+    <!-- ── Header ──────────────────────────────────────── -->
+    <div class="section-header mb-6">
+        <div>
+            <h1 class="page-title">My Attendance</h1>
+            <p class="page-subtitle">
+                {{ history|length }} event{{ 's' if history|length != 1 }} attended
+            </p>
+        </div>
+        <div class="stat-icon" style="background:var(--emerald-dim);">
+            <i data-lucide="check-circle" style="width:16px;height:16px;color:var(--emerald);"></i>
+        </div>
+    </div>
+
+    <!-- ── Flash messages ──────────────────────────────── -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for cat, msg in messages %}
+    <div style="padding:12px 16px;border-radius:var(--radius);margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:0.83rem;font-weight:500;
+        {% if cat == 'success' %}background:var(--emerald-dim);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;
+        {% else %}background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;{% endif %}">
+        <i data-lucide="{% if cat == 'success' %}check-circle{% else %}alert-circle{% endif %}" style="width:14px;height:14px;flex-shrink:0;"></i>
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- ── Code Entry Card ─────────────────────────────── -->
+    <div class="card p-6 mb-6" id="submit-section">
+        <h2 style="font-size:0.95rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <i data-lucide="key-round" style="width:16px;height:16px;color:var(--emerald);"></i>
+            Submit Attendance Code
+        </h2>
+        <p style="font-size:0.78rem;color:var(--text-subtle);margin-bottom:20px;">
+            Enter the code displayed by your event coordinator to mark your attendance.
+        </p>
+
+        <!-- Code entry form -->
+        <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;max-width:380px;">
+                <input type="text" id="attendance-code-input"
+                       placeholder="e.g.  AAG-483921"
+                       maxlength="12"
+                       autocomplete="off"
+                       autocapitalize="characters"
+                       style="width:100%;padding:12px 16px;background:var(--bg);border:2px solid var(--border);
+                              border-radius:var(--radius-lg);color:var(--text);font-family:monospace;
+                              font-size:1.1rem;letter-spacing:0.12em;outline:none;
+                              transition:border-color 0.2s, box-shadow 0.2s;text-transform:uppercase;"
+                       oninput="this.value=this.value.toUpperCase();"
+                       onfocus="this.style.borderColor='var(--emerald)';this.style.boxShadow='0 0 0 3px var(--emerald-dim)'"
+                       onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+            </div>
+            <button id="submit-code-btn" onclick="submitAttendanceCode()"
+                    class="btn btn-primary"
+                    style="padding:12px 24px;font-size:0.9rem;">
+                <i data-lucide="check" style="width:15px;height:15px;"></i>
+                Submit
+            </button>
+        </div>
+
+        <!-- Inline result -->
+        <div id="code-result" style="display:none;margin-top:14px;padding:12px 16px;border-radius:var(--radius);font-size:0.83rem;font-weight:500;display:flex;align-items:center;gap:8px;"></div>
+    </div>
+
+    <!-- ── Two column layout ───────────────────────────── -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+        <!-- Active Events with codes -->
+        <div class="card p-5">
+            <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;display:flex;align-items:center;gap:6px;margin-bottom:16px;">
+                <i data-lucide="zap" style="width:13px;height:13px;color:var(--amber);"></i>
+                Active Events
+                {% if active_events %}
+                <span style="margin-left:auto;background:var(--amber-dim);color:var(--amber);font-size:0.7rem;padding:2px 8px;border-radius:20px;font-weight:700;">
+                    {{ active_events|length }}
+                </span>
+                {% endif %}
+            </h2>
+
+            {% if active_events %}
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                {% for ev in active_events %}
+                <div style="background:var(--bg-hover);border-radius:var(--radius);padding:12px 14px;border:1px solid var(--border-muted);"
+                     class="anim-fade">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                        <div style="flex:1;min-width:0;">
+                            <p style="font-size:0.85rem;font-weight:700;color:var(--text);margin:0;
+                                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                {{ ev.title }}
+                            </p>
+                            <p style="font-size:0.72rem;color:var(--text-subtle);margin:2px 0 0;display:flex;align-items:center;gap:4px;">
+                                <i data-lucide="calendar" style="width:10px;height:10px;"></i>
+                                {% if ev.date %}{{ ev.date.strftime('%b %d') if ev.date.strftime is defined else ev.date }}{% endif %}
+                                {% if ev.club_name %}· {{ ev.club_name }}{% endif %}
+                            </p>
+                        </div>
+                        {% if ev.already_attended %}
+                        <span style="font-size:0.68rem;font-weight:700;background:var(--emerald-dim);color:var(--emerald);
+                                     padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;">
+                            ✓ Attended
+                        </span>
+                        {% else %}
+                        <span style="font-size:0.68rem;font-weight:700;background:var(--amber-dim);color:var(--amber);
+                                     padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;">
+                            Code Active
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    {% if not ev.already_attended %}
+                    <button onclick="fillCode('{{ ev.attendance_code }}')"
+                            style="margin-top:8px;font-size:0.72rem;color:var(--emerald);background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:4px;">
+                        <i data-lucide="arrow-up-circle" style="width:11px;height:11px;"></i>
+                        Use this event's code
+                    </button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:24px 0;">
+                <i data-lucide="calendar-off" style="width:28px;height:28px;color:var(--text-subtle);display:block;margin:0 auto 8px;"></i>
+                <p style="font-size:0.8rem;color:var(--text-subtle);">No active events right now</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Attendance History -->
+        <div class="card p-5">
+            <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;display:flex;align-items:center;gap:6px;margin-bottom:16px;">
+                <i data-lucide="history" style="width:13px;height:13px;color:var(--blue);"></i>
+                Attendance History
+            </h2>
+
+            {% if history %}
+            <div style="display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto;">
+                {% for rec in history %}
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;
+                            padding:10px 12px;background:var(--bg-hover);border-radius:var(--radius);
+                            border-left:3px solid var(--emerald);">
+                    <div style="flex:1;min-width:0;">
+                        <p style="font-size:0.83rem;font-weight:600;color:var(--text);margin:0;
+                                  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                            {{ rec.title }}
+                        </p>
+                        <p style="font-size:0.7rem;color:var(--text-subtle);margin:2px 0 0;">
+                            {% if rec.club_name %}{{ rec.club_name }} · {% endif %}
+                            {% if rec.date %}{{ rec.date.strftime('%b %d, %Y') if rec.date.strftime is defined else rec.date }}{% endif %}
+                        </p>
+                    </div>
+                    <span style="font-size:0.68rem;font-weight:700;color:var(--emerald);white-space:nowrap;flex-shrink:0;">
+                        ✓ Present
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:24px 0;">
+                <i data-lucide="clipboard-list" style="width:28px;height:28px;color:var(--text-subtle);display:block;margin:0 auto 8px;"></i>
+                <p style="font-size:0.8rem;color:var(--text-subtle);">No attendance records yet.</p>
+                <p style="font-size:0.72rem;color:var(--text-subtle);margin-top:4px;">Attend events and submit codes to build your history.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fillCode(code) {
+    const input = document.getElementById('attendance-code-input');
+    input.value = code;
+    input.dispatchEvent(new Event('input'));
+    input.focus();
+    document.getElementById('submit-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function submitAttendanceCode() {
+    const input  = document.getElementById('attendance-code-input');
+    const btn    = document.getElementById('submit-code-btn');
+    const result = document.getElementById('code-result');
+    const code   = input.value.trim().toUpperCase();
+
+    if (!code) {
+        showResult(false, 'Please enter an attendance code.');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+
+    try {
+        const resp = await fetch('{{ url_for("attendance.submit_code") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ code })
+        });
+        const data = await resp.json();
+        showResult(data.success, data.message);
+        if (data.success) {
+            input.value = '';
+            // Reload to update history and active events after short delay
+            setTimeout(() => window.location.reload(), 1800);
+        }
+    } catch (e) {
+        showResult(false, 'Connection error. Please try again.');
+    } finally {
+        btn.disabled = false;
+        btn.style.opacity = '';
+    }
+}
+
+function showResult(success, message) {
+    const el = document.getElementById('code-result');
+    el.style.display = 'flex';
+    if (success) {
+        el.style.background    = 'var(--emerald-dim)';
+        el.style.border        = '1px solid rgba(16,185,129,0.3)';
+        el.style.color         = '#6ee7b7';
+        el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>' + message;
+    } else {
+        el.style.background    = 'rgba(239,68,68,0.1)';
+        el.style.border        = '1px solid rgba(239,68,68,0.3)';
+        el.style.color         = '#fca5a5';
+        el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>' + message;
+    }
+    setTimeout(() => { el.style.display = 'none'; }, 6000);
+}
+
+// Allow Enter key to submit
+document.getElementById('attendance-code-input')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') submitAttendanceCode();
+});
+</script>
+{% endblock %}

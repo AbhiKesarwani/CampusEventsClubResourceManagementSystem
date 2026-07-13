@@ -4,26 +4,28 @@
 
 {% block content %}
 {% set role = session.get('role', 'student') %}
+<div class="page-content anim-fade" style="max-width:760px;">
 
-<div class="max-w-3xl mx-auto">
-    <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('events.list_events') }}" class="hover:text-emerald-500">Events</a>
-        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-100 font-medium">Create Event</span>
-    </nav>
+    <a href="{{ url_for('events.list_events') }}"
+       class="inline-flex items-center gap-2 text-sm mb-6 transition-colors"
+       style="color:var(--text-muted);">
+        <i data-lucide="arrow-left" style="width:13px;height:13px;"></i>
+        Back to Events
+    </a>
 
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-500"></i> New Event
-        </h2>
+    <div class="card p-6">
+        <h1 class="page-title mb-5" style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="calendar-plus" style="width:18px;height:18px;color:var(--emerald);"></i>
+            New Event
+        </h1>
 
-        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST" enctype="multipart/form-data">
 
-            <!-- Club selector (admin only) -->
+            <!-- Club selector (admin only; club_admin uses hidden default) -->
             {% if role == 'admin' %}
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Club <span class="text-red-500">*</span></label>
-                <select name="club_id" required class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+            <div class="form-group">
+                <label class="form-label">Club <span style="color:var(--red);">*</span></label>
+                <select name="club_id" required class="form-input">
                     <option value="">Select a club…</option>
                     {% for c in clubs %}
                     <option value="{{ c.club_id }}">{{ c.club_name }}</option>
@@ -34,94 +36,83 @@
             <input type="hidden" name="club_id" value="{{ default_club_id }}">
             {% endif %}
 
-            <!-- Title -->
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Event Title <span class="text-red-500">*</span></label>
-                <input name="title" required placeholder="Enter event name"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+            <div class="form-group">
+                <label class="form-label">Event Title <span style="color:var(--red);">*</span></label>
+                <input name="title" required placeholder="e.g. Annual Tech Fest 2025" class="form-input">
             </div>
 
-            <!-- Description -->
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Description</label>
+            <div class="form-group">
+                <label class="form-label">Description</label>
                 <textarea name="description" rows="4" placeholder="Describe the event…"
-                          class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white resize-none"></textarea>
+                          class="form-input"></textarea>
             </div>
 
-            <!-- Lead + Contact -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-600">Event Lead</label>
-                    <input name="event_lead" placeholder="Name of event lead"
-                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Event Lead</label>
+                    <input name="event_lead" placeholder="Lead name" class="form-input">
                 </div>
-                <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-600">Contact Number</label>
-                    <input name="contact_no" placeholder="Phone number"
-                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Contact Number</label>
+                    <input name="contact_no" placeholder="Phone number" class="form-input">
                 </div>
             </div>
 
-            <!-- Venue + Date -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-600">Venue</label>
-                    <select name="venue_id" class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Venue</label>
+                    <select name="venue_id" class="form-input">
                         <option value="">No venue</option>
                         {% for v in venues %}
                         <option value="{{ v.venue_id }}">{{ v.venue_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-600">Date <span class="text-red-500">*</span></label>
-                    <input type="date" name="date" required
-                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Date <span style="color:var(--red);">*</span></label>
+                    <input type="date" name="date" required class="form-input">
                 </div>
             </div>
 
-            <!-- Time -->
-            <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-600">Start Time</label>
-                    <input type="time" name="start_time"
-                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" name="start_time" class="form-input">
                 </div>
-                <div class="space-y-1.5">
-                    <label class="block text-sm font-semibold text-gray-600">End Time</label>
-                    <input type="time" name="end_time"
-                           class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">End Time</label>
+                    <input type="time" name="end_time" class="form-input">
                 </div>
             </div>
 
-            <!-- Registration Link -->
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Google Form Registration Link</label>
-                <input name="registration_link" placeholder="https://forms.gle/…"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
-                <p class="text-xs text-gray-500">Students will be redirected to this Google Form to register.</p>
+            <div class="form-group">
+                <label class="form-label">Registration Link (Google Form)</label>
+                <input name="registration_link" placeholder="https://forms.gle/…" class="form-input">
+                <p class="form-hint">Students will see a Register button linking here.</p>
             </div>
 
-            <!-- Images -->
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Event Images</label>
-                <label class="flex flex-col items-center justify-center border-2 border-dashed border-indigo-200
-                              rounded-xl py-8 cursor-pointer bg-emerald-500/10/50 hover:bg-emerald-500/10 transition"
-                       for="event_images_input">
-                    <i data-lucide="upload-cloud" class="w-10 h-10 text-indigo-400 mb-2"></i>
-                    <span class="text-sm text-emerald-500 font-medium">Click to upload</span>
-                    <span class="text-xs text-gray-500 mt-1">JPG, PNG, GIF, WebP — max 5 MB each</span>
+            <!-- Event Images -->
+            <div class="form-group">
+                <label class="form-label">Event Images</label>
+                <label style="cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px;border-radius:var(--radius-lg);border:2px dashed var(--border);background:var(--bg-hover);transition:border-color 0.2s;"
+                       id="evt-upload-zone">
+                    <i data-lucide="upload-cloud" style="width:28px;height:28px;color:var(--emerald);"></i>
+                    <span style="font-size:0.8rem;font-weight:600;color:var(--emerald);">Click to upload images</span>
+                    <span style="font-size:0.7rem;color:var(--text-subtle);">JPG, PNG, GIF, WebP — max 5 MB each</span>
                     <input type="file" name="event_images" id="event_images_input"
-                           multiple accept=".jpg,.jpeg,.png,.gif,.webp" class="hidden">
+                           multiple accept=".jpg,.jpeg,.png,.gif,.webp" class="hidden"
+                           onchange="updateUploadZone(this)">
                 </label>
-                <p id="file-names" class="text-xs text-gray-500"></p>
+                <p id="file-names" class="form-hint"></p>
             </div>
 
-            <button type="submit"
-                    class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold text-base
-                           hover:bg-emerald-700 transition shadow-lg hover:shadow-xl">
-                🚀 Create Event
-            </button>
+            <div class="flex gap-3">
+                <button type="submit" class="btn btn-primary flex-1 justify-center">
+                    <i data-lucide="calendar-plus" style="width:14px;height:14px;"></i>
+                    Create Event
+                </button>
+                <a href="{{ url_for('events.list_events') }}" class="btn btn-secondary">Cancel</a>
+            </div>
         </form>
     </div>
 </div>
@@ -129,9 +120,12 @@
 
 {% block scripts %}
 <script>
-document.getElementById('event_images_input').addEventListener('change', function() {
-    const names = Array.from(this.files).map(f => f.name).join(', ');
-    document.getElementById('file-names').textContent = names ? `Selected: ${names}` : '';
-});
+function updateUploadZone(input) {
+    const zone = document.getElementById('evt-upload-zone');
+    const names = document.getElementById('file-names');
+    const count = input.files.length;
+    if (zone) zone.style.borderColor = count ? 'var(--emerald)' : 'var(--border)';
+    if (names) names.textContent = count ? `${count} file${count !== 1 ? 's' : ''} selected` : '';
+}
 </script>
 {% endblock %}

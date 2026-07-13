@@ -1,36 +1,40 @@
 {% extends 'layout.html' %}
 {% block title %}Create Club — CECRMS{% endblock %}
 {% block page_title %}Create Club{% endblock %}
+
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('clubs.list_clubs') }}" class="hover:text-emerald-500">Clubs</a>
-        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-100 font-medium">Create Club</span>
-    </nav>
+<div class="page-content anim-fade" style="max-width:720px;">
 
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <i data-lucide="shield-plus" class="w-5 h-5 text-emerald-500"></i> New Club
-        </h2>
+    <a href="{{ url_for('clubs.list_clubs') }}"
+       class="inline-flex items-center gap-2 text-sm mb-6 transition-colors"
+       style="color:var(--text-muted);">
+        <i data-lucide="arrow-left" style="width:13px;height:13px;"></i>
+        Back to Clubs
+    </a>
 
-        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+    <div class="card p-6">
+        <h1 class="page-title mb-5" style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="shield-plus" style="width:18px;height:18px;color:var(--emerald);"></i>
+            New Club
+        </h1>
 
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Club Name <span class="text-red-500">*</span></label>
+        <form method="POST" enctype="multipart/form-data">
+
+            <div class="form-group">
+                <label class="form-label">Club Name <span style="color:var(--red);">*</span></label>
                 <input name="club_name" required placeholder="e.g. Coding Club"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                       class="form-input">
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Description</label>
+            <div class="form-group">
+                <label class="form-label">Description</label>
                 <textarea name="description" rows="4" placeholder="Describe the club…"
-                          class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white resize-none"></textarea>
+                          class="form-input"></textarea>
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Coordinator</label>
-                <select name="coordinator_id" class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+            <div class="form-group">
+                <label class="form-label">Coordinator</label>
+                <select name="coordinator_id" class="form-input">
                     <option value="">No coordinator</option>
                     {% for u in users %}
                     <option value="{{ u.user_id }}">{{ u.name }} ({{ u.role }})</option>
@@ -38,30 +42,51 @@
                 </select>
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">
+            <div class="form-group">
+                <label class="form-label">
                     Club Admin Email
-                    <span class="text-xs font-normal text-gray-500 ml-1">(ownership — club_admin with this email can manage the club)</span>
+                    <span style="font-size:0.7rem;font-weight:400;color:var(--text-subtle);margin-left:4px;">
+                        — club_admin users with this email will manage this club
+                    </span>
                 </label>
-                <input name="club_email" type="email" placeholder="e.g. aaghaz@gmail.com"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                <input name="club_email" type="email" placeholder="e.g. coordinator@example.com"
+                       class="form-input">
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Club Images</label>
-                <label class="flex flex-col items-center justify-center border-2 border-dashed border-indigo-200 rounded-xl py-8 cursor-pointer bg-emerald-500/10/50 hover:bg-emerald-500/10 transition">
-                    <i data-lucide="upload-cloud" class="w-10 h-10 text-indigo-400 mb-2"></i>
-                    <span class="text-sm text-emerald-500 font-medium">Click to upload</span>
-                    <span class="text-xs text-gray-500 mt-1">Max 5 MB each</span>
-                    <input type="file" name="club_images" multiple accept=".jpg,.jpeg,.png,.gif,.webp" class="hidden">
+            <!-- File Upload -->
+            <div class="form-group">
+                <label class="form-label">Club Images</label>
+                <label class="upload-zone" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px;border-radius:var(--radius-lg);border:2px dashed var(--border);background:var(--bg-hover);transition:border-color 0.2s;"
+                       id="upload-label">
+                    <i data-lucide="upload-cloud" style="width:28px;height:28px;color:var(--emerald);"></i>
+                    <span style="font-size:0.83rem;font-weight:600;color:var(--emerald);">Click to upload images</span>
+                    <span style="font-size:0.72rem;color:var(--text-subtle);">JPG, PNG, GIF, WEBP — max 5 MB each</span>
+                    <input type="file" name="club_images" multiple accept=".jpg,.jpeg,.png,.gif,.webp"
+                           class="hidden" id="image-input" onchange="updateLabel(this)">
                 </label>
+                <p class="form-hint" id="file-count"></p>
             </div>
 
-            <button type="submit"
-                    class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow-lg">
-                Create Club
-            </button>
+            <div class="flex gap-3">
+                <button type="submit" class="btn btn-primary flex-1 justify-center">
+                    <i data-lucide="plus" style="width:14px;height:14px;"></i>
+                    Create Club
+                </button>
+                <a href="{{ url_for('clubs.list_clubs') }}" class="btn btn-secondary">Cancel</a>
+            </div>
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateLabel(input) {
+    const count = input.files.length;
+    const label = document.getElementById('file-count');
+    if (label) label.textContent = count ? `${count} file${count !== 1 ? 's' : ''} selected` : '';
+    const zone = document.getElementById('upload-label');
+    if (zone) zone.style.borderColor = count ? 'var(--emerald)' : 'var(--border)';
+}
+</script>
 {% endblock %}

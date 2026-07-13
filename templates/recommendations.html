@@ -1,31 +1,37 @@
 {% extends 'layout.html' %}
-{% block title %}Recommended For You — CECRMS{% endblock %}
+{% block title %}For You — CECRMS{% endblock %}
 {% block page_title %}Recommendations{% endblock %}
+
 {% block content %}
+<div class="page-content anim-fade">
 
-<div class="flex items-center justify-between mb-6">
-    <div>
-        <h2 class="text-2xl font-extrabold text-gray-100">Recommended For You</h2>
-        <p class="text-sm text-gray-500 mt-1">Based on your attendance history</p>
+    <div class="section-header mb-6">
+        <div>
+            <h1 class="page-title">Recommended For You</h1>
+            <p class="page-subtitle">Based on your attendance and club activity</p>
+        </div>
+        <i data-lucide="sparkles" style="width:24px;height:24px;color:var(--amber);flex-shrink:0;"></i>
     </div>
-    <i data-lucide="sparkles" class="w-8 h-8 text-amber-400"></i>
-</div>
 
-{% if events %}
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-    {% for event in events %}
-    {% include 'components/event_card.html' %}
-    {% endfor %}
+    {% if events %}
+    <div class="club-grid stagger">
+        {% for event in events %}
+        {% include 'components/event_card.html' %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card p-16 text-center">
+        <div class="empty-state-icon mx-auto mb-4">
+            <i data-lucide="sparkles" style="width:24px;height:24px;color:var(--amber);"></i>
+        </div>
+        <p style="font-size:1rem;font-weight:700;color:var(--text);">No recommendations yet</p>
+        <p class="text-sm mt-1">Attend more events to unlock personalized recommendations.</p>
+        <a href="{{ url_for('events.list_events', upcoming=1) }}" class="btn btn-primary mt-4">
+            <i data-lucide="calendar-days" style="width:14px;height:14px;"></i>
+            Browse Upcoming Events
+        </a>
+    </div>
+    {% endif %}
+
 </div>
-{% else %}
-<div class="text-center py-20 bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl">
-    <i data-lucide="sparkles" class="w-16 h-16 text-gray-600 mx-auto mb-4"></i>
-    <h3 class="text-lg font-bold text-gray-500 mb-2">No recommendations yet</h3>
-    <p class="text-gray-500 text-sm">Attend more events to unlock personalized recommendations.</p>
-    <a href="{{ url_for('events.list_events', upcoming=1) }}"
-       class="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700 transition">
-        <i data-lucide="calendar-days" class="w-4 h-4"></i> Browse Events
-    </a>
-</div>
-{% endif %}
 {% endblock %}

@@ -68,6 +68,47 @@ def create_app(config_class=Config):
                 pass
         return dict(current_user=user, session=session, unread_count=unread_count)
 
+    # ── Jinja Filters ─────────────────────────────────────────────────────────
+    from datetime import datetime as _dt, timezone as _tz
+
+    @app.template_filter('timeago')
+    def timeago_filter(dt):
+        """Convert a datetime to a human-friendly relative time string."""
+        if not dt:
+            return ''
+        if hasattr(dt, 'replace'):
+            now = _dt.now()
+            diff = now - dt.replace(tzinfo=None)
+            seconds = int(diff.total_seconds())
+        else:
+            return str(dt)
+
+        if seconds < 60:
+            return 'just now'
+        elif seconds < 3600:
+            m = seconds // 60
+            return f"{m} minute{'s' if m != 1 else ''} ago"
+        elif seconds < 86400:
+            h = seconds // 3600
+            return f"{h} hour{'s' if h != 1 else ''} ago"
+        elif seconds < 604800:
+            d = seconds // 86400
+            return f"{d} day{'s' if d != 1 else ''} ago"
+        elif seconds < 2592000:
+            w = seconds // 604800
+            return f"{w} week{'s' if w != 1 else ''} ago"
+        else:
+            return dt.strftime('%d %b %Y')
+
+    @app.template_filter('datetimeformat')
+    def datetimeformat_filter(dt, fmt='%d %b %Y'):
+        if not dt:
+            return ''
+        if hasattr(dt, 'strftime'):
+            return dt.strftime(fmt)
+        return str(dt)
+
+
     # ── Error Handlers ────────────────────────────────────────────────────────
     @app.errorhandler(404)
     def not_found(e):

@@ -1,93 +1,118 @@
 {% extends 'layout.html' %}
 {% block title %}Edit Club — CECRMS{% endblock %}
 {% block page_title %}Edit Club{% endblock %}
+
 {% block content %}
 {% set role = session.get('role', 'student') %}
+<div class="page-content anim-fade" style="max-width:760px;">
 
-<div class="max-w-3xl mx-auto">
-    <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('clubs.list_clubs') }}" class="hover:text-emerald-500">Clubs</a>
-        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <a href="{{ url_for('clubs.detail', club_id=club.club_id) }}" class="hover:text-emerald-500">{{ club.club_name }}</a>
-        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-100">Edit</span>
-    </nav>
+    <a href="{{ url_for('clubs.detail', club_id=club.club_id) }}"
+       class="inline-flex items-center gap-2 text-sm mb-6 transition-colors"
+       style="color:var(--text-muted);">
+        <i data-lucide="arrow-left" style="width:13px;height:13px;"></i>
+        Back to {{ club.club_name }}
+    </a>
 
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-white mb-6">Edit: {{ club.club_name }}</h2>
+    <div class="card p-6 mb-6">
+        <h1 class="page-title mb-5" style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="pencil" style="width:18px;height:18px;color:var(--amber);"></i>
+            Edit: {{ club.club_name }}
+        </h1>
 
-        <form method="POST" enctype="multipart/form-data" class="space-y-5">
-
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Club Name</label>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="form-label">Club Name</label>
                 <input name="club_name" value="{{ club.club_name }}"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                       class="form-input" required>
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Description</label>
-                <textarea name="description" rows="4"
-                          class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white resize-none">{{ club.description or '' }}</textarea>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" rows="4" class="form-input">{{ club.description or '' }}</textarea>
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">
+            <div class="form-group">
+                <label class="form-label">
                     Club Admin Email
-                    <span class="text-xs font-normal text-gray-500 ml-1">(club_admin matching this email can manage this club)</span>
+                    <span style="font-size:0.7rem;font-weight:400;color:var(--text-subtle);margin-left:4px;">
+                        — club_admin users with this email can manage this club
+                    </span>
                 </label>
                 <input name="club_email" type="email" value="{{ club.club_email or '' }}"
-                       placeholder="e.g. aaghaz@gmail.com"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
+                       placeholder="e.g. coordinator@example.com"
+                       class="form-input">
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Upload More Images</label>
-                <input type="file" name="club_images" multiple accept=".jpg,.jpeg,.png,.gif,.webp"
-                       class="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-indigo-100">
+            <!-- Upload More Images -->
+            <div class="form-group">
+                <label class="form-label">Upload More Images</label>
+                <label style="cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px;border-radius:var(--radius-lg);border:2px dashed var(--border);background:var(--bg-hover);transition:border-color 0.2s;"
+                       id="upload-label-2">
+                    <i data-lucide="upload-cloud" style="width:24px;height:24px;color:var(--emerald);"></i>
+                    <span style="font-size:0.8rem;font-weight:600;color:var(--emerald);">Click to add images</span>
+                    <span style="font-size:0.7rem;color:var(--text-subtle);">JPG, PNG, GIF, WEBP — max 5 MB each</span>
+                    <input type="file" name="club_images" multiple accept=".jpg,.jpeg,.png,.gif,.webp"
+                           class="hidden" id="image-input-2" onchange="updateLabel2(this)">
+                </label>
+                <p class="form-hint" id="file-count-2"></p>
             </div>
 
-            <button type="submit"
-                    class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow-lg">
-                Save Changes
-            </button>
+            <div class="flex gap-3">
+                <button type="submit" class="btn btn-primary flex-1 justify-center">
+                    <i data-lucide="save" style="width:14px;height:14px;"></i>
+                    Save Changes
+                </button>
+                <a href="{{ url_for('clubs.detail', club_id=club.club_id) }}" class="btn btn-secondary">Cancel</a>
+            </div>
         </form>
     </div>
 
     <!-- Existing Images -->
     {% if club_images %}
-    <div class="mt-8">
-        <h3 class="text-base font-bold text-gray-100 mb-4 flex items-center gap-2">
-            <i data-lucide="images" class="w-5 h-5 text-blue-500"></i> Uploaded Images
-        </h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="card p-5">
+        <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;display:flex;align-items:center;gap:6px;margin-bottom:16px;">
+            <i data-lucide="images" style="width:14px;height:14px;color:var(--blue);"></i>
+            Uploaded Images ({{ club_images|length }})
+        </h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));gap:10px;">
             {% for img in club_images %}
-            <div class="relative group rounded-xl overflow-hidden shadow-md" id="img-wrapper-{{ img.img_id }}">
+            <div style="position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:1;" id="img-wrapper-{{ img.img_id }}">
                 <img src="/static/{{ img.img_path }}"
-                     class="h-32 w-full object-cover cursor-pointer group-hover:scale-105 transition duration-300"
-                     onclick="openModal('/static/{{ img.img_path }}')">
+                     style="width:100%;height:100%;object-fit:cover;display:block;cursor:pointer;transition:transform 0.3s;"
+                     loading="lazy"
+                     onclick="openLightbox('/static/{{ img.img_path }}')"
+                     onmouseover="this.style.transform='scale(1.06)'"
+                     onmouseout="this.style.transform='scale(1)'">
                 <button onclick="deleteImage({{ img.img_id }}, {{ club.club_id }})"
-                        class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition
-                               bg-red-600 text-white text-xs px-2 py-1 rounded-lg shadow">
-                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                        style="position:absolute;top:6px;right:6px;opacity:0;transition:opacity 0.2s;background:var(--red);color:white;border:none;border-radius:6px;padding:4px 6px;cursor:pointer;font-size:0.65rem;display:flex;align-items:center;gap:2px;"
+                        onmouseover="this.style.opacity='1'"
+                        class="delete-img-btn">
+                    <i data-lucide="trash-2" style="width:10px;height:10px;"></i>
                 </button>
             </div>
             {% endfor %}
         </div>
     </div>
     {% endif %}
-</div>
 
-<!-- Modal -->
-<div id="imageModal" class="fixed inset-0 bg-black/85 backdrop-blur hidden z-50 flex items-center justify-center" onclick="closeModal()">
-    <img id="modalImg" class="max-w-[90vw] max-h-[90vh] rounded-2xl shadow-2xl border-2 border-white/20">
-    <button onclick="closeModal()" class="absolute top-5 right-5 text-white text-3xl font-bold opacity-70 hover:opacity-100">✕</button>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-function openModal(src) { document.getElementById('modalImg').src = src; document.getElementById('imageModal').classList.remove('hidden'); }
-function closeModal() { document.getElementById('imageModal').classList.add('hidden'); }
+function updateLabel2(input) {
+    const count = input.files.length;
+    const label = document.getElementById('file-count-2');
+    if (label) label.textContent = count ? `${count} file${count !== 1 ? 's' : ''} selected` : '';
+    const zone = document.getElementById('upload-label-2');
+    if (zone) zone.style.borderColor = count ? 'var(--emerald)' : 'var(--border)';
+}
+
+// Show delete buttons on hover
+document.querySelectorAll('.delete-img-btn').forEach(btn => {
+    btn.closest('[id^="img-wrapper"]')?.addEventListener('mouseenter', () => btn.style.opacity = '1');
+    btn.closest('[id^="img-wrapper"]')?.addEventListener('mouseleave', () => btn.style.opacity = '0');
+});
 
 function deleteImage(imgId, clubId) {
     if (!confirm('Delete this image?')) return;

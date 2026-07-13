@@ -10,11 +10,10 @@
 <div class="space-y-6 anim-fade">
 
 {# ══════════════════════════ HERO BANNER ══════════════════════════ #}
-<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0B0F14] to-[#121821] border border-white/10 shadow-lg p-6 md:p-8 text-white">
+<div class="hero-banner">
     <!-- Background orbs -->
-    <div class="absolute -top-10 -right-10 w-48 h-48 bg-brand-surface text-white/10 rounded-full blur-2xl"></div>
-    <div class="absolute -bottom-10 -left-5 w-32 h-32 bg-blue-400/20 rounded-full blur-xl"></div>
-    <div class="absolute top-1/2 right-1/4 w-20 h-20 bg-indigo-400/20 rounded-full blur-lg"></div>
+    <div class="hero-orb" style="width:200px;height:200px;background:rgba(16,185,129,0.12);top:-50px;right:-50px;"></div>
+    <div class="hero-orb" style="width:140px;height:140px;background:rgba(139,92,246,0.08);bottom:-30px;left:-20px;"></div>
 
     <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -60,23 +59,22 @@
 
 {# ══════════════════════════ STATS GRID ══════════════════════════ #}
 {% if role == 'admin' %}
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+<div class="stats-grid">
     {% set stats = [
-        ('calendar-days', 'Events',    stat_events,             'from-blue-500 to-blue-600'),
-        ('users',         'Clubs',     stat_clubs,              'from-violet-500 to-violet-600'),
-        ('building-2',    'Venues',    stat_venues,             'from-sky-500 to-sky-600'),
-        ('package',       'Resources', stat_resources,          'from-orange-500 to-orange-600'),
-        ('check-circle',  'Attendance',stat_attendance,         'from-emerald-500 to-emerald-600'),
-        ('inbox',         'Pending',   stat_pending_requests,   'from-rose-500 to-rose-600'),
+        ('calendar-days', 'Events',     stat_events,           'var(--emerald-dim)',  'var(--emerald)'),
+        ('users',         'Clubs',      stat_clubs,            'var(--purple-dim)',   'var(--purple)'),
+        ('building-2',    'Venues',     stat_venues,           'var(--blue-dim)',     'var(--blue)'),
+        ('package',       'Resources',  stat_resources,        'var(--amber-dim)',    'var(--amber)'),
+        ('check-circle',  'Attendance', stat_attendance,       'var(--emerald-dim)',  'var(--emerald)'),
+        ('inbox',         'Pending',    stat_pending_requests, 'var(--red-dim)',      'var(--red)'),
     ] %}
-    {% for icon, label, val, grad in stats %}
-    <div class="stat-card bg-brand-card border border-white/5 dark:border-slate-700 group cursor-default">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br {{ grad }} flex items-center justify-center mb-3
-                    group-hover:scale-110 transition-transform">
-            <i data-lucide="{{ icon }}" class="w-4 h-4 text-white"></i>
+    {% for icon, label, val, bg, color in stats %}
+    <div class="stat-card">
+        <div class="stat-icon" style="background:{{ bg }};">
+            <i data-lucide="{{ icon }}" style="width:16px;height:16px;color:{{ color }};"></i>
         </div>
-        <p class="text-2xl font-extrabold text-white text-white stat-counter" data-val="{{ val or 0 }}">0</p>
-        <p class="text-xs font-medium text-gray-500 text-gray-500 mt-0.5">{{ label }}</p>
+        <p class="stat-value" data-count="{{ val or 0 }}">0</p>
+        <p class="stat-label">{{ label }}</p>
     </div>
     {% endfor %}
 </div>
@@ -119,20 +117,19 @@
 
 {% elif role == 'club_admin' %}
 <!-- Club Admin Stats -->
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-    {% for icon, label, val, grad in [
-        ('calendar-days','Events',   stat_events,           'from-indigo-500 to-indigo-600'),
-        ('users',        'Members',  stat_members,          'from-emerald-500 to-emerald-600'),
-        ('inbox',        'Pending',  stat_pending_requests, 'from-amber-500 to-amber-600'),
-        ('check-circle', 'Approved', (stat_members or 0) - (stat_pending_requests or 0), 'from-blue-500 to-blue-600'),
+<div class="stats-grid">
+    {% for icon, label, val, bg, color in [
+        ('calendar-days','Events',   stat_events,           'var(--purple-dim)',  'var(--purple)'),
+        ('users',        'Members',  stat_members,          'var(--emerald-dim)', 'var(--emerald)'),
+        ('inbox',        'Pending',  stat_pending_requests, 'var(--amber-dim)',   'var(--amber)'),
+        ('check-circle', 'Attendance',stat_attendance,      'var(--emerald-dim)', 'var(--emerald)'),
     ] %}
-    <div class="stat-card bg-brand-card border border-white/5 dark:border-slate-700 group cursor-default">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br {{ grad }} flex items-center justify-center mb-3
-                    group-hover:scale-110 transition-transform">
-            <i data-lucide="{{ icon }}" class="w-4 h-4 text-white"></i>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:{{ bg }};">
+            <i data-lucide="{{ icon }}" style="width:16px;height:16px;color:{{ color }};"></i>
         </div>
-        <p class="text-2xl font-extrabold text-white text-white stat-counter" data-val="{{ val or 0 }}">0</p>
-        <p class="text-xs font-medium text-gray-500 text-gray-500 mt-0.5">{{ label }}</p>
+        <p class="stat-value" data-count="{{ val or 0 }}">0</p>
+        <p class="stat-label">{{ label }}</p>
     </div>
     {% endfor %}
 </div>
@@ -181,20 +178,20 @@
 
 {% else %}
 {# Student Stats #}
-<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-    {% for icon, label, val, grad in [
-        ('check-circle','Attended',     stat_attended,      'from-emerald-500 to-emerald-600'),
-        ('award',       'Certificates', stat_certificates,  'from-amber-500 to-amber-600'),
+<div class="stat-row">
+    {% for icon, label, val, bg, color in [
+        ('check-circle','Attended',     stat_attended,      'var(--emerald-dim)', 'var(--emerald)'),
+        ('award',       'Certificates', stat_certificates,  'var(--amber-dim)',   'var(--amber)'),
     ] %}
-    <div class="stat-card bg-brand-card border border-white/5 dark:border-slate-700 group cursor-default col-span-1">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br {{ grad }} flex items-center justify-center mb-3
-                    group-hover:scale-110 transition-transform">
-            <i data-lucide="{{ icon }}" class="w-4 h-4 text-white"></i>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:{{ bg }};">
+            <i data-lucide="{{ icon }}" style="width:16px;height:16px;color:{{ color }};"></i>
         </div>
-        <p class="text-2xl font-extrabold text-white text-white stat-counter" data-val="{{ val or 0 }}">0</p>
-        <p class="text-xs font-medium text-gray-500 text-gray-500 mt-0.5">{{ label }}</p>
+        <p class="stat-value" data-count="{{ val or 0 }}">0</p>
+        <p class="stat-label">{{ label }}</p>
     </div>
     {% endfor %}
+
     <!-- Progress rings -->
     <div class="col-span-2 bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-4 flex items-center justify-around">
         {% for label, val, max_val, color in [

@@ -6,23 +6,26 @@
     <title>Sign In — CECRMS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        * { font-family: 'Inter', sans-serif; }
 
         :root {
-            --bg: #0d1117;
-            --bg-2: #161b22;
-            --bg-card: #1c2128;
-            --border: #30363d;
-            --text: #e6edf3;
-            --text-muted: #7d8590;
-            --emerald: #10b981;
-            --emerald-dim: rgba(16,185,129,0.15);
-            --emerald-glow: rgba(16,185,129,0.3);
+            --bg:          #0d1117;
+            --bg-2:        #161b22;
+            --bg-card:     #1c2128;
+            --border:      rgba(48,61,78,0.9);
+            --text:        #e6edf3;
+            --text-muted:  #7d8590;
+            --emerald:     #10b981;
+            --emerald-dim: rgba(16,185,129,0.12);
+            --emerald-glow:rgba(16,185,129,0.28);
+            --amber:       #f59e0b;
         }
 
+        /* ── LAYOUT ───────────────────────────────────────────── */
+        html, body { height: 100%; }
         body {
             background: var(--bg);
             min-height: 100vh;
@@ -30,117 +33,255 @@
             display: flex;
         }
 
-        /* ── Left Hero ── */
+        /* ── LEFT HERO ────────────────────────────────────────── */
         .hero-side {
-            width: 65%;
+            flex: 0 0 65%;
             min-height: 100vh;
-            background: linear-gradient(135deg, rgba(11,15,20,0.85) 0%, rgba(18,24,33,0.95) 100%),
-                        url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80') center/cover;
+            /* Lighter overlay so image stays visible */
+            background:
+                linear-gradient(135deg,
+                    rgba(11,15,20,0.50) 0%,
+                    rgba(13,17,23,0.62) 60%,
+                    rgba(18,24,33,0.75) 100%),
+                url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80')
+                center / cover no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 80px;
+            padding: 72px 80px;
             position: relative;
             overflow: hidden;
         }
 
-        /* Animated gradient overlay */
+        /* Colour overlays */
         .hero-side::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at top right, rgba(16,185,129,0.15), transparent 50%),
-                        radial-gradient(circle at bottom left, rgba(245,158,11,0.1), transparent 50%);
+            background:
+                radial-gradient(circle at top right,   rgba(16,185,129,0.18), transparent 50%),
+                radial-gradient(circle at bottom left, rgba(245,158,11,0.08), transparent 50%);
             z-index: 1;
         }
 
-        /* Floating shapes */
-        .float-shape {
+        /* Subtle dot grid */
+        .grid-overlay {
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 44px 44px;
+            z-index: 2;
+        }
+
+        /* Animated orbs */
+        .orb {
             position: absolute;
             border-radius: 50%;
-            border: 1px solid rgba(16,185,129,0.2);
-            animation: shape-spin linear infinite;
+            filter: blur(60px);
+            animation: orb-float ease-in-out infinite alternate;
+        }
+        @keyframes orb-float {
+            from { transform: translate(0, 0) scale(1); }
+            to   { transform: translate(20px, -20px) scale(1.05); }
+        }
+
+        /* Floating rings */
+        .float-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(16,185,129,0.18);
+            animation: ring-spin linear infinite;
             pointer-events: none;
         }
-        @keyframes shape-spin {
+        @keyframes ring-spin {
             from { transform: rotate(0deg); }
             to   { transform: rotate(360deg); }
         }
 
-        /* Grid overlay */
-        .grid-overlay {
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: 2;
+        /* Hero content */
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 560px;
         }
 
-        /* Stats */
+        .hero-logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 52px;
+        }
+        .hero-logo-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--emerald), #059669);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 24px rgba(16,185,129,0.45);
+            flex-shrink: 0;
+        }
+        .hero-logo h1 {
+            font-size: 1.75rem;
+            font-weight: 900;
+            color: var(--text);
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+        .hero-logo p {
+            font-size: 0.78rem;
+            color: rgba(230,237,243,0.65);
+            margin-top: 3px;
+        }
+
+        .hero-headline {
+            font-size: clamp(2.2rem, 3.5vw, 3.4rem);
+            font-weight: 900;
+            color: var(--text);
+            line-height: 1.1;
+            margin-bottom: 18px;
+            letter-spacing: -0.03em;
+        }
+        .hero-headline .gradient-text {
+            background: linear-gradient(135deg, var(--emerald), #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-sub {
+            font-size: 1rem;
+            color: rgba(230,237,243,0.75);
+            line-height: 1.65;
+            margin-bottom: 40px;
+            max-width: 480px;
+        }
+
+        /* Stats pills */
+        .stats-row {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 36px;
+        }
         .stat-pill {
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            padding: 16px 24px;
-            background: rgba(18,24,33,0.6);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease, background 0.3s ease;
+            padding: 14px 20px;
+            background: rgba(13,17,23,0.55);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+            transition: transform 0.3s, background 0.3s;
         }
         .stat-pill:hover {
-            transform: translateY(-5px);
-            background: rgba(27,36,48,0.7);
+            transform: translateY(-4px);
+            background: rgba(22,30,42,0.7);
         }
         .stat-pill-icon {
-            width: 44px; height: 44px;
+            width: 40px; height: 40px;
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .stat-num {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+        }
+        .stat-desc {
+            font-size: 0.7rem;
+            color: rgba(230,237,243,0.55);
+            margin-top: 2px;
         }
 
         /* Feature list */
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
         .feature-item {
-            display: flex; align-items: center; gap: 10px;
-            color: rgba(230,237,243,0.7);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(230,237,243,0.72);
             font-size: 0.875rem;
         }
         .feature-dot {
-            width: 6px; height: 6px;
+            width: 20px; height: 20px;
             border-radius: 50%;
-            background: var(--emerald);
+            background: var(--emerald-dim);
+            border: 1px solid rgba(16,185,129,0.3);
+            display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
 
-        /* ── Right Panel ── */
+        /* ── RIGHT LOGIN PANEL ────────────────────────────────── */
         .login-side {
-            width: 35%;
+            flex: 0 0 35%;
             min-height: 100vh;
-            background: rgba(11,15,20,0.95);
-            backdrop-filter: blur(20px);
+            background: rgba(10,13,18,0.96);
+            backdrop-filter: blur(24px);
             border-left: 1px solid rgba(255,255,255,0.05);
             display: flex;
-            flex-direction: column;
+            align-items: center;
             justify-content: center;
-            padding: 40px;
+            padding: 40px 48px;
             position: relative;
             flex-shrink: 0;
-            box-shadow: -20px 0 40px rgba(0,0,0,0.5);
+            box-shadow: -24px 0 48px rgba(0,0,0,0.45);
         }
 
-        /* Glass card effect on login panel */
+        /* Top accent line */
         .login-side::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
             height: 2px;
             background: linear-gradient(90deg, transparent, var(--emerald), transparent);
-            opacity: 0.6;
+            opacity: 0.5;
         }
 
-        /* Form */
+        /* Inner constrained form box */
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Mobile logo */
+        .mobile-logo {
+            display: none;
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .mobile-logo-icon {
+            width: 46px; height: 46px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 10px;
+        }
+
+        /* Form inputs */
+        .form-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .input-wrap { position: relative; }
+        .input-icon {
+            position: absolute;
+            left: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 15px; height: 15px;
+        }
         .form-input {
             width: 100%;
             background: var(--bg-card);
@@ -150,23 +291,15 @@
             font-size: 0.875rem;
             color: var(--text);
             outline: none;
-            transition: all 0.15s;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
         .form-input:focus {
             border-color: var(--emerald);
             box-shadow: 0 0 0 3px var(--emerald-dim);
         }
-        .form-input::placeholder { color: var(--text-muted); }
-        .input-wrap { position: relative; }
-        .input-icon {
-            position: absolute; left: 12px; top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            pointer-events: none;
-            width: 15px; height: 15px;
-        }
+        .form-input::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-        /* Flash */
+        /* Flash messages */
         .flash-msg {
             padding: 10px 14px;
             border-radius: 8px;
@@ -174,10 +307,10 @@
             margin-bottom: 12px;
             display: flex; align-items: center; gap: 8px;
         }
-        .flash-danger { background: rgba(248,81,73,0.12); border: 1px solid rgba(248,81,73,0.3); color: #f85149; }
-        .flash-success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
+        .flash-danger  { background: rgba(248,81,73,0.10); border: 1px solid rgba(248,81,73,0.28); color: #f85149; }
+        .flash-success { background: rgba(16,185,129,0.10); border: 1px solid rgba(16,185,129,0.28); color: #10b981; }
 
-        /* Submit btn */
+        /* Submit button */
         .btn-submit {
             width: 100%;
             padding: 12px;
@@ -199,32 +332,69 @@
         }
         .btn-submit:active { transform: scale(0.98); }
 
-        /* Glow animation for logo */
-        @keyframes glow-pulse {
-            0%, 100% { box-shadow: 0 0 20px var(--emerald-glow); }
-            50%       { box-shadow: 0 0 40px rgba(16,185,129,0.5); }
+        /* Divider */
+        .divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 22px 0;
+        }
+        .divider-line { flex: 1; height: 1px; background: var(--border); }
+        .divider-text { font-size: 0.72rem; color: var(--text-muted); }
+
+        /* ── RESPONSIVE ───────────────────────────────────────── */
+
+        /* Tablet: 55/45 split */
+        @media (max-width: 1024px) {
+            .hero-side  { flex: 0 0 55%; padding: 56px 52px; }
+            .login-side { flex: 0 0 45%; padding: 40px 40px; }
+            .hero-headline { font-size: 2.4rem; }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero-side { display: none; }
-            .login-side { width: 100%; padding: 40px 24px; border-left: none; }
-        }
-        @media (max-width: 480px) {
-            .login-side { padding: 32px 20px; }
+        /* Laptop-small */
+        @media (max-width: 900px) {
+            .hero-side  { flex: 0 0 52%; padding: 44px 44px; }
+            .login-side { flex: 0 0 48%; padding: 36px 32px; }
         }
 
-        /* Counter animation */
-        .stat-num {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1;
+        /* Mobile: stack vertically */
+        @media (max-width: 700px) {
+            body { flex-direction: column; }
+
+            /* Hero becomes a compact top banner */
+            .hero-side {
+                flex: none;
+                width: 100%;
+                min-height: 240px;
+                padding: 36px 24px 32px;
+                justify-content: flex-end;
+            }
+            .hero-logo { margin-bottom: 20px; }
+            .hero-headline { font-size: 1.9rem; margin-bottom: 12px; }
+            .hero-sub { display: none; }
+            .stats-row { gap: 10px; }
+            .stat-pill { padding: 10px 14px; gap: 8px; }
+            .stat-num { font-size: 1.1rem; }
+            .feature-list { display: none; }
+            .float-ring, .orb { display: none; }
+
+            .login-side {
+                flex: none;
+                width: 100%;
+                min-height: unset;
+                border-left: none;
+                border-top: 1px solid rgba(255,255,255,0.05);
+                padding: 36px 24px 48px;
+                box-shadow: none;
+                align-items: flex-start;
+            }
+            .login-box { max-width: 100%; }
+            .mobile-logo { display: block; }
         }
-        .stat-desc {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            margin-top: 1px;
+
+        @media (max-width: 380px) {
+            .hero-side { min-height: 200px; padding: 28px 16px 24px; }
+            .login-side { padding: 28px 16px 40px; }
+            .hero-headline { font-size: 1.6rem; }
+            .stats-row { flex-direction: column; gap: 8px; }
         }
     </style>
 </head>
@@ -232,48 +402,54 @@
 
 <!-- ═══ LEFT HERO ═══ -->
 <div class="hero-side">
-    <!-- Grid overlay -->
     <div class="grid-overlay"></div>
 
     <!-- Animated orbs -->
-    <div class="orb" style="width:350px;height:350px;background:rgba(16,185,129,0.08);top:-80px;right:-100px;animation-duration:18s;"></div>
-    <div class="orb" style="width:280px;height:280px;background:rgba(88,166,255,0.06);bottom:-60px;left:-80px;animation-duration:22s;animation-direction:reverse;"></div>
-    <div class="orb" style="width:180px;height:180px;background:rgba(167,139,250,0.07);top:50%;left:30%;animation-duration:15s;"></div>
+    <div class="orb" style="width:380px;height:380px;background:rgba(16,185,129,0.07);top:-100px;right:-120px;animation-duration:18s;"></div>
+    <div class="orb" style="width:260px;height:260px;background:rgba(88,166,255,0.05);bottom:-70px;left:-90px;animation-duration:24s;animation-direction:reverse;"></div>
+    <div class="orb" style="width:160px;height:160px;background:rgba(167,139,250,0.06);top:45%;left:28%;animation-duration:14s;"></div>
 
     <!-- Floating rings -->
-    <div class="float-shape" style="width:180px;height:180px;top:10%;right:5%;animation-duration:30s;"></div>
-    <div class="float-shape" style="width:80px;height:80px;bottom:15%;right:20%;animation-duration:20s;animation-direction:reverse;border-color:rgba(88,166,255,0.15);"></div>
+    <div class="float-ring" style="width:190px;height:190px;top:8%;right:4%;animation-duration:32s;"></div>
+    <div class="float-ring" style="width:90px;height:90px;bottom:12%;right:18%;animation-duration:22s;animation-direction:reverse;border-color:rgba(88,166,255,0.12);"></div>
 
     <!-- Content -->
-    <div style="position:relative;z-index:10;max-width:600px;">
+    <div class="hero-content">
 
         <!-- Logo -->
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:60px;">
-            <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--emerald),#059669);display:flex;align-items:center;justify-content:center;box-shadow: 0 8px 24px rgba(16,185,129,0.4);">
-                <i data-lucide="graduation-cap" style="width:28px;height:28px;color:white;"></i>
+        <div class="hero-logo">
+            <div class="hero-logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+                     fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
             </div>
             <div>
-                <h1 style="font-size:1.8rem;font-weight:900;color:var(--text);line-height:1;letter-spacing:-0.02em;">CECRMS</h1>
-                <p style="font-size:0.85rem;font-weight:500;color:var(--text-muted);margin-top:4px;">Campus Event & Club Resource Management</p>
+                <h1>CECRMS</h1>
+                <p>Campus Event &amp; Club Resource Management</p>
             </div>
         </div>
 
         <!-- Headline -->
-        <h2 style="font-size:3.5rem;font-weight:900;color:var(--text);line-height:1.1;margin-bottom:20px;letter-spacing:-0.03em;">
-            Manage Campus Life <br>
-            <span style="background:linear-gradient(135deg,var(--emerald),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                Smarter.
-            </span>
+        <h2 class="hero-headline">
+            Manage Campus Life<br>
+            <span class="gradient-text">Smarter.</span>
         </h2>
-        <p style="font-size:1.1rem;color:var(--text-muted);margin-bottom:48px;line-height:1.6;font-weight:400;max-width:500px;">
-            The all-in-one platform for students, coordinators, and administrators to organize, discover, and celebrate campus activities.
+
+        <p class="hero-sub">
+            The all-in-one platform for students, coordinators, and
+            administrators to organise, discover, and celebrate campus life.
         </p>
 
-        <!-- Stats row -->
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:0;">
+        <!-- Stats pills -->
+        <div class="stats-row">
             <div class="stat-pill">
                 <div class="stat-pill-icon" style="background:rgba(16,185,129,0.15);">
-                    <i data-lucide="users" style="width:20px;height:20px;color:var(--emerald);"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                         fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
                 </div>
                 <div>
                     <div class="stat-num">50+</div>
@@ -282,7 +458,12 @@
             </div>
             <div class="stat-pill">
                 <div class="stat-pill-icon" style="background:rgba(245,158,11,0.15);">
-                    <i data-lucide="calendar-days" style="width:20px;height:20px;color:var(--amber);"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                         fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                        <line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/>
+                        <line x1="3" x2="21" y1="10" y2="10"/>
+                    </svg>
                 </div>
                 <div>
                     <div class="stat-num">500+</div>
@@ -291,7 +472,10 @@
             </div>
             <div class="stat-pill">
                 <div class="stat-pill-icon" style="background:rgba(139,92,246,0.15);">
-                    <i data-lucide="graduation-cap" style="width:20px;height:20px;color:#a78bfa;"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                         fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
                 </div>
                 <div>
                     <div class="stat-num">2000+</div>
@@ -300,115 +484,194 @@
             </div>
         </div>
 
+        <!-- Feature list -->
+        <div class="feature-list">
+            <div class="feature-item">
+                <div class="feature-dot">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
+                         fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                Real-time attendance tracking with secure codes
+            </div>
+            <div class="feature-item">
+                <div class="feature-dot">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
+                         fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                Resource allocation &amp; request management
+            </div>
+            <div class="feature-item">
+                <div class="feature-dot">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
+                         fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                Smart event recommendations &amp; certificates
+            </div>
+        </div>
 
     </div>
 </div>
 
 <!-- ═══ RIGHT LOGIN PANEL ═══ -->
 <div class="login-side">
+    <div class="login-box">
 
-    <!-- Mobile logo (hidden on desktop) -->
-    <div class="md:hidden" style="text-align:center;margin-bottom:32px;">
-        <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
-            <i data-lucide="graduation-cap" style="width:24px;height:24px;color:white;"></i>
-        </div>
-        <h1 style="font-size:1.4rem;font-weight:900;color:var(--text);">CECRMS</h1>
-    </div>
-
-    <!-- Heading -->
-    <div style="margin-bottom:32px;">
-        <h2 style="font-size:1.8rem;font-weight:800;color:var(--text);margin-bottom:8px;letter-spacing:-0.02em;">Welcome back</h2>
-        <p style="font-size:0.95rem;color:var(--text-muted);">Sign in to your campus account to continue</p>
-    </div>
-
-    <!-- Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for cat, msg in messages %}
-    <div class="flash-msg flash-{{ cat }}">
-        <i data-lucide="{% if cat=='success' %}check-circle{% else %}alert-circle{% endif %}" style="width:15px;height:15px;flex-shrink:0;"></i>
-        {{ msg }}
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-
-    <!-- Form -->
-    <form method="POST" action="{{ url_for('auth.login') }}" style="display:flex;flex-direction:column;gap:16px;">
-
-        <!-- Email -->
-        <div>
-            <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Email address</label>
-            <div class="input-wrap">
-                <i data-lucide="mail" class="input-icon"></i>
-                <input type="email" name="email" required
-                       placeholder="you@college.edu"
-                       class="form-input"
-                       id="login-email"
-                       autocomplete="email">
+        <!-- Mobile logo (visible only on mobile) -->
+        <div class="mobile-logo">
+            <div class="mobile-logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                     fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
             </div>
+            <h1 style="font-size:1.3rem;font-weight:900;color:var(--text);">CECRMS</h1>
         </div>
 
-        <!-- Password -->
-        <div>
-            <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Password</label>
-            <div class="input-wrap">
-                <i data-lucide="lock" class="input-icon"></i>
-                <input type="password" name="password" required
-                       placeholder="••••••••"
-                       class="form-input"
-                       id="login-password"
-                       style="padding-right:42px;"
-                       autocomplete="current-password">
-                <button type="button" onclick="togglePw()"
-                        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;">
-                    <i data-lucide="eye" style="width:15px;height:15px;" id="eye-icon"></i>
-                </button>
+        <!-- Heading -->
+        <div style="margin-bottom:28px;">
+            <h2 style="font-size:1.65rem;font-weight:800;color:var(--text);margin-bottom:6px;letter-spacing:-0.02em;">
+                Welcome back
+            </h2>
+            <p style="font-size:0.88rem;color:var(--text-muted);">
+                Sign in to your campus account to continue
+            </p>
+        </div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for cat, msg in messages %}
+        <div class="flash-msg flash-{{ cat }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 style="flex-shrink:0;">
+                {% if cat == 'success' %}
+                <polyline points="20 6 9 17 4 12"/>
+                {% else %}
+                <circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>
+                {% endif %}
+            </svg>
+            {{ msg }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- Form -->
+        <form method="POST" action="{{ url_for('auth.login') }}"
+              style="display:flex;flex-direction:column;gap:14px;">
+
+            <!-- Email -->
+            <div>
+                <label class="form-label" for="login-email">Email address</label>
+                <div class="input-wrap">
+                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="20" height="16" x="2" y="4" rx="2"/>
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                    </svg>
+                    <input type="email" name="email" id="login-email" required
+                           placeholder="you@college.edu"
+                           class="form-input"
+                           autocomplete="email">
+                </div>
             </div>
+
+            <!-- Password -->
+            <div>
+                <label class="form-label" for="login-password">Password</label>
+                <div class="input-wrap">
+                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <input type="password" name="password" id="login-password" required
+                           placeholder="••••••••"
+                           class="form-input"
+                           style="padding-right:42px;"
+                           autocomplete="current-password">
+                    <button type="button" id="pw-toggle"
+                            onclick="togglePw()"
+                            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
+                                   background:none;border:none;cursor:pointer;
+                                   color:var(--text-muted);padding:2px;line-height:0;"
+                            aria-label="Toggle password visibility">
+                        <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn-submit" id="login-btn" style="margin-top:6px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                    <polyline points="10 17 15 12 10 7"/>
+                    <line x1="15" x2="3" y1="12" y2="12"/>
+                </svg>
+                Sign In
+            </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">
+            <div class="divider-line"></div>
+            <span class="divider-text">OR</span>
+            <div class="divider-line"></div>
         </div>
 
-        <!-- Submit -->
-        <button type="submit" class="btn-submit" id="login-btn" style="margin-top:8px;">
-            <i data-lucide="log-in" style="width:16px;height:16px;"></i>
-            Sign In
-        </button>
-    </form>
+        <!-- Register link -->
+        <p style="text-align:center;font-size:0.875rem;color:var(--text-muted);">
+            New to CECRMS?
+            <a href="{{ url_for('auth.register') }}"
+               style="color:var(--emerald);font-weight:700;text-decoration:none;margin-left:4px;"
+               onmouseover="this.style.textDecoration='underline'"
+               onmouseout="this.style.textDecoration='none'">
+                Create an account →
+            </a>
+        </p>
 
-    <!-- Divider -->
-    <div style="display:flex;align-items:center;gap:12px;margin:24px 0;">
-        <div style="flex:1;height:1px;background:var(--border);"></div>
-        <span style="font-size:0.75rem;color:var(--text-muted);">OR</span>
-        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <!-- Footer note -->
+        <p style="text-align:center;font-size:0.7rem;color:var(--text-muted);margin-top:28px;opacity:0.5;line-height:1.5;">
+            Campus Event &amp; Club Resource Management System<br>
+            © 2025 CECRMS. All rights reserved.
+        </p>
+
     </div>
-
-    <!-- Register link -->
-    <p style="text-align:center;font-size:0.875rem;color:var(--text-muted);">
-        New to CECRMS?
-        <a href="{{ url_for('auth.register') }}"
-           style="color:var(--emerald);font-weight:700;text-decoration:none;margin-left:4px;"
-           onmouseover="this.style.textDecoration='underline'"
-           onmouseout="this.style.textDecoration='none'">
-            Create an account →
-        </a>
-    </p>
-
-    <!-- Footer note -->
-    <p style="text-align:center;font-size:0.72rem;color:var(--text-muted);margin-top:32px;opacity:0.6;">
-        Campus Event & Club Resource Management System<br>
-        © 2025 CECRMS. All rights reserved.
-    </p>
 </div>
 
 <script>
-    lucide.createIcons();
-
     function togglePw() {
         const inp = document.getElementById('login-password');
-        const ico = document.getElementById('eye-icon');
+        const eye = document.getElementById('eye-icon');
         inp.type = inp.type === 'password' ? 'text' : 'password';
-        ico.setAttribute('data-lucide', inp.type === 'password' ? 'eye' : 'eye-off');
-        lucide.createIcons();
+        const isText = inp.type === 'text';
+        eye.innerHTML = isText
+            ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" x2="23" y1="1" y2="23"/>`
+            : `<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>`;
     }
+
+    // Subtle loading animation on submit
+    document.getElementById('login-btn')?.addEventListener('click', function() {
+        this.style.opacity = '0.8';
+        this.style.pointerEvents = 'none';
+        setTimeout(() => {
+            this.style.opacity = '';
+            this.style.pointerEvents = '';
+        }, 3000);
+    });
 </script>
 </body>
 </html>

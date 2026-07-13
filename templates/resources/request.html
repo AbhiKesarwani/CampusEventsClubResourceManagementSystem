@@ -1,65 +1,207 @@
 {% extends 'layout.html' %}
-{% block title %}Request Resource — CECRMS{% endblock %}
-{% block page_title %}Request Resource{% endblock %}
+{% block title %}Request Resources — CECRMS{% endblock %}
+{% block page_title %}Request Resources{% endblock %}
+
 {% block content %}
-<div class="max-w-xl mx-auto">
-    <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <a href="{{ url_for('resources.list_resources') }}" class="hover:text-emerald-500">Resources</a>
-        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-gray-100">Request</span>
-    </nav>
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <i data-lucide="package-plus" class="w-5 h-5 text-purple-600"></i> Request a Resource
-        </h2>
-        <form method="POST" class="space-y-5">
+{% set role = session.get('role') %}
+<div class="page-content anim-fade" style="max-width:860px;">
 
-            {% if session.get('role') == 'admin' and clubs %}
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Club</label>
-                <select name="club_id" class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
-                    {% for c in clubs %}
-                    <option value="{{ c.club_id }}">{{ c.club_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            {% endif %}
-
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Event <span class="text-red-500">*</span></label>
-                <select name="event_id" required class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
-                    <option value="">Select an event…</option>
-                    {% for e in events %}
-                    <option value="{{ e.event_id }}">{{ e.title }} ({{ e.date }})</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Resource <span class="text-red-500">*</span></label>
-                <select name="resource_id" required class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
-                    <option value="">Select a resource…</option>
-                    {% for r in resources %}
-                    <option value="{{ r.resource_id }}">{{ r.resource_name }} ({{ r.available }} available)</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-600">Quantity <span class="text-red-500">*</span></label>
-                <input type="number" name="quantity" min="1" required placeholder="1"
-                       class="w-full rounded-xl border border-brand-border px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-brand-surface text-white">
-            </div>
-
-            <p class="text-xs text-gray-500 bg-amber-50 border border-amber-100 rounded-xl p-3">
-                ⚠ Your request will be reviewed by an admin. Resources are allocated only after approval.
-            </p>
-
-            <button type="submit"
-                    class="w-full py-3 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700 transition shadow-lg">
-                Submit Request
-            </button>
-        </form>
+    <!-- Header -->
+    <div class="section-header mb-6">
+        <div>
+            <h1 class="page-title">Request Resources</h1>
+            <p class="page-subtitle">Submit a resource request for your event</p>
+        </div>
+        {% if role == 'club_admin' %}
+        <a href="{{ url_for('resources.my_requests') }}" class="btn btn-secondary btn-sm">
+            <i data-lucide="inbox" style="width:13px;height:13px;"></i>
+            My Requests
+        </a>
+        {% endif %}
     </div>
+
+    <div class="grid-2-1 gap-6">
+
+        <!-- Request Form -->
+        <div class="card p-6">
+            <form method="POST" action="{{ url_for('resources.submit_request') }}">
+
+                <!-- Admin: Club Selection -->
+                {% if clubs %}
+                <div class="form-group">
+                    <label class="form-label">
+                        <i data-lucide="users" style="width:12px;height:12px;"></i>
+                        Club
+                    </label>
+                    <select name="club_id" class="form-input" required>
+                        <option value="">— Select Club —</option>
+                        {% for club in clubs %}
+                        <option value="{{ club.club_id }}">{{ club.club_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <!-- Event -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i data-lucide="calendar" style="width:12px;height:12px;"></i>
+                        Event
+                    </label>
+                    <select name="event_id" class="form-input" required id="event-select">
+                        <option value="">— Select Event —</option>
+                        {% for event in events %}
+                        <option value="{{ event.event_id }}">{{ event.title }}
+                            {% if event.date %} · {{ event.date | datetimeformat('%d %b %Y') }}{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if not events %}
+                    <p class="form-hint" style="color:var(--amber);">
+                        <i data-lucide="alert-triangle" style="width:11px;height:11px;display:inline;"></i>
+                        No events found. Create an event first.
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Resource -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i data-lucide="package" style="width:12px;height:12px;"></i>
+                        Resource
+                    </label>
+                    <select name="resource_id" class="form-input" required id="resource-select">
+                        <option value="">— Select Resource —</option>
+                        {% for r in resources %}
+                        <option value="{{ r.resource_id }}"
+                                data-available="{{ r.available }}">
+                            {{ r.resource_name }}
+                            ({{ r.available }} available of {{ r.total_quantity }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Availability indicator -->
+                <div id="availability-box" class="p-3 rounded-lg mb-4" style="display:none;background:var(--bg-hover);border:1px solid var(--border);">
+                    <p class="text-xs font-semibold" id="availability-text" style="color:var(--text-muted);margin:0;"></p>
+                </div>
+
+                <!-- Quantity -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i data-lucide="hash" style="width:12px;height:12px;"></i>
+                        Quantity
+                    </label>
+                    <input type="number" name="quantity" class="form-input"
+                           min="1" value="1" required id="qty-input">
+                </div>
+
+                <!-- Reason -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i data-lucide="file-text" style="width:12px;height:12px;"></i>
+                        Reason / Purpose
+                    </label>
+                    <textarea name="reason" class="form-input"
+                              rows="3"
+                              placeholder="Why do you need this resource? How will it be used?"></textarea>
+                    <p class="form-hint">Be specific to help the admin approve faster.</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full justify-center">
+                    <i data-lucide="send" style="width:14px;height:14px;"></i>
+                    Submit Request
+                </button>
+
+            </form>
+        </div>
+
+        <!-- Info Panel -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <!-- Available Resources summary -->
+            <div class="card p-5">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">
+                    Resource Availability
+                </h3>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    {% for r in resources %}
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-sm" style="color:var(--text);min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            {{ r.resource_name }}
+                        </span>
+                        <span class="badge {% if r.available > 0 %}badge-approved{% else %}badge-rejected{% endif %}">
+                            {{ r.available }}/{{ r.total_quantity }}
+                        </span>
+                    </div>
+                    {% else %}
+                    <p class="text-sm" style="color:var(--text-subtle);">No resources configured.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Workflow Info -->
+            <div class="card p-5">
+                <h3 class="font-semibold text-sm mb-3" style="color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">
+                    Workflow
+                </h3>
+                <ol class="space-y-3">
+                    <li class="flex gap-2 text-sm" style="color:var(--text-muted);">
+                        <span class="step-number" style="flex-shrink:0;">1</span>
+                        Submit your request with reason
+                    </li>
+                    <li class="flex gap-2 text-sm" style="color:var(--text-muted);">
+                        <span class="step-number" style="flex-shrink:0;">2</span>
+                        Admin reviews and approves/rejects
+                    </li>
+                    <li class="flex gap-2 text-sm" style="color:var(--text-muted);">
+                        <span class="step-number" style="flex-shrink:0;">3</span>
+                        You receive a notification with the decision
+                    </li>
+                    <li class="flex gap-2 text-sm" style="color:var(--text-muted);">
+                        <span class="step-number" style="flex-shrink:0;">4</span>
+                        Approved resources are allocated to your event
+                    </li>
+                </ol>
+            </div>
+
+        </div>
+    </div>
+
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const resourceSelect = document.getElementById('resource-select');
+const availBox       = document.getElementById('availability-box');
+const availText      = document.getElementById('availability-text');
+const qtyInput       = document.getElementById('qty-input');
+
+function updateAvailability() {
+    const opt = resourceSelect.options[resourceSelect.selectedIndex];
+    const avail = parseInt(opt.dataset.available);
+    if (!opt.value || isNaN(avail)) {
+        availBox.style.display = 'none';
+        return;
+    }
+    availBox.style.display = 'block';
+    if (avail > 0) {
+        availBox.style.borderColor = 'var(--emerald-glow)';
+        availBox.style.background  = 'var(--emerald-dim)';
+        availText.style.color      = 'var(--emerald)';
+        availText.textContent      = `✓ ${avail} unit${avail !== 1 ? 's' : ''} available for this resource`;
+        qtyInput.max = avail;
+    } else {
+        availBox.style.borderColor = 'rgba(239,68,68,0.25)';
+        availBox.style.background  = 'var(--red-dim)';
+        availText.style.color      = 'var(--red)';
+        availText.textContent      = '✗ No units available — all are currently allocated';
+        qtyInput.max = 0;
+    }
+}
+
+resourceSelect.addEventListener('change', updateAvailability);
+</script>
 {% endblock %}

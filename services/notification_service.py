@@ -2,15 +2,16 @@
 from database import get_db_connection
 
 
-def create_notification(user_id: int, title: str, body: str = None, link: str = None) -> None:
+def create_notification(user_id: int, title: str, body: str = None,
+                        link: str = None, type: str = 'info') -> None:
     """Insert a notification for a user."""
     conn = cur = None
     try:
         conn = get_db_connection()
         cur  = conn.cursor()
         cur.execute(
-            "INSERT INTO notifications (user_id, title, body, link) VALUES (%s,%s,%s,%s)",
-            (user_id, title, body, link)
+            "INSERT INTO notifications (user_id, title, body, link, type) VALUES (%s,%s,%s,%s,%s)",
+            (user_id, title, body, link, type)
         )
         conn.commit()
     except Exception:
@@ -21,7 +22,7 @@ def create_notification(user_id: int, title: str, body: str = None, link: str = 
         if conn: conn.close()
 
 
-def get_user_notifications(user_id: int, limit: int = 30) -> list[dict]:
+def get_user_notifications(user_id: int, limit: int = 50) -> list[dict]:
     conn = cur = None
     try:
         conn = get_db_connection()

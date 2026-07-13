@@ -114,16 +114,17 @@ def submit_request():
         event_id    = request.form.get('event_id', type=int)
         resource_id = request.form.get('resource_id', type=int)
         quantity    = request.form.get('quantity', type=int, default=1)
+        reason      = request.form.get('reason', '').strip() or None
 
         req_club_id = club_id
         if role == 'admin':
             req_club_id = request.form.get('club_id', type=int)
 
         try:
-            rid = create_request(event_id, req_club_id, resource_id, quantity, session['user_id'])
+            rid = create_request(event_id, req_club_id, resource_id, quantity, session['user_id'], reason)
             log_action(session['user_id'], 'REQUEST_RESOURCE', 'resource_request', rid)
             flash("Resource request submitted!", "success")
-            return redirect(url_for('resources.list_resources'))
+            return redirect(url_for('resources.my_requests'))
         except ValueError as e:
             flash(str(e), "danger")
         except Exception as e:
@@ -159,3 +160,22 @@ def reject(request_id):
     except Exception as e:
         flash(f"Error: {e}", "danger")
     return redirect(url_for('resources.all_requests'))
+
+
+@bp.route('/my-requests')
+@login_required
+def my_requests():
+    """Club coordinator views their club's resource requests."""
+    role    = session.get('role')
+    club_id = session.get('club_id')
+
+    if role == 'admin':
+        return redirect(url_for('resources.all_requests'))
+    if role != 'club_admin' or not club_id:
+        flash("Access denied.", "danger")
+        return redirect(url_for('dashboard.index'))
+
+    reqs = get_requests_for_club(club_id)
+    user = get_user_by_id(session['user_id'])
+    return render_template('resources/my_requests.html',
+                           requests=reqs, user=user, active='resource_requests')

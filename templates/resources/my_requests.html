@@ -1,0 +1,83 @@
+{% extends 'layout.html' %}
+{% block title %}My Resource Requests — CECRMS{% endblock %}
+{% block page_title %}My Requests{% endblock %}
+
+{% block content %}
+<div class="page-content anim-fade">
+
+    <!-- Header -->
+    <div class="section-header mb-6">
+        <div>
+            <h1 class="page-title">My Resource Requests</h1>
+            <p class="page-subtitle">Track resource requests you've submitted</p>
+        </div>
+        <a href="{{ url_for('resources.submit_request') }}" class="btn btn-primary">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i>
+            New Request
+        </a>
+    </div>
+
+    {% if requests %}
+    <div style="display:flex;flex-direction:column;gap:12px;" class="stagger">
+        {% for req in requests %}
+        <div class="request-card {{ req.status | lower }}">
+            <div class="flex items-center gap-4 flex-wrap">
+
+                <div style="flex:1;min-width:200px;">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="badge badge-{{ req.status | lower }}">{{ req.status }}</span>
+                        <span class="text-xs" style="color:var(--text-subtle);">#{{ req.request_id }}</span>
+                    </div>
+                    <h3 style="font-size:0.95rem;font-weight:700;color:var(--text);margin:0 0 3px 0;">
+                        {{ req.quantity }}× {{ req.resource_name }}
+                    </h3>
+                    <p style="font-size:0.8rem;color:var(--text-muted);margin:0;display:flex;align-items:center;gap:4px;">
+                        <i data-lucide="calendar" style="width:11px;height:11px;"></i>
+                        {{ req.event_title }}
+                    </p>
+                </div>
+
+                {% if req.reason %}
+                <div style="flex:2;min-width:180px;">
+                    <p class="text-xs mb-1" style="color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.06em;">Reason</p>
+                    <p style="font-size:0.8rem;color:var(--text-muted);margin:0;line-height:1.5;">{{ req.reason }}</p>
+                </div>
+                {% endif %}
+
+                <div style="flex:1;min-width:120px;text-align:right;">
+                    <p style="font-size:0.75rem;color:var(--text-subtle);margin:0 0 4px 0;">
+                        {{ req.created_at | timeago if req.created_at else '' }}
+                    </p>
+                    {% if req.reviewed_by_name %}
+                    <p style="font-size:0.72rem;color:var(--text-subtle);margin:0;">
+                        Reviewed by: <strong>{{ req.reviewed_by_name }}</strong>
+                    </p>
+                    {% elif req.status == 'Pending' %}
+                    <p style="font-size:0.72rem;color:var(--amber);margin:0;display:flex;align-items:center;gap:3px;justify-content:flex-end;">
+                        <i data-lucide="clock" style="width:10px;height:10px;"></i>
+                        Awaiting review
+                    </p>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="card p-16 text-center">
+        <div class="empty-state-icon mx-auto mb-4">
+            <i data-lucide="package-plus" style="width:24px;height:24px;"></i>
+        </div>
+        <p style="font-size:1rem;font-weight:700;color:var(--text);">No requests submitted yet</p>
+        <p class="text-sm mt-1">Submit a resource request for your upcoming events.</p>
+        <a href="{{ url_for('resources.submit_request') }}" class="btn btn-primary mt-4">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i>
+            New Request
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
