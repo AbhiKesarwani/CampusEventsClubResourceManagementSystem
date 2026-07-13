@@ -6,7 +6,10 @@ from services.user_service import get_user_by_id
 from services.event_service import get_upcoming_events, count_events, get_events_for_club
 from services.club_service import get_all_clubs, get_club_by_id
 from services.venue_service import count_venues
-from services.resource_service import count_resources, count_pending_requests, get_requests_for_club
+from services.resource_service import (
+    count_resources, count_pending_requests, get_requests_for_club,
+    release_expired_allocations
+)
 from services.attendance_service import (
     count_attendance, get_user_attendance,
     get_top_events_by_attendance, get_top_clubs_by_attendance,
@@ -29,18 +32,28 @@ def index():
 
     ctx = dict(user=user, active='dashboard', role=role)
 
-    upcoming    = get_upcoming_events(limit=6)
-    recommended = get_recommendations(session['user_id'], limit=3)
-    ctx['upcoming_events']    = upcoming
-    ctx['recommended_events'] = recommended
+    upcoming = get_upcoming_events(limit=6)
+    ctx['upcoming_events'] = upcoming
 
     if role == 'admin':
+        try: release_expired_allocations()
+        except Exception: pass
         ctx.update(_admin_stats())
+        ctx['recommended_events'] = []
+
     elif role == 'club_admin':
+        try: release_expired_allocations()
+        except Exception: pass
         club_id = session.get('club_id')
         ctx.update(_club_admin_stats(club_id))
-    else:
+        ctx['recommended_events'] = []
+
+    else:  # student
         ctx.update(_student_stats(session['user_id']))
+        try:
+            ctx['recommended_events'] = get_recommendations(session['user_id'], limit=3)
+        except Exception:
+            ctx['recommended_events'] = []
 
     return render_template('dashboard.html', **ctx)
 

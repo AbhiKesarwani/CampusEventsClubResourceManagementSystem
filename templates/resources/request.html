@@ -97,16 +97,50 @@
                            min="1" value="1" required id="qty-input">
                 </div>
 
-                <!-- Reason -->
+                <!-- Purpose -->
                 <div class="form-group">
                     <label class="form-label">
                         <i data-lucide="file-text" style="width:12px;height:12px;"></i>
-                        Reason / Purpose
+                        Purpose <span style="color:var(--text-subtle);font-weight:400;">(required)</span>
                     </label>
-                    <textarea name="reason" class="form-input"
-                              rows="3"
-                              placeholder="Why do you need this resource? How will it be used?"></textarea>
-                    <p class="form-hint">Be specific to help the admin approve faster.</p>
+                    <textarea name="purpose" class="form-input" rows="2" required
+                              placeholder="How will this resource be used at the event?"></textarea>
+                </div>
+
+                <!-- Required date + times -->
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i data-lucide="calendar" style="width:12px;height:12px;"></i>
+                            Required Date
+                        </label>
+                        <input type="date" name="required_date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i data-lucide="clock" style="width:12px;height:12px;"></i>
+                            Start Time
+                        </label>
+                        <input type="time" name="req_start_time" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i data-lucide="clock-4" style="width:12px;height:12px;"></i>
+                            End Time
+                        </label>
+                        <input type="time" name="req_end_time" class="form-input">
+                    </div>
+                </div>
+
+                <!-- Remarks (optional) -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i data-lucide="message-square" style="width:12px;height:12px;"></i>
+                        Additional Remarks
+                        <span style="color:var(--text-subtle);font-weight:400;">(optional)</span>
+                    </label>
+                    <textarea name="remarks" class="form-input" rows="2"
+                              placeholder="Any special requirements, setup instructions, etc."></textarea>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-full justify-center">

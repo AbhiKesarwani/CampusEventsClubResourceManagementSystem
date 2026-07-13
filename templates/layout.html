@@ -101,15 +101,15 @@
             <span class="sidebar-label">Clubs</span>
         </a>
 
-        <a href="{{ url_for('recommendations.index') }}"
-           class="sidebar-link {% if active=='recommendations' %}active-nav{% endif %}">
-            <i data-lucide="sparkles" class="sidebar-icon"></i>
-            <span class="sidebar-label">For You</span>
-        </a>
-
         <!-- ── MY SPACE (student only) ── -->
         {% if role == 'student' %}
         <p class="sidebar-section">My Space</p>
+
+        <a href="{{ url_for('recommendations.index') }}"
+           class="sidebar-link {% if active=='recommendations' %}active-nav{% endif %}">
+            <i data-lucide="sparkles" class="sidebar-icon"></i>
+            <span class="sidebar-label">Recommended Events</span>
+        </a>
 
         <a href="{{ url_for('attendance.my_attendance') }}"
            class="sidebar-link {% if active=='attendance' %}active-nav{% endif %}">

@@ -6,7 +6,8 @@ from services.resource_service import (
     get_all_resources, get_resource_by_id,
     create_resource, update_resource, delete_resource,
     get_all_requests, get_requests_for_club,
-    create_request, approve_request, reject_request
+    create_request, approve_request, reject_request,
+    release_expired_allocations
 )
 from services.event_service import get_events_for_club, get_all_events
 from services.club_service import get_clubs_for_select
@@ -15,9 +16,22 @@ from services.log_service import log_action
 bp = Blueprint('resources', __name__, url_prefix='/resources')
 
 
+def _trigger_auto_release():
+    """Call on any resource-related page load. Silent — never breaks the page."""
+    try:
+        released = release_expired_allocations()
+        if released:
+            flash(f"{released} resource allocation(s) automatically returned after event end.", "info")
+    except Exception:
+        pass
+
+
+# ── Resource CRUD (Admin only) ─────────────────────────────────────────────────
+
 @bp.route('/')
 @login_required
 def list_resources():
+    _trigger_auto_release()
     resources = get_all_resources()
     user      = get_user_by_id(session['user_id'])
     return render_template('resources/list.html',
@@ -28,9 +42,9 @@ def list_resources():
 @admin_required
 def create():
     if request.method == 'POST':
-        name     = request.form.get('resource_name', '').strip()
-        qty      = request.form.get('total_quantity', 0)
-        desc     = request.form.get('description', '').strip()
+        name = request.form.get('resource_name', '').strip()
+        qty  = request.form.get('total_quantity', 0)
+        desc = request.form.get('description', '').strip()
         if not name:
             flash("Resource name required.", "danger")
         else:
@@ -82,17 +96,18 @@ def delete(resource_id):
     return redirect(url_for('resources.list_resources'))
 
 
-# ── Resource Request Workflow ─────────────────────────────────────────────────
+# ── Resource Request Workflow ──────────────────────────────────────────────────
 
 @bp.route('/requests')
 @admin_required
 def all_requests():
+    _trigger_auto_release()
     status   = request.args.get('status')
     requests = get_all_requests(status if status else None)
     user     = get_user_by_id(session['user_id'])
     return render_template('resources/requests.html',
                            requests=requests, status_filter=status,
-                           user=user, active='resources')
+                           user=user, active='resource_requests')
 
 
 @bp.route('/request', methods=['GET', 'POST'])
@@ -102,11 +117,11 @@ def submit_request():
     role    = session.get('role')
 
     if role == 'admin':
-        events    = get_all_events()
-        clubs     = get_clubs_for_select()
+        events = get_all_events()
+        clubs  = get_clubs_for_select()
     else:
-        events    = get_events_for_club(club_id)
-        clubs     = []
+        events = get_events_for_club(club_id)
+        clubs  = []
 
     resources = get_all_resources()
 
@@ -115,15 +130,25 @@ def submit_request():
         resource_id = request.form.get('resource_id', type=int)
         quantity    = request.form.get('quantity', type=int, default=1)
         reason      = request.form.get('reason', '').strip() or None
+        req_date    = request.form.get('required_date') or None
+        start_time  = request.form.get('req_start_time') or None
+        end_time    = request.form.get('req_end_time') or None
+        purpose     = request.form.get('purpose', '').strip() or None
+        remarks     = request.form.get('remarks', '').strip() or None
 
         req_club_id = club_id
         if role == 'admin':
             req_club_id = request.form.get('club_id', type=int)
 
         try:
-            rid = create_request(event_id, req_club_id, resource_id, quantity, session['user_id'], reason)
+            rid = create_request(
+                event_id, req_club_id, resource_id, quantity, session['user_id'],
+                reason=reason,
+                required_date=req_date, req_start_time=start_time,
+                req_end_time=end_time, purpose=purpose, remarks=remarks
+            )
             log_action(session['user_id'], 'REQUEST_RESOURCE', 'resource_request', rid)
-            flash("Resource request submitted!", "success")
+            flash("Resource request submitted! Awaiting admin approval.", "success")
             return redirect(url_for('resources.my_requests'))
         except ValueError as e:
             flash(str(e), "danger")
@@ -175,6 +200,7 @@ def my_requests():
         flash("Access denied.", "danger")
         return redirect(url_for('dashboard.index'))
 
+    _trigger_auto_release()
     reqs = get_requests_for_club(club_id)
     user = get_user_by_id(session['user_id'])
     return render_template('resources/my_requests.html',

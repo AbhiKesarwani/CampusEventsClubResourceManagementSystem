@@ -1,8 +1,71 @@
 # services/resource_service.py
+from datetime import datetime
 from database import get_db_connection
 
 
+def release_expired_allocations() -> int:
+    """
+    Check all Approved resource_requests where the associated event's
+    end_time + date have passed. Mark them Completed and reduce event_resources.
+    Called on dashboard / resource page loads — no cron needed.
+    Returns number of requests auto-released.
+    """
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor(dictionary=True)
+
+        # Find approved requests whose event has already ended
+        cur.execute("""
+            SELECT rr.request_id, rr.resource_id, rr.quantity,
+                   rr.event_id,
+                   e.date, e.end_time
+            FROM resource_requests rr
+            JOIN events e ON e.event_id = rr.event_id
+            WHERE rr.status = 'Approved'
+              AND rr.auto_released = 0
+              AND e.date IS NOT NULL
+              AND e.end_time IS NOT NULL
+              AND TIMESTAMP(e.date, e.end_time) < NOW()
+        """)
+        expired = cur.fetchall()
+        if not expired:
+            return 0
+
+        cur2 = conn.cursor()
+        for req in expired:
+            # Mark request completed
+            cur2.execute("""
+                UPDATE resource_requests
+                SET status='Completed', auto_released=1, updated_at=NOW()
+                WHERE request_id=%s
+            """, (req['request_id'],))
+
+            # Reduce event_resources (remove allocation)
+            cur2.execute("""
+                UPDATE event_resources
+                SET quantity = GREATEST(0, quantity - %s)
+                WHERE event_id=%s AND resource_id=%s
+            """, (req['quantity'], req['event_id'], req['resource_id']))
+
+            # Clean up zero-quantity rows
+            cur2.execute("""
+                DELETE FROM event_resources
+                WHERE event_id=%s AND resource_id=%s AND quantity <= 0
+            """, (req['event_id'], req['resource_id']))
+
+        conn.commit()
+        return len(expired)
+    except Exception:
+        if conn: conn.rollback()
+        return 0
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+
 # ── Resources ─────────────────────────────────────────────────────────────────
+
 
 def get_all_resources() -> list[dict]:
     conn = cur = None
@@ -166,7 +229,10 @@ def count_pending_requests() -> int:
 
 
 def create_request(event_id: int, club_id: int, resource_id: int,
-                   quantity: int, requested_by: int, reason: str = None) -> int:
+                   quantity: int, requested_by: int, reason: str = None,
+                   required_date=None, req_start_time=None,
+                   req_end_time=None, purpose: str = None,
+                   remarks: str = None) -> int:
     """Submit a resource request. Raises ValueError on over-allocation."""
     conn = cur = None
     try:
@@ -191,9 +257,11 @@ def create_request(event_id: int, club_id: int, resource_id: int,
         cur2 = conn.cursor()
         cur2.execute("""
             INSERT INTO resource_requests
-              (event_id, club_id, resource_id, quantity, requested_by, reason)
-            VALUES (%s,%s,%s,%s,%s,%s)
-        """, (event_id, club_id, resource_id, quantity, requested_by, reason))
+              (event_id, club_id, resource_id, quantity, requested_by,
+               reason, required_date, req_start_time, req_end_time, purpose, remarks)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (event_id, club_id, resource_id, quantity, requested_by,
+              reason, required_date, req_start_time, req_end_time, purpose, remarks))
         conn.commit()
         return cur2.lastrowid
     except Exception:

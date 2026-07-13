@@ -1,7 +1,7 @@
 # services/attendance_service.py
 import random
 import string
-from datetime import datetime
+from datetime import datetime, timedelta
 from database import get_db_connection
 
 
@@ -10,6 +10,124 @@ def _generate_code() -> str:
     letters = ''.join(random.choices(string.ascii_uppercase, k=3))
     digits  = ''.join(random.choices(string.digits, k=6))
     return f"{letters}-{digits}"
+
+
+def _generate_otp_digits() -> str:
+    """Generate a 6-digit numeric OTP."""
+    return f"{random.randint(0, 999999):06d}"
+
+
+def generate_otp(event_id: int) -> str:
+    """
+    Generate (or regenerate) a 6-digit numeric OTP for an event.
+    OTP expires 5 minutes after generation.
+    Stores in attendance_otp + otp_generated_at on the events table.
+    Returns the OTP string.
+    """
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor()
+        otp       = _generate_otp_digits()
+        generated = datetime.now()
+        cur.execute(
+            "UPDATE events SET attendance_otp=%s, otp_generated_at=%s WHERE event_id=%s",
+            (otp, generated, event_id)
+        )
+        conn.commit()
+        return otp
+    except Exception:
+        if conn: conn.rollback()
+        raise
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+
+def get_event_by_otp(otp: str) -> dict | None:
+    """
+    Look up an event by its 6-digit OTP.
+    Returns None if not found OR if OTP is older than 5 minutes.
+    """
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor(dictionary=True)
+        cur.execute(
+            "SELECT * FROM events WHERE attendance_otp = %s",
+            (otp.strip(),)
+        )
+        event = cur.fetchone()
+        if not event:
+            return None
+        # 5-minute expiry check
+        gen_at = event.get('otp_generated_at')
+        if gen_at:
+            if isinstance(gen_at, str):
+                try:
+                    gen_at = datetime.fromisoformat(gen_at)
+                except ValueError:
+                    gen_at = None
+            if gen_at and datetime.now() - gen_at > timedelta(minutes=5):
+                return None  # expired
+        return event
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+
+def submit_otp_self(otp: str, user_id: int) -> dict:
+    """
+    Student self-submits a 6-digit OTP.
+    Returns {success, message, event_title, cert_path (if issued)}
+    """
+    otp = otp.strip()
+    event = get_event_by_otp(otp)
+    if not event:
+        return {'success': False,
+                'message': 'Invalid or expired OTP. OTPs are valid for 5 minutes only.'}
+
+    is_new = mark_attendance(event['event_id'], user_id, scan_by=None)
+    if not is_new:
+        return {'success': False,
+                'message': 'You have already submitted attendance for this event.'}
+
+    # Auto-generate certificate
+    cert_path = None
+    try:
+        from services.certificate_service import issue_certificate
+        from services.user_service import get_user_by_id
+        student = get_user_by_id(user_id)
+        if student:
+            cert = issue_certificate(
+                event['event_id'], user_id,
+                student['name'], event['title']
+            )
+            cert_path = cert.get('cert_path') if cert else None
+    except Exception:
+        pass  # certificate failure must never block attendance
+
+    # Dedup notification to student
+    try:
+        from services.notification_service import create_notification_safe
+        create_notification_safe(
+            user_id=user_id,
+            title='Attendance Marked ✓',
+            body=f"Your attendance for '{event['title']}' has been recorded.",
+            link='/attendance/my',
+            type='attendance_marked',
+            event_key=f"att_{event['event_id']}_{user_id}"
+        )
+    except Exception:
+        pass
+
+    return {
+        'success':     True,
+        'message':     f"Attendance marked for \u201c{event['title']}\u201d!",
+        'event_title': event['title'],
+        'cert_path':   cert_path
+    }
+
 
 
 def generate_attendance_code(event_id: int) -> str:

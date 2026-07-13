@@ -1,9 +1,8 @@
 {% extends 'layout.html' %}
-{% block title %}Attendance Code — {{ event.title }}{% endblock %}
-{% block page_title %}Attendance{% endblock %}
+{% block title %}Attendance OTP — {{ event.title }}{% endblock %}
+{% block page_title %}Attendance OTP{% endblock %}
 
 {% block content %}
-{% set role = session.get('role', 'student') %}
 <div class="page-content anim-fade">
 
     <!-- Back -->
@@ -14,85 +13,95 @@
         Back to Event
     </a>
 
-    <!-- Page header -->
+    <!-- Header -->
     <div class="section-header mb-6">
         <div>
-            <h1 class="page-title">Attendance Management</h1>
+            <h1 class="page-title">Attendance OTP</h1>
             <p class="page-subtitle">{{ event.title }}</p>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
-            {% if code_active and event.attendance_code %}
+            {% if otp_active %}
             <span style="background:var(--emerald-dim);color:var(--emerald);font-size:0.72rem;font-weight:700;
                          padding:4px 12px;border-radius:20px;display:flex;align-items:center;gap:5px;">
                 <span style="width:6px;height:6px;background:var(--emerald);border-radius:50%;display:inline-block;animation:pulse 2s infinite;"></span>
-                Live
+                Live — <span id="countdown-text">{{ otp_seconds }}s</span>
             </span>
-            {% elif event.attendance_code %}
-            <span style="background:rgba(239,68,68,0.1);color:#ef4444;font-size:0.72rem;font-weight:700;
-                         padding:4px 12px;border-radius:20px;">
-                Expired
-            </span>
+            {% elif event.attendance_otp %}
+            <span style="background:rgba(239,68,68,0.1);color:#ef4444;font-size:0.72rem;font-weight:700;padding:4px 12px;border-radius:20px;">Expired</span>
+            {% else %}
+            <span style="background:var(--bg-hover);color:var(--text-muted);font-size:0.72rem;font-weight:700;padding:4px 12px;border-radius:20px;">No OTP</span>
             {% endif %}
         </div>
     </div>
 
-    <!-- Top grid: Code card + Stats -->
+    <!-- Top grid -->
     <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px;margin-bottom:20px;">
 
-        <!-- Attendance Code Card -->
+        <!-- OTP Card -->
         <div class="card p-6">
-            <p style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;
-                      letter-spacing:0.08em;margin-bottom:10px;">Attendance Code</p>
+            <p style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">
+                6-Digit Attendance OTP
+            </p>
 
-            {% if event.attendance_code %}
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-                <div id="code-display"
-                     style="font-family:monospace;font-size:2.2rem;font-weight:900;
-                            letter-spacing:0.15em;color:{{ 'var(--emerald)' if code_active else 'var(--text-subtle)' }};
-                            background:var(--bg-hover);padding:14px 24px;border-radius:var(--radius-lg);
-                            border:2px solid {{ 'rgba(16,185,129,0.25)' if code_active else 'var(--border-muted)' }};
-                            user-select:all;line-height:1;">
-                    {{ event.attendance_code }}
+            {% if event.attendance_otp %}
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+                <!-- OTP Display -->
+                <div id="otp-display"
+                     style="font-family:monospace;font-size:3rem;font-weight:900;letter-spacing:0.25em;
+                            color:{{ 'var(--emerald)' if otp_active else 'var(--text-subtle)' }};
+                            background:var(--bg-hover);padding:16px 28px;border-radius:var(--radius-lg);
+                            border:2px solid {{ 'rgba(16,185,129,0.35)' if otp_active else 'var(--border-muted)' }};
+                            line-height:1;user-select:all;position:relative;">
+                    {{ event.attendance_otp }}
                 </div>
-                <button onclick="copyCode('{{ event.attendance_code }}')" id="copy-btn"
-                        style="background:var(--bg-hover);border:1px solid var(--border);color:var(--text-muted);
-                               border-radius:var(--radius);padding:10px 14px;cursor:pointer;
-                               display:flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:600;
-                               transition:all 0.2s;" title="Copy code">
-                    <i data-lucide="copy" style="width:13px;height:13px;"></i>
-                    Copy
-                </button>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <button onclick="copyOTP('{{ event.attendance_otp }}')" id="copy-btn"
+                            style="background:var(--bg-hover);border:1px solid var(--border);color:var(--text-muted);
+                                   border-radius:var(--radius);padding:9px 14px;cursor:pointer;
+                                   display:flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:600;
+                                   transition:all 0.2s;">
+                        <i data-lucide="copy" style="width:13px;height:13px;"></i>
+                        Copy
+                    </button>
+                    {% if otp_active %}
+                    <div id="countdown-ring" style="text-align:center;font-size:0.7rem;color:var(--text-subtle);">
+                        <span id="countdown-sec">{{ otp_seconds }}</span>s left
+                    </div>
+                    {% endif %}
+                </div>
             </div>
 
-            {% if event.code_expires_at %}
-            <p style="font-size:0.75rem;color:var(--text-subtle);margin-bottom:16px;display:flex;align-items:center;gap:5px;">
-                <i data-lucide="clock" style="width:11px;height:11px;"></i>
-                Expires:
-                <strong style="color:{{ 'var(--emerald)' if code_active else '#ef4444' }};">
-                    {{ event.code_expires_at.strftime('%b %d, %Y at %I:%M %p') if event.code_expires_at.strftime is defined else event.code_expires_at }}
-                </strong>
-            </p>
+            {% if otp_active %}
+            <div style="background:var(--emerald-dim);border:1px solid rgba(16,185,129,0.2);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:0.78rem;color:rgba(110,231,183,0.9);display:flex;align-items:center;gap:8px;">
+                <i data-lucide="info" style="width:13px;height:13px;flex-shrink:0;"></i>
+                OTP is valid for <strong>{{ otp_expiry_minutes }} minutes</strong> from generation. Share with students now.
+            </div>
+            {% else %}
+            <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:0.78rem;color:#fca5a5;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="alert-circle" style="width:13px;height:13px;flex-shrink:0;"></i>
+                This OTP has expired. Regenerate to allow new submissions.
+            </div>
             {% endif %}
 
             {% else %}
-            <p style="font-size:0.85rem;color:var(--text-subtle);margin-bottom:16px;">No code generated yet.</p>
+            <p style="font-size:0.85rem;color:var(--text-subtle);margin-bottom:16px;">No OTP generated yet. Click below to create one.</p>
             {% endif %}
 
-            <!-- Code actions -->
+            <!-- Actions -->
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <form method="POST" action="{{ url_for('attendance.regenerate_code', event_id=event.event_id) }}" style="display:inline;">
+                <form method="POST" action="{{ url_for('attendance.generate_event_otp', event_id=event.event_id) }}" style="display:inline;">
                     <button type="submit" class="btn btn-primary btn-sm">
                         <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i>
-                        Regenerate
+                        {{ 'Regenerate OTP' if event.attendance_otp else 'Generate OTP' }}
                     </button>
                 </form>
-                {% if code_active and event.attendance_code %}
+                {% if otp_active %}
                 <form method="POST" action="{{ url_for('attendance.expire_code', event_id=event.event_id) }}"
-                      onsubmit="return confirm('Expire this code? Students will no longer be able to submit attendance.');"
+                      onsubmit="return confirm('Expire this OTP? Students will no longer be able to submit.');"
                       style="display:inline;">
                     <button type="submit" class="btn btn-danger btn-sm">
                         <i data-lucide="ban" style="width:12px;height:12px;"></i>
-                        Expire Code
+                        Expire OTP
                     </button>
                 </form>
                 {% endif %}
@@ -103,20 +112,16 @@
             </div>
         </div>
 
-        <!-- Stats card -->
+        <!-- Stats -->
         <div class="card p-6">
-            <p style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;">
-                Attendance Stats
-            </p>
-            <div style="display:flex;flex-direction:column;gap:12px;">
+            <p style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;">Stats</p>
+            <div style="display:flex;flex-direction:column;gap:10px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-hover);border-radius:var(--radius);">
                     <span style="font-size:0.8rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
                         <i data-lucide="users" style="width:13px;height:13px;color:var(--emerald);"></i>
                         Present
                     </span>
-                    <span style="font-size:1.4rem;font-weight:900;color:var(--emerald);">
-                        {{ attendance_records|length }}
-                    </span>
+                    <span style="font-size:1.6rem;font-weight:900;color:var(--emerald);">{{ attendance_records|length }}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-hover);border-radius:var(--radius);">
                     <span style="font-size:0.8rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
@@ -131,54 +136,49 @@
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-hover);border-radius:var(--radius);">
                     <span style="font-size:0.8rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
                         <i data-lucide="clock" style="width:13px;height:13px;color:var(--amber);"></i>
-                        Start Time
+                        Time
                     </span>
-                    <span style="font-size:0.85rem;font-weight:700;color:var(--text);">
-                        {{ event.start_time }}
-                    </span>
+                    <span style="font-size:0.85rem;font-weight:700;color:var(--text);">{{ event.start_time }}{% if event.end_time %} – {{ event.end_time }}{% endif %}</span>
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Attendance List -->
+    <!-- Attendees Table -->
     <div class="card p-5">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
             <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;display:flex;align-items:center;gap:6px;">
                 <i data-lucide="list-checks" style="width:14px;height:14px;color:var(--emerald);"></i>
                 Attendees ({{ attendance_records|length }})
             </h2>
-            <!-- Search -->
             <div style="position:relative;">
                 <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text-subtle);pointer-events:none;"></i>
-                <input type="text" id="attendee-search" placeholder="Search by name or email…"
+                <input type="text" id="attendee-search" placeholder="Search name or email…"
                        oninput="filterAttendees(this.value)"
                        style="padding:7px 12px 7px 30px;background:var(--bg-hover);border:1px solid var(--border);
                               border-radius:var(--radius);color:var(--text);font-size:0.78rem;outline:none;
                               transition:border-color 0.2s;width:220px;"
-                       onfocus="this.style.borderColor='var(--emerald)'"
-                       onblur="this.style.borderColor='var(--border)'">
+                       onfocus="this.style.borderColor='var(--emerald)'" onblur="this.style.borderColor='var(--border)'">
             </div>
         </div>
 
         {% if attendance_records %}
         <div style="overflow-x:auto;">
-            <table style="width:100%;border-collapse:collapse;" id="attendees-table">
+            <table style="width:100%;border-collapse:collapse;">
                 <thead>
                     <tr style="border-bottom:1px solid var(--border-muted);">
-                        <th style="text-align:left;padding:8px 12px;font-size:0.7rem;font-weight:700;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.06em;">#</th>
-                        <th style="text-align:left;padding:8px 12px;font-size:0.7rem;font-weight:700;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.06em;">Name</th>
-                        <th style="text-align:left;padding:8px 12px;font-size:0.7rem;font-weight:700;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.06em;">Email</th>
-                        <th style="text-align:left;padding:8px 12px;font-size:0.7rem;font-weight:700;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.06em;">Time</th>
+                        <th style="text-align:left;padding:8px 12px;font-size:0.7rem;font-weight:700;color:var(--text-subtle);text-transform:uppercase;">#</th>
+                        <th style="text-align:left;padding:8px 12px;font-size:0.7rem;font-weight:700;color:var(--text-subtle);text-transform:uppercase;">Name</th>
+                        <th style="text-align:left;padding:8px 12px;font-size:0.7rem;font-weight:700;color:var(--text-subtle);text-transform:uppercase;">Email</th>
+                        <th style="text-align:left;padding:8px 12px;font-size:0.7rem;font-weight:700;color:var(--text-subtle);text-transform:uppercase;">Time</th>
                     </tr>
                 </thead>
-                <tbody id="attendees-body">
+                <tbody>
                     {% for rec in attendance_records %}
                     <tr class="attendee-row" data-name="{{ rec.name|lower }}" data-email="{{ rec.email|lower }}"
                         style="border-bottom:1px solid var(--border-muted);transition:background 0.15s;"
-                        onmouseover="this.style.background='var(--bg-hover)'"
-                        onmouseout="this.style.background=''">
+                        onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
                         <td style="padding:10px 12px;font-size:0.75rem;color:var(--text-subtle);">{{ loop.index }}</td>
                         <td style="padding:10px 12px;">
                             <div style="display:flex;align-items:center;gap:8px;">
@@ -203,7 +203,7 @@
         <div style="text-align:center;padding:32px 0;">
             <i data-lucide="users" style="width:32px;height:32px;color:var(--text-subtle);display:block;margin:0 auto 10px;"></i>
             <p style="font-size:0.85rem;color:var(--text-subtle);">No attendance records yet.</p>
-            <p style="font-size:0.75rem;color:var(--text-subtle);margin-top:4px;">Share the code above with students to start tracking.</p>
+            <p style="font-size:0.75rem;color:var(--text-subtle);margin-top:4px;">Generate an OTP and share it with students.</p>
         </div>
         {% endif %}
     </div>
@@ -213,39 +213,59 @@
 
 {% block scripts %}
 <style>
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.4; }
-}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 </style>
 <script>
-function copyCode(code) {
-    navigator.clipboard.writeText(code).then(() => {
+// ── OTP Countdown ──
+{% if otp_active and otp_seconds > 0 %}
+(function() {
+    let secs = {{ otp_seconds }};
+    const secEl  = document.getElementById('countdown-sec');
+    const textEl = document.getElementById('countdown-text');
+    const disp   = document.getElementById('otp-display');
+
+    function tick() {
+        secs--;
+        if (secs <= 0) {
+            if (secEl)  secEl.textContent  = '0';
+            if (textEl) textEl.textContent  = 'Expired';
+            if (disp) {
+                disp.style.color       = 'var(--text-subtle)';
+                disp.style.borderColor = 'var(--border-muted)';
+            }
+            return;
+        }
+        if (secEl)  secEl.textContent  = secs;
+        if (textEl) textEl.textContent = secs + 's';
+        // turn red in last 60s
+        if (disp && secs < 60) disp.style.color = '#ef4444';
+        setTimeout(tick, 1000);
+    }
+    setTimeout(tick, 1000);
+})();
+{% endif %}
+
+// ── Copy OTP ──
+function copyOTP(otp) {
+    navigator.clipboard.writeText(otp).then(() => {
         const btn = document.getElementById('copy-btn');
         btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
-        btn.style.color    = 'var(--emerald)';
+        btn.style.color = 'var(--emerald)';
         btn.style.borderColor = 'rgba(16,185,129,0.4)';
         setTimeout(() => {
             btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy';
-            btn.style.color    = 'var(--text-muted)';
+            btn.style.color = 'var(--text-muted)';
             btn.style.borderColor = 'var(--border)';
         }, 2000);
-    }).catch(() => {
-        // Fallback
-        const el = document.getElementById('code-display');
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
     });
 }
 
-function filterAttendees(query) {
-    const q = query.toLowerCase();
+// ── Search ──
+function filterAttendees(q) {
+    q = q.toLowerCase();
     document.querySelectorAll('.attendee-row').forEach(row => {
-        const name  = row.dataset.name  || '';
-        const email = row.dataset.email || '';
-        row.style.display = (name.includes(q) || email.includes(q)) ? '' : 'none';
+        const match = row.dataset.name.includes(q) || row.dataset.email.includes(q);
+        row.style.display = match ? '' : 'none';
     });
 }
 </script>
