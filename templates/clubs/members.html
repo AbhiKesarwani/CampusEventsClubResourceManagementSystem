@@ -12,15 +12,17 @@
             <i data-lucide="arrow-left" class="w-5 h-5"></i>
         </a>
         <div>
-            <h1 class="text-2xl font-extrabold text-white text-white">{{ club.club_name }}</h1>
+            <h1 class="text-2xl font-extrabold text-white">{{ club.club_name }}</h1>
             <p class="text-sm text-gray-500 mt-0.5">{{ members|length }} member{{ 's' if members|length != 1 }}</p>
         </div>
         {% if can_manage %}
-        <a href="{{ url_for('clubs.membership_requests', club_id=club.club_id) }}"
-           class="btn-secondary ml-auto">
-            <i data-lucide="inbox" class="w-4 h-4"></i>
-            Join Requests
-        </a>
+        <div class="ml-auto flex gap-2">
+            <a href="{{ url_for('clubs.edit', club_id=club.club_id) }}"
+               class="btn btn-secondary btn-sm">
+                <i data-lucide="pencil" style="width:14px;height:14px;"></i>
+                Edit Club
+            </a>
+        </div>
         {% endif %}
     </div>
 
@@ -137,9 +139,18 @@
     {% endif %}
 
     {% if not members %}
-    <div class="text-center py-16">
-        <i data-lucide="users" class="w-12 h-12 text-slate-300 mx-auto mb-3"></i>
-        <p class="text-gray-500 font-medium">No members yet</p>
+    <div class="card" style="padding:60px 24px;text-align:center;">
+        <div class="empty-state-icon" style="margin:0 auto 16px;background:var(--emerald-dim);">
+            <i data-lucide="users" style="width:28px;height:28px;color:var(--emerald);"></i>
+        </div>
+        <h3 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px;">No members yet</h3>
+        <p style="font-size:0.83rem;color:var(--text-subtle);max-width:300px;margin:0 auto 16px;">
+            {% if can_manage %}
+            Use the form below to add registered students as members.
+            {% else %}
+            This club doesn't have any members listed yet.
+            {% endif %}
+        </p>
     </div>
     {% endif %}
 

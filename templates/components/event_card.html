@@ -2,10 +2,11 @@
   templates/components/event_card.html
 
   Variables expected:
-    event  — event dict (event_id, title, club_name, venue_name, date, description, first_image, registration_link)
+    event  — event dict (event_id, title, club_name, venue_name, date, description, first_image, registration_link, club_id, coordinator_name)
 #}
 
 {% set role = session.get('role', 'student') %}
+{% set club_id = session.get('club_id') %}
 
 <div class="club-card card-hover">
 
@@ -62,6 +63,12 @@
                 {{ event.start_time }}
             </p>
             {% endif %}
+            {% if event.coordinator_name %}
+            <p style="font-size:0.73rem;color:var(--text-subtle);margin:0;display:flex;align-items:center;gap:4px;">
+                <i data-lucide="user-check" style="width:11px;height:11px;flex-shrink:0;"></i>
+                {{ event.coordinator_name }}
+            </p>
+            {% endif %}
         </div>
 
         {# Description #}
@@ -87,7 +94,7 @@
             </a>
             {% endif %}
 
-            {% if role in ('admin', 'club_admin') %}
+            {% if role == 'admin' or (role == 'club_admin' and event.club_id == club_id) %}
             <a href="{{ url_for('events.edit', event_id=event.event_id) }}"
                class="btn btn-amber btn-sm">
                 <i data-lucide="pencil" style="width:12px;height:12px;"></i>

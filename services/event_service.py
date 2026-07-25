@@ -5,8 +5,10 @@ from database import get_db_connection
 # ── List / Fetch ─────────────────────────────────────────────────────────────
 
 def get_all_events(club_id=None, venue_id=None, date_from=None,
-                   date_to=None, upcoming=False, past=False) -> list[dict]:
-    """Fetch events with optional filters."""
+                   date_to=None, upcoming=False, past=False,
+                   search=None, status=None,
+                   page=None, per_page=12) -> list[dict]:
+    """Fetch events with optional filters, search, and pagination."""
     conn = cur = None
     try:
         conn = get_db_connection()
@@ -33,16 +35,77 @@ def get_all_events(club_id=None, venue_id=None, date_from=None,
         if date_to:
             query += " AND e.date <= %s"
             params.append(date_to)
-        if upcoming:
-            query += " AND e.date >= CURDATE()"
-        if past:
+        # status param takes priority over individual upcoming/past flags
+        if status == 'upcoming':
+            query += " AND e.date > CURDATE()"
+        elif status == 'ongoing':
+            query += " AND e.date = CURDATE()"
+        elif status == 'past':
             query += " AND e.date < CURDATE()"
-        query += " ORDER BY e.date ASC"
+        else:
+            # legacy flag support
+            if upcoming:
+                query += " AND e.date >= CURDATE()"
+            if past:
+                query += " AND e.date < CURDATE()"
+        if search:
+            query += " AND e.title LIKE %s"
+            params.append(f"%{search}%")
+        query += " ORDER BY e.created_at DESC, e.date DESC"
+        if page is not None:
+            offset = (page - 1) * per_page
+            query += " LIMIT %s OFFSET %s"
+            params.extend([per_page, offset])
         cur.execute(query, params)
         return cur.fetchall()
     finally:
         if cur: cur.close()
         if conn: conn.close()
+
+
+def count_all_events(club_id=None, venue_id=None, date_from=None,
+                     date_to=None, upcoming=False, past=False,
+                     search=None, status=None) -> int:
+    """Count events matching filters (for pagination)."""
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor()
+        query = "SELECT COUNT(*) FROM events e WHERE 1=1"
+        params = []
+        if club_id:
+            query += " AND e.club_id = %s"
+            params.append(club_id)
+        if venue_id:
+            query += " AND e.venue_id = %s"
+            params.append(venue_id)
+        if date_from:
+            query += " AND e.date >= %s"
+            params.append(date_from)
+        if date_to:
+            query += " AND e.date <= %s"
+            params.append(date_to)
+        if status == 'upcoming':
+            query += " AND e.date > CURDATE()"
+        elif status == 'ongoing':
+            query += " AND e.date = CURDATE()"
+        elif status == 'past':
+            query += " AND e.date < CURDATE()"
+        else:
+            if upcoming:
+                query += " AND e.date >= CURDATE()"
+            if past:
+                query += " AND e.date < CURDATE()"
+        if search:
+            query += " AND e.title LIKE %s"
+            params.append(f"%{search}%")
+        cur.execute(query, params)
+        row = cur.fetchone()
+        return row[0] if row else 0
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
 
 
 def get_event_by_id(event_id: int) -> dict | None:

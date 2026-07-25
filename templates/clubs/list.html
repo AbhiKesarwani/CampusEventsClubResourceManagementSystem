@@ -10,7 +10,11 @@
     <div class="section-header mb-6">
         <div>
             <h1 class="page-title">All Clubs</h1>
-            <p class="page-subtitle">{{ clubs|length }} club{{ 's' if clubs|length != 1 else '' }} available</p>
+            <p class="page-subtitle">
+                {{ total if total is defined else clubs|length }} club{{ 's' if (total if total is defined else clubs|length) != 1 else '' }}
+                {% if filters.search %}&nbsp;·&nbsp;matching "<strong>{{ filters.search }}</strong>"{% endif %}
+                {% if total_pages is defined and total_pages > 1 %}&nbsp;·&nbsp;page {{ page }} of {{ total_pages }}{% endif %}
+            </p>
         </div>
         {% if role == 'admin' %}
         <a href="{{ url_for('clubs.create') }}" class="btn btn-primary">
@@ -20,35 +24,22 @@
         {% endif %}
     </div>
 
-    <!-- Filter Bar -->
-    <form method="GET" action="{{ url_for('clubs.list_clubs') }}"
-          class="card p-4 mb-6" style="border-radius:var(--radius-lg);">
-        <div class="flex flex-wrap gap-4 items-end">
-            <div class="form-group" style="margin:0;min-width:180px;flex:1;">
-                <label class="form-label">Coordinator</label>
-                <select name="coordinator_id" class="form-input">
-                    <option value="">All Coordinators</option>
-                    {% for coord in coordinators %}
-                    <option value="{{ coord.user_id }}" {% if filters.coordinator_id == coord.user_id %}selected{% endif %}>
-                        {{ coord.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
+    <!-- Search Bar (standalone — filters removed per spec) -->
+    <form method="GET" action="{{ url_for('clubs.list_clubs') }}" id="club-filter-form"
+          style="margin-bottom:20px;">
 
-            <div class="flex items-center gap-3 pb-1">
-                <label class="flex items-center gap-2 cursor-pointer text-sm" style="color:var(--text-muted);">
-                    <input type="checkbox" name="has_events" value="1"
-                           {% if filters.has_events %}checked{% endif %}
-                           style="accent-color:var(--emerald);width:15px;height:15px;">
-                    Has Active Events
-                </label>
-            </div>
-
-            <div class="flex gap-2 pb-1">
-                <a href="{{ url_for('clubs.list_clubs') }}" class="btn btn-secondary btn-sm">Clear</a>
-                <button type="submit" class="btn btn-primary btn-sm">Apply Filters</button>
-            </div>
+        <div class="search-bar-wrap" style="max-width:100%;flex:none;">
+            <i data-lucide="search" class="search-bar-icon"></i>
+            <input type="text" name="search" id="club-search"
+                   class="search-bar-input"
+                   placeholder="Search clubs..."
+                   value="{{ filters.search or '' }}"
+                   autocomplete="off">
+            <button type="button" class="search-bar-clear" id="club-search-clear"
+                    onclick="clearClubSearch()" title="Clear search"
+                    style="display:{% if filters.search %}flex{% else %}none{% endif %}">
+                <i data-lucide="x" style="width:13px;height:13px;"></i>
+            </button>
         </div>
     </form>
 
@@ -73,6 +64,22 @@
                     </div>
                 </div>
                 {% endif %}
+
+                {# Member count badge #}
+                {% if c.member_count is defined %}
+                <div style="position:absolute;top:10px;left:10px;background:rgba(11,15,20,0.85);border:1px solid var(--border);backdrop-filter:blur(6px);padding:3px 8px;border-radius:12px;display:flex;align-items:center;gap:4px;">
+                    <i data-lucide="users" style="width:10px;height:10px;color:var(--emerald);"></i>
+                    <span style="font-size:0.63rem;font-weight:700;color:var(--text);">{{ c.member_count or 0 }} member{{ 's' if (c.member_count or 0) != 1 else '' }}</span>
+                </div>
+                {% endif %}
+
+                {# Event count badge #}
+                {% if c.event_count %}
+                <div style="position:absolute;top:10px;right:10px;background:rgba(16,185,129,0.9);backdrop-filter:blur(6px);padding:3px 8px;border-radius:12px;display:flex;align-items:center;gap:4px;">
+                    <i data-lucide="calendar" style="width:10px;height:10px;color:white;"></i>
+                    <span style="font-size:0.63rem;font-weight:700;color:white;">{{ c.event_count }} event{{ 's' if c.event_count != 1 else '' }}</span>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Card Body -->
@@ -95,21 +102,13 @@
                 </p>
                 {% endif %}
 
-                <!-- Stats Row -->
-                <div class="club-card-stats">
-                    {% if c.member_count is defined %}
-                    <span class="club-card-stat">
-                        <i data-lucide="users" style="width:11px;height:11px;color:var(--text-subtle);"></i>
-                        {{ c.member_count or 0 }} member{{ 's' if (c.member_count or 0) != 1 else '' }}
-                    </span>
-                    {% endif %}
-                    {% if c.event_count %}
-                    <span class="club-card-stat" style="color:var(--emerald);">
-                        <i data-lucide="calendar" style="width:11px;height:11px;"></i>
-                        {{ c.event_count }} event{{ 's' if c.event_count != 1 else '' }}
-                    </span>
-                    {% endif %}
-                </div>
+                <!-- Upcoming events indicator -->
+                {% if c.upcoming_event_count is defined and c.upcoming_event_count %}
+                <p style="font-size:0.72rem;color:var(--text-subtle);display:flex;align-items:center;gap:4px;margin:0;">
+                    <i data-lucide="zap" style="width:10px;height:10px;color:var(--amber);"></i>
+                    {{ c.upcoming_event_count }} upcoming event{{ 's' if c.upcoming_event_count != 1 else '' }}
+                </p>
+                {% endif %}
 
                 <!-- Description -->
                 <p class="line-clamp-2" style="font-size:0.78rem;color:var(--text-subtle);margin:0;flex:1;">
@@ -124,25 +123,26 @@
                         View
                     </a>
 
-                    {% if role == 'student' %}
-                    <a href="{{ url_for('clubs.detail', club_id=c.club_id) }}#join"
-                       class="btn btn-secondary btn-sm flex-1 justify-center">
-                        <i data-lucide="user-plus" style="width:12px;height:12px;"></i>
-                        Join
+                    <a href="{{ url_for('clubs.detail', club_id=c.club_id) }}#gallery"
+                       class="btn btn-secondary btn-sm btn-icon" title="Gallery">
+                        <i data-lucide="image" style="width:12px;height:12px;"></i>
                     </a>
-                    {% endif %}
+
+                    <a href="{{ url_for('clubs.download_gallery_zip', club_id=c.club_id) }}"
+                       class="btn btn-secondary btn-sm btn-icon" title="Download Images">
+                        <i data-lucide="download" style="width:12px;height:12px;"></i>
+                    </a>
 
                     {% if role == 'admin' or (role == 'club_admin' and session.get('club_id') == c.club_id) %}
                     <a href="{{ url_for('clubs.edit', club_id=c.club_id) }}"
-                       class="btn btn-amber btn-sm">
+                       class="btn btn-amber btn-sm btn-icon" title="Edit Club">
                         <i data-lucide="pencil" style="width:12px;height:12px;"></i>
-                        Edit
                     </a>
                     {% endif %}
 
                     {% if role == 'admin' %}
                     <form method="POST" action="{{ url_for('clubs.delete', club_id=c.club_id) }}"
-                          onsubmit="return confirm('Delete {{ c.club_name|replace("'","\\'")|safe }}? This cannot be undone.');">
+                          onsubmit="return confirm('Delete {{ c.club_name|replace("'","\\'") }}? This cannot be undone.');">
                         <button type="submit" class="btn btn-danger btn-sm btn-icon">
                             <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
                         </button>
@@ -155,14 +155,26 @@
         {% endfor %}
     </div>
 
+    <!-- Pagination -->
+    {% if total_pages is defined and total_pages > 1 %}
+    {% include 'components/pagination.html' %}
+    {% endif %}
+
     {% else %}
     <!-- Empty State -->
     <div class="card p-16 text-center">
         <div class="empty-state-icon mx-auto mb-4">
             <i data-lucide="users" style="width:24px;height:24px;"></i>
         </div>
-        <p style="font-size:1rem;font-weight:700;color:var(--text);">No clubs found</p>
-        <p class="text-sm mt-1">Try adjusting your filters or check back later.</p>
+        <p style="font-size:1rem;font-weight:700;color:var(--text);">
+            {% if filters.search %}No clubs match "{{ filters.search }}"{% else %}No clubs found{% endif %}
+        </p>
+        <p class="text-sm mt-1">
+            {% if filters.search %}Try a different search term.{% else %}Check back later.{% endif %}
+        </p>
+        {% if filters.search %}
+        <a href="{{ url_for('clubs.list_clubs') }}" class="btn btn-secondary mt-4">Clear Search</a>
+        {% endif %}
         {% if role == 'admin' %}
         <a href="{{ url_for('clubs.create') }}" class="btn btn-primary mt-4">
             <i data-lucide="plus" style="width:14px;height:14px;"></i>
@@ -171,6 +183,7 @@
         {% endif %}
     </div>
     {% endif %}
+
 
 </div>
 {% endblock %}
@@ -184,5 +197,33 @@ document.querySelectorAll('.club-card').forEach(card => {
     card.addEventListener('mouseenter', () => img.style.transform = 'scale(1.06)');
     card.addEventListener('mouseleave', () => img.style.transform = 'scale(1)');
 });
+
+// Debounced search
+const clubSearch = document.getElementById('club-search');
+const clubClearBtn = document.getElementById('club-search-clear');
+
+function updateClubClear() {
+    if (clubClearBtn) clubClearBtn.style.display = clubSearch.value ? 'flex' : 'none';
+}
+
+if (clubSearch) {
+    updateClubClear();
+    let debounceTimer;
+    clubSearch.addEventListener('input', () => {
+        updateClubClear();
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            document.getElementById('club-filter-form').submit();
+        }, 450);
+    });
+}
+
+function clearClubSearch() {
+    if (clubSearch) {
+        clubSearch.value = '';
+        updateClubClear();
+        document.getElementById('club-filter-form').submit();
+    }
+}
 </script>
 {% endblock %}

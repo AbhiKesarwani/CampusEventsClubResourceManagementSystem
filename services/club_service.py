@@ -2,26 +2,63 @@
 from database import get_db_connection
 
 
-def get_all_clubs() -> list[dict]:
+def get_all_clubs(search=None, coordinator_id=None, has_events=None) -> list[dict]:
     conn = cur = None
     try:
         conn = get_db_connection()
         cur  = conn.cursor(dictionary=True)
-        cur.execute("""
+        query = """
             SELECT c.*,
                    u.name AS coordinator_name,
                    (SELECT img_path FROM club_images
                     WHERE club_id = c.club_id ORDER BY img_id ASC LIMIT 1) AS first_image,
                    (SELECT COUNT(*) FROM events e WHERE e.club_id = c.club_id) AS event_count,
+                   (SELECT COUNT(*) FROM events e WHERE e.club_id = c.club_id AND e.date >= CURDATE()) AS upcoming_event_count,
                    (SELECT COUNT(*) FROM club_members m WHERE m.club_id = c.club_id) AS member_count
             FROM clubs c
             LEFT JOIN users u ON c.coordinator_id = u.user_id
-            ORDER BY c.club_name ASC
-        """)
+            WHERE 1=1
+        """
+        params = []
+        if search:
+            query += " AND c.club_name LIKE %s"
+            params.append(f"%{search}%")
+        if coordinator_id:
+            query += " AND c.coordinator_id = %s"
+            params.append(coordinator_id)
+        if has_events:
+            query += " AND (SELECT COUNT(*) FROM events e WHERE e.club_id = c.club_id) > 0"
+        query += " ORDER BY c.club_name ASC"
+        cur.execute(query, params)
         return cur.fetchall()
     finally:
         if cur: cur.close()
         if conn: conn.close()
+
+
+def count_all_clubs(search=None, coordinator_id=None, has_events=None) -> int:
+    """Count clubs matching optional filters (for pagination)."""
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor()
+        query = "SELECT COUNT(*) FROM clubs c WHERE 1=1"
+        params = []
+        if search:
+            query += " AND c.club_name LIKE %s"
+            params.append(f"%{search}%")
+        if coordinator_id:
+            query += " AND c.coordinator_id = %s"
+            params.append(coordinator_id)
+        if has_events:
+            query += " AND (SELECT COUNT(*) FROM events e WHERE e.club_id = c.club_id) > 0"
+        cur.execute(query, params)
+        row = cur.fetchone()
+        return row[0] if row else 0
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
 
 
 def get_club_by_id(club_id: int) -> dict | None:

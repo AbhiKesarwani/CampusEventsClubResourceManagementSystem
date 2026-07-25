@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
-{% block title %}Events — CECRMS{% endblock %}
-{% block page_title %}Events{% endblock %}
+{% block title %}{{ 'My Events' if my_events_view else 'Events' }} — CECRMS{% endblock %}
+{% block page_title %}{{ 'My Events' if my_events_view else 'Events' }}{% endblock %}
 
 {% block content %}
 {% set role = session.get('role', 'student') %}
@@ -9,77 +9,106 @@
     <!-- Header -->
     <div class="section-header mb-6">
         <div>
-            <h1 class="page-title">All Events</h1>
-            <p class="page-subtitle">{{ events|length }} event{{ 's' if events|length != 1 else '' }}</p>
+            <h1 class="page-title">
+                {% if my_events_view %}
+                    <span style="color:var(--emerald);">My</span> Events
+                {% else %}
+                    All Events
+                {% endif %}
+            </h1>
+            <p class="page-subtitle">
+                <i data-lucide="calendar-days" style="width:13px;height:13px;"></i>
+                {% if total is defined %}
+                    {{ total }} event{{ 's' if total != 1 else '' }}
+                    {% if filters.search %}&nbsp;·&nbsp;matching "<strong>{{ filters.search }}</strong>"{% endif %}
+                    {% if total_pages > 1 %}&nbsp;·&nbsp;page {{ page }} of {{ total_pages }}{% endif %}
+                {% else %}
+                    {{ events|length }} event{{ 's' if events|length != 1 else '' }}
+                {% endif %}
+                {% if my_events_view %}
+                    &nbsp;·&nbsp;
+                    <a href="{{ url_for('events.list_events') }}"
+                       style="color:var(--emerald);font-size:0.78rem;">View all campus events →</a>
+                {% endif %}
+            </p>
         </div>
-        {% if role in ('admin', 'club_admin') %}
-        <a href="{{ url_for('events.create') }}" class="btn btn-primary">
-            <i data-lucide="plus" style="width:14px;height:14px;"></i>
-            Create Event
-        </a>
-        {% endif %}
+        <div style="display:flex;gap:8px;align-items:center;">
+            {% if not my_events_view and role == 'club_admin' %}
+            <a href="{{ url_for('events.my_events') }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="calendar-check" style="width:13px;height:13px;"></i>
+                My Events
+            </a>
+            {% endif %}
+            {% if role in ('admin', 'club_admin') %}
+            <a href="{{ url_for('events.create') }}" class="btn btn-primary">
+                <i data-lucide="plus" style="width:14px;height:14px;"></i>
+                Create Event
+            </a>
+            {% endif %}
+        </div>
     </div>
 
-    <!-- Filter Bar -->
-    <form method="GET" action="{{ url_for('events.list_events') }}"
-          class="card p-4 mb-6">
-        <div class="flex flex-wrap gap-4 items-end">
-
-            {% if role == 'admin' %}
-            <div class="form-group" style="margin:0;min-width:140px;flex:1;">
-                <label class="form-label">Club</label>
-                <select name="club_id" class="form-input">
-                    <option value="">All Clubs</option>
-                    {% for c in clubs %}
-                    <option value="{{ c.club_id }}" {% if filters.club_id==c.club_id %}selected{% endif %}>
-                        {{ c.club_name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            {% endif %}
-
-            <div class="form-group" style="margin:0;min-width:140px;flex:1;">
-                <label class="form-label">Venue</label>
-                <select name="venue_id" class="form-input">
-                    <option value="">All Venues</option>
-                    {% for v in venues %}
-                    <option value="{{ v.venue_id }}" {% if filters.venue_id==v.venue_id %}selected{% endif %}>
-                        {{ v.venue_name }}
-                    </option>
-                    {% endfor %}
-                </select>
+    <!-- Filter Bar — hidden for My Events view since it's always own club -->
+    {% if not my_events_view %}
+    <div class="card p-4 mb-6">
+        <form method="GET" action="{{ url_for('events.list_events') }}" id="event-filter-form">
+            <!-- Search bar (full-width row above filters) -->
+            <div class="search-bar-wrap" style="margin-bottom:12px;max-width:100%;flex:none;">
+                <i data-lucide="search" class="search-bar-icon"></i>
+                <input type="text" name="search" id="event-search"
+                       class="search-bar-input"
+                       placeholder="Search events by title…"
+                       value="{{ filters.search or '' }}"
+                       autocomplete="off">
+                <button type="button" class="search-bar-clear" id="event-search-clear"
+                        onclick="clearEventSearch()" title="Clear search">
+                    <i data-lucide="x" style="width:13px;height:13px;"></i>
+                </button>
             </div>
 
-            <div class="form-group" style="margin:0;">
-                <label class="form-label">From</label>
-                <input type="date" name="date_from" value="{{ filters.date_from or '' }}" class="form-input">
-            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
 
-            <div class="form-group" style="margin:0;">
-                <label class="form-label">To</label>
-                <input type="date" name="date_to" value="{{ filters.date_to or '' }}" class="form-input">
-            </div>
+                {% if role in ('admin', 'club_admin') %}
+                <div class="form-group" style="margin:0;min-width:140px;flex:1;">
+                    <label class="form-label">
+                        <i data-lucide="users" style="width:11px;height:11px;"></i>
+                        Club
+                    </label>
+                    <select name="club_id" class="form-input">
+                        <option value="">All Clubs</option>
+                        {% for c in clubs %}
+                        <option value="{{ c.club_id }}" {% if filters.club_id==c.club_id %}selected{% endif %}>
+                            {{ c.club_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
 
-            <div class="flex items-center gap-4 pb-1">
-                <label class="flex items-center gap-2 cursor-pointer text-sm" style="color:var(--text-muted);">
-                    <input type="checkbox" name="upcoming" value="1" {% if filters.upcoming %}checked{% endif %}
-                           style="accent-color:var(--emerald);width:15px;height:15px;">
-                    Upcoming
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer text-sm" style="color:var(--text-muted);">
-                    <input type="checkbox" name="past" value="1" {% if filters.past %}checked{% endif %}
-                           style="accent-color:var(--emerald);width:15px;height:15px;">
-                    Past
-                </label>
-            </div>
+                <!-- Status Filter -->
+                <div class="form-group" style="margin:0;min-width:150px;flex:0 0 180px;">
+                    <label class="form-label">
+                        <i data-lucide="filter" style="width:11px;height:11px;"></i>
+                        Status
+                    </label>
+                    <select name="status" id="event-status-select" class="form-input">
+                        <option value=""   {% if not filters.status %}selected{% endif %}>All Events</option>
+                        <option value="upcoming" {% if filters.status=='upcoming' %}selected{% endif %}>Upcoming</option>
+                        <option value="ongoing"  {% if filters.status=='ongoing'  %}selected{% endif %}>Ongoing</option>
+                        <option value="past"     {% if filters.status=='past'     %}selected{% endif %}>Past</option>
+                    </select>
+                </div>
 
-            <div class="flex gap-2 pb-1">
-                <a href="{{ url_for('events.list_events') }}" class="btn btn-secondary btn-sm">Clear</a>
-                <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                <div style="display:flex;gap:8px;padding-bottom:2px;align-items:flex-end;">
+                    <a href="{{ url_for('events.list_events') }}" class="btn btn-secondary btn-sm">
+                        <i data-lucide="x" style="width:12px;height:12px;"></i>
+                        Clear
+                    </a>
+                </div>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
+    {% endif %}
 
     <!-- Events Grid -->
     {% if events %}
@@ -88,21 +117,93 @@
         {% include 'components/event_card.html' %}
         {% endfor %}
     </div>
+
+    <!-- Pagination -->
+    {% if total_pages is defined and total_pages > 1 %}
+    {% include 'components/pagination.html' %}
+    {% endif %}
+
     {% else %}
-    <div class="card p-16 text-center">
-        <div class="empty-state-icon mx-auto mb-4">
-            <i data-lucide="calendar-x" style="width:24px;height:24px;"></i>
+    <!-- Empty State -->
+    <div class="card">
+        <div class="empty-state">
+            <div class="empty-state-icon" style="background:var(--emerald-dim);">
+                <i data-lucide="calendar-x" style="width:28px;height:28px;color:var(--emerald);"></i>
+            </div>
+            <h3>No Events Found</h3>
+            <p>
+                {% if my_events_view %}
+                    Your club hasn't created any events yet. Create your first event to get started!
+                {% elif filters.search %}
+                    No events match "<strong>{{ filters.search }}</strong>". Try a different search term.
+                {% elif filters.status == 'upcoming' %}
+                    No upcoming events scheduled. Check back soon!
+                {% elif filters.status == 'ongoing' %}
+                    No events are happening today.
+                {% elif filters.status == 'past' %}
+                    No past events found.
+                {% else %}
+                    No events match your current filters. Try adjusting or clearing them.
+                {% endif %}
+            </p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+                {% if role in ('admin', 'club_admin') %}
+                <a href="{{ url_for('events.create') }}" class="btn btn-primary">
+                    <i data-lucide="plus" style="width:14px;height:14px;"></i>
+                    Create First Event
+                </a>
+                {% endif %}
+                {% if not my_events_view %}
+                <a href="{{ url_for('events.list_events') }}" class="btn btn-secondary">
+                    <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
+                    Clear Filters
+                </a>
+                {% endif %}
+            </div>
         </div>
-        <p style="font-size:1rem;font-weight:700;color:var(--text);">No events found</p>
-        <p class="text-sm mt-1">Try adjusting your filters or check back later.</p>
-        {% if role in ('admin','club_admin') %}
-        <a href="{{ url_for('events.create') }}" class="btn btn-primary mt-4">
-            <i data-lucide="plus" style="width:14px;height:14px;"></i>
-            Create First Event
-        </a>
-        {% endif %}
     </div>
     {% endif %}
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── Search debounce (300ms) ──
+const searchInput = document.getElementById('event-search');
+const clearBtn    = document.getElementById('event-search-clear');
+const filterForm  = document.getElementById('event-filter-form');
+
+function updateClearBtn() {
+    if (clearBtn) clearBtn.style.display = searchInput && searchInput.value ? 'flex' : 'none';
+}
+
+if (searchInput) {
+    updateClearBtn();
+    let debounceTimer;
+    searchInput.addEventListener('input', () => {
+        updateClearBtn();
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            if (filterForm) filterForm.submit();
+        }, 300);
+    });
+}
+
+function clearEventSearch() {
+    if (searchInput) {
+        searchInput.value = '';
+        updateClearBtn();
+        if (filterForm) filterForm.submit();
+    }
+}
+
+// ── Status dropdown auto-submit ──
+const statusSelect = document.getElementById('event-status-select');
+if (statusSelect) {
+    statusSelect.addEventListener('change', () => {
+        if (filterForm) filterForm.submit();
+    });
+}
+</script>
 {% endblock %}

@@ -124,6 +124,10 @@
     </div>
     {% endif %}
 
+    {% if total_pages is defined and total_pages > 1 %}
+    {% include 'components/pagination.html' %}
+    {% endif %}
+
 </div>
 {% endblock %}
 

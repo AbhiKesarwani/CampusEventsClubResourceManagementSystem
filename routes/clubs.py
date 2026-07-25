@@ -4,9 +4,9 @@ from helpers.auth_helpers import (
     login_required, admin_required, club_admin_required
 )
 from helpers.upload_helpers import save_upload, delete_upload
-from services.user_service import get_user_by_id, get_all_users
+from services.user_service import get_user_by_id
 from services.club_service import (
-    get_all_clubs, get_club_by_id, get_club_images,
+    get_all_clubs, count_all_clubs, get_club_by_id, get_club_images,
     create_club, update_club, delete_club,
     add_club_image, delete_club_image
 )
@@ -15,8 +15,8 @@ from services.member_service import (
     get_non_members
 )
 from services.membership_service import (
-    request_join, get_requests_for_club, approve_request, reject_request,
-    get_user_request_status, count_pending_requests_for_club
+    get_requests_for_club, approve_request, reject_request,
+    count_pending_requests_for_club
 )
 from services.event_service import get_upcoming_events
 from services.log_service import log_action
@@ -25,6 +25,8 @@ bp = Blueprint('clubs', __name__, url_prefix='/clubs')
 
 POSITIONS = ['President', 'Vice President', 'Secretary', 'Treasurer',
              'Coordinator', 'Volunteer', 'Member']
+
+PER_PAGE = 12
 
 
 # ── Ownership helper (coordinator_id-based) ────────────────────────────────────
@@ -42,25 +44,25 @@ def _can_manage_club(club_id: int) -> bool:
 @bp.route('/')
 @login_required
 def list_clubs():
-    coordinator_id = request.args.get('coordinator_id', type=int)
-    has_events     = request.args.get('has_events', type=int)
+    search = request.args.get('search', '').strip()
+    page   = request.args.get('page', 1, type=int)
 
-    clubs = get_all_clubs()
+    total       = count_all_clubs(search=search or None)
+    per_page    = PER_PAGE
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    page        = max(1, min(page, total_pages))
+    offset      = (page - 1) * per_page
 
-    if coordinator_id:
-        clubs = [c for c in clubs if c.get('coordinator_id') == coordinator_id]
-    if has_events:
-        clubs = [c for c in clubs if c.get('event_count', 0) > 0]
-
-    all_users    = get_all_users()
-    coordinators = [u for u in all_users if u['role'] in ('admin', 'club_admin')]
+    clubs = get_all_clubs(search=search or None)
+    # Paginate in-memory (dataset is small; service returns all matching)
+    clubs = clubs[offset: offset + per_page]
 
     user = get_user_by_id(session['user_id'])
     return render_template('clubs/list.html',
                            clubs=clubs,
-                           coordinators=coordinators,
                            user=user, active='clubs',
-                           filters={'coordinator_id': coordinator_id, 'has_events': has_events})
+                           page=page, total_pages=total_pages, total=total,
+                           filters={'search': search})
 
 
 # ── Detail ─────────────────────────────────────────────────────────────────────
@@ -80,10 +82,6 @@ def detail(club_id):
     can_manage = _can_manage_club(club_id)
     role = session.get('role')
 
-    membership_status = None
-    if role == 'student':
-        membership_status = get_user_request_status(club_id, session['user_id'])
-
     pending_count = 0
     if can_manage or role == 'admin':
         pending_count = count_pending_requests_for_club(club_id)
@@ -96,7 +94,6 @@ def detail(club_id):
                            club_images=images,
                            members=members,
                            can_manage=can_manage,
-                           membership_status=membership_status,
                            pending_count=pending_count,
                            upcoming_events=upcoming,
                            user=user, active='clubs')
@@ -311,20 +308,7 @@ def member_position(club_id, user_id):
     return redirect(url_for('clubs.members', club_id=club_id))
 
 
-# ── Membership requests (student → join) ───────────────────────────────────────
-@bp.route('/<int:club_id>/join', methods=['POST'])
-@login_required
-def join(club_id):
-    if session.get('role') != 'student':
-        flash("Only students can request membership.", "danger")
-        return redirect(url_for('clubs.detail', club_id=club_id))
-    try:
-        request_join(club_id, session['user_id'])
-        flash("Membership request submitted!", "success")
-    except Exception as e:
-        flash(f"Error: {e}", "danger")
-    return redirect(url_for('clubs.detail', club_id=club_id))
-
+# ── Membership management (coordinator/admin only) ────────────────────────────
 
 @bp.route('/<int:club_id>/requests')
 @login_required
@@ -362,3 +346,4 @@ def reject_membership(request_id):
         flash(f"Error: {e}", "danger")
     referer = request.referrer or url_for('clubs.list_clubs')
     return redirect(referer)
+

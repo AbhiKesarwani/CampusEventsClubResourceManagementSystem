@@ -4,22 +4,33 @@ from flask import (Blueprint, render_template, request,
 from helpers.auth_helpers import login_required
 from services.user_service import get_user_by_id
 from services.notification_service import (
-    get_user_notifications, mark_read, mark_all_read,
-    delete_notification, delete_all_notifications
+    get_user_notifications, count_user_notifications,
+    mark_read, mark_all_read,
+    delete_notification, delete_all_notifications, count_unread
 )
 
 bp = Blueprint('notifications', __name__, url_prefix='/notifications')
+
+PER_PAGE = 20
 
 
 @bp.route('/')
 @login_required
 def index():
-    user_id = session['user_id']
-    notifs  = get_user_notifications(user_id)
-    user    = get_user_by_id(user_id)
+    user_id     = session['user_id']
+    page        = request.args.get('page', 1, type=int)
+    total       = count_user_notifications(user_id)
+    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
+    page        = max(1, min(page, total_pages))
+    notifs      = get_user_notifications(user_id, page=page, per_page=PER_PAGE)
+    user        = get_user_by_id(user_id)
+    unread_total = count_unread(user_id)
     return render_template('notifications.html',
-                           notifications=notifs, user=user,
-                           active='notifications')
+                           notifications=notifs,
+                           all_count=total,
+                           unread_total=unread_total,
+                           page=page, total_pages=total_pages, total=total,
+                           user=user, active='notifications')
 
 
 @bp.route('/<int:notif_id>/read', methods=['POST'])

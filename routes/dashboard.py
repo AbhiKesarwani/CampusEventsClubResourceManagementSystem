@@ -1,5 +1,6 @@
 # routes/dashboard.py
 import json
+from datetime import datetime
 from flask import Blueprint, render_template, session
 from helpers.auth_helpers import login_required
 from services.user_service import get_user_by_id
@@ -24,13 +25,26 @@ from services.member_service import get_member_count
 bp = Blueprint('dashboard', __name__)
 
 
+def _get_greeting() -> str:
+    """Return time-appropriate greeting based on server hour."""
+    hour = datetime.now().hour
+    if 5 <= hour < 12:
+        return "Good Morning"
+    elif 12 <= hour < 17:
+        return "Good Afternoon"
+    elif 17 <= hour < 21:
+        return "Good Evening"
+    else:
+        return "Good Night"
+
+
 @bp.route('/')
 @login_required
 def index():
     user = get_user_by_id(session['user_id'])
     role = session.get('role')
 
-    ctx = dict(user=user, active='dashboard', role=role)
+    ctx = dict(user=user, active='dashboard', role=role, greeting=_get_greeting())
 
     upcoming = get_upcoming_events(limit=6)
     ctx['upcoming_events'] = upcoming
@@ -39,14 +53,14 @@ def index():
         try: release_expired_allocations()
         except Exception: pass
         ctx.update(_admin_stats())
-        ctx['recommended_events'] = []
+        ctx['recommended_events'] = []  # Admin never gets recommendations
 
     elif role == 'club_admin':
         try: release_expired_allocations()
         except Exception: pass
         club_id = session.get('club_id')
         ctx.update(_club_admin_stats(club_id))
-        ctx['recommended_events'] = []
+        ctx['recommended_events'] = []  # Coordinator never gets recommendations
 
     else:  # student
         ctx.update(_student_stats(session['user_id']))

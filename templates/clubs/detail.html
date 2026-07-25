@@ -43,23 +43,6 @@
 
         <!-- Action buttons -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            {% if role == 'student' %}
-                {% if membership_status == 'Approved' %}
-                <span class="btn btn-secondary btn-sm" style="background:rgba(16,185,129,0.2);color:var(--emerald);border-color:rgba(16,185,129,0.4);">
-                    <i data-lucide="check-circle" style="width:14px;height:14px;"></i> Member
-                </span>
-                {% elif membership_status == 'Pending' %}
-                <span class="btn btn-secondary btn-sm" style="background:rgba(245,158,11,0.2);color:var(--amber);border-color:rgba(245,158,11,0.4);">
-                    <i data-lucide="clock" style="width:14px;height:14px;"></i> Pending
-                </span>
-                {% else %}
-                <form method="POST" action="{{ url_for('clubs.join', club_id=club.club_id) }}">
-                    <button class="btn btn-primary btn-sm" type="submit">
-                        <i data-lucide="user-plus" style="width:14px;height:14px;"></i> Join Club
-                    </button>
-                </form>
-                {% endif %}
-            {% endif %}
             {% if can_manage %}
             <a href="{{ url_for('clubs.members', club_id=club.club_id) }}" class="btn btn-secondary btn-sm">
                 <i data-lucide="users" style="width:14px;height:14px;"></i>
@@ -67,6 +50,11 @@
             </a>
             <a href="{{ url_for('clubs.edit', club_id=club.club_id) }}" class="btn btn-secondary btn-sm">
                 <i data-lucide="pencil" style="width:14px;height:14px;"></i> Edit
+            </a>
+            {% endif %}
+            {% if club.club_email %}
+            <a href="mailto:{{ club.club_email }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="mail" style="width:14px;height:14px;"></i> Contact
             </a>
             {% endif %}
             {% if role == 'admin' %}
@@ -141,7 +129,7 @@
         </div>
         {% endif %}
 
-        {# Gallery Grid #}
+        {# Gallery Grid — Pinterest/Masonry style #}
         {% if club_images %}
         <div class="card" style="padding:24px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
@@ -157,13 +145,16 @@
                 </a>
             </div>
 
-            <div class="gallery-grid">
+            {# Masonry-style gallery using CSS columns #}
+            <div style="columns:3;column-gap:10px;" class="gallery-masonry" id="gallery-masonry">
                 {% for img in club_images %}
-                <div class="gallery-item">
+                <div class="gallery-item" style="break-inside:avoid;margin-bottom:10px;aspect-ratio:unset;height:auto;">
                     <img src="{{ url_for('static', filename=img.img_path) }}"
                          alt="Gallery image {{ loop.index }}"
+                         loading="lazy"
+                         style="width:100%;height:auto;display:block;object-fit:cover;"
                          onclick="openLightbox(this.src)">
-                    <div class="gallery-overlay">
+                    <div class="gallery-overlay" style="align-items:flex-start;">
                         <!-- Preview -->
                         <button onclick="openLightbox('{{ url_for('static', filename=img.img_path) }}')"
                                 style="width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;"
@@ -195,6 +186,9 @@
                 <i data-lucide="image-off" style="width:24px;height:24px;"></i>
             </div>
             <p style="font-size:0.875rem;color:var(--text-muted);">No gallery images uploaded yet.</p>
+            {% if can_manage %}
+            <p style="font-size:0.78rem;color:var(--text-subtle);margin-top:6px;">Go to Edit Club to upload images.</p>
+            {% endif %}
         </div>
         {% endif %}
 

@@ -142,7 +142,7 @@
         </a>
         {% endif %}
 
-        <a href="{{ url_for('events.list_events') }}"
+        <a href="{{ url_for('events.my_events') }}"
            class="sidebar-link {% if active=='my_events' %}active-nav{% endif %}">
             <i data-lucide="calendar-check" class="sidebar-icon"></i>
             <span class="sidebar-label">My Events</span>
@@ -224,7 +224,7 @@
 <!-- ═══════════════════════════════════════
      MAIN CONTENT
 ════════════════════════════════════════ -->
-<div id="main-content">
+<div id="main-content" class="page-bg">
 
     <!-- Top Navbar -->
     <header id="topnav">

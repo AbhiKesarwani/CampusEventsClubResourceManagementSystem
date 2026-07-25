@@ -1,10 +1,9 @@
-# routes/events.py
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from helpers.auth_helpers import login_required, club_admin_required, admin_required
 from helpers.upload_helpers import save_upload, delete_upload
 from services.user_service import get_user_by_id
 from services.event_service import (
-    get_all_events, get_event_by_id, get_event_images, get_event_resources,
+    get_all_events, count_all_events, get_event_by_id, get_event_images, get_event_resources,
     create_event, update_event, delete_event,
     add_event_image, delete_event_image, get_related_events
 )
@@ -16,38 +15,71 @@ from services.recommendation_service import log_view
 
 bp = Blueprint('events', __name__, url_prefix='/events')
 
+PER_PAGE = 12
+
 
 @bp.route('/')
 @login_required
 def list_events():
-    club_id   = request.args.get('club_id', type=int)
-    venue_id  = request.args.get('venue_id', type=int)
-    date_from = request.args.get('date_from')
-    date_to   = request.args.get('date_to')
-    upcoming  = bool(request.args.get('upcoming'))
-    past      = bool(request.args.get('past'))
+    search  = request.args.get('search', '').strip()
+    status  = request.args.get('status', '').lower().strip()   # '', 'upcoming', 'ongoing', 'past'
+    page    = request.args.get('page', 1, type=int)
+    club_id = request.args.get('club_id', type=int)  # kept for admin club filter
 
-    # club_admin only sees their club's events
-    role = session.get('role')
-    if role == 'club_admin':
-        club_id = session.get('club_id')
+    # Count total for pagination
+    total = count_all_events(club_id=club_id, search=search or None, status=status or None)
+    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
+    page = max(1, min(page, total_pages))
 
-    events = get_all_events(club_id=club_id, venue_id=venue_id,
-                            date_from=date_from, date_to=date_to,
-                            upcoming=upcoming, past=past)
+    # All roles see all events
+    events = get_all_events(club_id=club_id, search=search or None, status=status or None,
+                            page=page, per_page=PER_PAGE)
 
-    clubs  = get_clubs_for_select()
+    clubs = get_clubs_for_select()  # used in admin club filter
+    user  = get_user_by_id(session['user_id'])
+
+    return render_template('events/list.html',
+                           events=events,
+                           clubs=clubs,
+                           user=user, active='events',
+                           page=page, total_pages=total_pages, total=total,
+                           filters={
+                               'search': search,
+                               'status': status,
+                               'club_id': club_id,
+                           })
+
+
+
+@bp.route('/my')
+@login_required
+def my_events():
+    """Coordinator only: shows events for their own club."""
+    role    = session.get('role')
+    club_id = session.get('club_id')
+
+    if role not in ('club_admin', 'admin'):
+        flash("My Events is for club coordinators only.", "info")
+        return redirect(url_for('events.list_events'))
+
+    # Admin can filter by any club
+    if role == 'admin':
+        club_id = request.args.get('club_id', type=int) or club_id
+
+    events = get_all_events(club_id=club_id)
+    clubs  = get_clubs_for_select() if role == 'admin' else []
     venues = get_venues_for_select()
     user   = get_user_by_id(session['user_id'])
 
     return render_template('events/list.html',
                            events=events,
                            clubs=clubs, venues=venues,
-                           user=user, active='events',
+                           user=user, active='my_events',
+                           my_events_view=True,
                            filters={
-                               'club_id': club_id, 'venue_id': venue_id,
-                               'date_from': date_from, 'date_to': date_to,
-                               'upcoming': upcoming, 'past': past
+                               'club_id': club_id, 'venue_id': None,
+                               'date_from': None, 'date_to': None,
+                               'upcoming': False, 'past': False
                            })
 
 

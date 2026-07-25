@@ -30,24 +30,23 @@ def login():
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
-    clubs = get_clubs_for_select()
     if request.method == 'POST':
         name     = request.form.get('name', '').strip()
         email    = request.form.get('email', '').strip()
         phone    = request.form.get('phone', '').strip()
         password = request.form.get('password', '')
-        club_id  = request.form.get('club_id') or None
+        # club_id intentionally NOT accepted from form — assigned by coordinator only
 
         if not (name and email and password):
             flash("Name, email, and password are required.", "danger")
-            return render_template('register.html', clubs=clubs, user=None)
+            return render_template('register.html', user=None)
         try:
-            create_user(name, email, password, phone, club_id, role='student')
+            create_user(name, email, password, phone, club_id=None, role='student')
             flash("Registered successfully. Please login.", "success")
             return redirect(url_for('auth.login'))
         except Exception as e:
             flash(f"Registration failed: {e}", "danger")
-    return render_template('register.html', clubs=clubs, user=None)
+    return render_template('register.html', user=None)
 
 
 @bp.route('/logout')

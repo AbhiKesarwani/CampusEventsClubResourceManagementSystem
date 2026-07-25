@@ -26,7 +26,7 @@
         <div style="position:relative;flex:1;">
             <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-subtle);pointer-events:none;"></i>
             <input type="text" name="q" value="{{ q }}"
-                   placeholder="Search events, clubs, venues…"
+                   placeholder="Search events, clubs, coordinators, venues…"
                    id="main-search-input"
                    class="form-input" style="padding-left:34px;">
         </div>
@@ -77,10 +77,54 @@
                 </div>
                 <div class="club-card-body">
                     <h3 style="font-size:0.9rem;font-weight:700;color:var(--text);margin:0;">{{ c.club_name }}</h3>
-                    <p style="font-size:0.75rem;color:var(--emerald);margin:0;">{{ c.coordinator_name or 'No coordinator' }}</p>
+                    <p style="font-size:0.75rem;color:var(--emerald);margin:0;display:flex;align-items:center;gap:4px;">
+                        <i data-lucide="user-check" style="width:11px;height:11px;"></i>
+                        {{ c.coordinator_name or 'No coordinator' }}
+                    </p>
                     <p class="line-clamp-2" style="font-size:0.75rem;color:var(--text-subtle);margin:0;">{{ c.description or '—' }}</p>
                 </div>
             </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Coordinators Results -->
+    {% if coordinators %}
+    <div class="mb-8">
+        <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;display:flex;align-items:center;gap:6px;margin-bottom:14px;">
+            <i data-lucide="user-cog" style="width:14px;height:14px;color:var(--amber);"></i>
+            Coordinators ({{ coordinators|length }})
+        </h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;" class="stagger">
+            {% for coord in coordinators %}
+            <div class="card card-hover" style="padding:16px;display:flex;align-items:center;gap:14px;">
+                <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--amber),#d97706);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;color:white;flex-shrink:0;">
+                    {{ coord.name[0]|upper }}
+                </div>
+                <div style="min-width:0;flex:1;">
+                    <p style="font-size:0.9rem;font-weight:700;color:var(--text);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ coord.name }}</p>
+                    {% if coord.club_name %}
+                    <p style="font-size:0.73rem;color:var(--emerald);margin:2px 0 0;display:flex;align-items:center;gap:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        <i data-lucide="shield" style="width:10px;height:10px;flex-shrink:0;"></i>
+                        {{ coord.club_name }}
+                    </p>
+                    {% endif %}
+                    <span class="role-badge role-{{ coord.role }}" style="margin-top:4px;display:inline-block;">{{ coord.role|replace('_',' ')|title }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+                    {% if coord.club_id %}
+                    <a href="{{ url_for('clubs.detail', club_id=coord.club_id) }}"
+                       class="btn btn-secondary btn-xs" title="View Club">
+                        <i data-lucide="users" style="width:11px;height:11px;"></i>
+                    </a>
+                    {% endif %}
+                    <a href="mailto:{{ coord.email }}"
+                       class="btn btn-secondary btn-xs" title="Contact">
+                        <i data-lucide="mail" style="width:11px;height:11px;"></i>
+                    </a>
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -135,23 +179,38 @@
 
     <!-- No Results -->
     {% if total == 0 %}
-    <div class="card p-16 text-center">
-        <div class="empty-state-icon mx-auto mb-4">
-            <i data-lucide="search-x" style="width:24px;height:24px;"></i>
+    <div class="card" style="padding:60px 24px;text-align:center;">
+        <div style="width:72px;height:72px;border-radius:50%;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <i data-lucide="search-x" style="width:32px;height:32px;color:var(--text-subtle);"></i>
         </div>
-        <p style="font-weight:700;color:var(--text);">Nothing found for "{{ q }}"</p>
-        <p class="text-sm mt-1">Try searching with different keywords.</p>
+        <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:8px;">Nothing found</h2>
+        <p style="font-size:0.84rem;color:var(--text-subtle);max-width:360px;margin:0 auto 20px;line-height:1.6;">
+            No events, clubs, coordinators, venues or resources matched "<strong style="color:var(--text);">{{ q }}</strong>".
+            Try different keywords.
+        </p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <a href="{{ url_for('events.list_events') }}" class="btn btn-primary btn-sm">
+                <i data-lucide="calendar-days" style="width:13px;height:13px;"></i>
+                Browse Events
+            </a>
+            <a href="{{ url_for('clubs.list_clubs') }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="users" style="width:13px;height:13px;"></i>
+                Browse Clubs
+            </a>
+        </div>
     </div>
     {% endif %}
 
     {% else %}
     <!-- No query yet -->
-    <div class="card p-16 text-center">
-        <div class="empty-state-icon mx-auto mb-4">
-            <i data-lucide="search" style="width:24px;height:24px;"></i>
+    <div class="card" style="padding:60px 24px;text-align:center;">
+        <div style="width:72px;height:72px;border-radius:50%;background:var(--emerald-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <i data-lucide="search" style="width:32px;height:32px;color:var(--emerald);"></i>
         </div>
-        <p style="font-weight:700;color:var(--text);">Start searching</p>
-        <p class="text-sm mt-1">Type in the search bar above to find events, clubs, venues, and resources.</p>
+        <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:8px;">Search CECRMS</h2>
+        <p style="font-size:0.84rem;color:var(--text-subtle);max-width:400px;margin:0 auto;line-height:1.6;">
+            Find events, clubs, coordinators, venues, and resources across the entire campus platform.
+        </p>
     </div>
     {% endif %}
 

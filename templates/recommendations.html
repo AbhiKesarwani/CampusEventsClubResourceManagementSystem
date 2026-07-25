@@ -134,6 +134,10 @@
         {% endfor %}
     </div>
 
+    {% if total_pages is defined and total_pages > 1 %}
+    {% include 'components/pagination.html' %}
+    {% endif %}
+
     {% else %}
     <!-- Empty state -->
     <div class="card p-8" style="text-align:center;padding:60px 24px;">

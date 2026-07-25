@@ -18,10 +18,12 @@ def release_expired_allocations() -> int:
         # Find approved requests whose event has already ended
         cur.execute("""
             SELECT rr.request_id, rr.resource_id, rr.quantity,
-                   rr.event_id,
-                   e.date, e.end_time
+                   rr.event_id, rr.requested_by,
+                   r.resource_name,
+                   e.title AS event_title, e.date, e.end_time
             FROM resource_requests rr
-            JOIN events e ON e.event_id = rr.event_id
+            JOIN events    e ON e.event_id     = rr.event_id
+            JOIN resources r ON r.resource_id  = rr.resource_id
             WHERE rr.status = 'Approved'
               AND rr.auto_released = 0
               AND e.date IS NOT NULL
@@ -55,6 +57,23 @@ def release_expired_allocations() -> int:
             """, (req['event_id'], req['resource_id']))
 
         conn.commit()
+
+        # Fire deduped notifications (after commit)
+        try:
+            from services.notification_service import create_notification_safe
+            for req in expired:
+                create_notification_safe(
+                    user_id=req['requested_by'],
+                    title='Resource Automatically Returned',
+                    body=(f"{req['quantity']}x {req['resource_name']} has been automatically "
+                          f"returned after '{req['event_title']}' ended."),
+                    link='/resources/my-requests',
+                    type='info',
+                    event_key=f"auto_release_{req['request_id']}"
+                )
+        except Exception:
+            pass  # Never let notification failure break the release
+
         return len(expired)
     except Exception:
         if conn: conn.rollback()
@@ -62,6 +81,7 @@ def release_expired_allocations() -> int:
     finally:
         if cur: cur.close()
         if conn: conn.close()
+
 
 
 # ── Resources ─────────────────────────────────────────────────────────────────

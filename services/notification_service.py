@@ -57,18 +57,51 @@ def create_notification_safe(user_id: int, title: str, body: str = None,
         if conn: conn.close()
 
 
-def get_user_notifications(user_id: int, limit: int = 50) -> list[dict]:
+def get_user_notifications(user_id: int, page: int = None, per_page: int = 20,
+                           limit: int = None) -> list[dict]:
+    """Fetch notifications for a user, newest first.
+    
+    If page/per_page provided, uses DB-level pagination.
+    If limit provided (legacy), fetches up to that many records.
+    """
     conn = cur = None
     try:
         conn = get_db_connection()
         cur  = conn.cursor(dictionary=True)
-        cur.execute("""
-            SELECT * FROM notifications
-            WHERE user_id = %s
-            ORDER BY created_at DESC
-            LIMIT %s
-        """, (user_id, limit))
+        if page is not None:
+            offset = (page - 1) * per_page
+            cur.execute("""
+                SELECT * FROM notifications
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                LIMIT %s OFFSET %s
+            """, (user_id, per_page, offset))
+        else:
+            fetch_limit = limit if limit is not None else 50
+            cur.execute("""
+                SELECT * FROM notifications
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                LIMIT %s
+            """, (user_id, fetch_limit))
         return cur.fetchall()
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+
+def count_user_notifications(user_id: int) -> int:
+    """Count total notifications for a user (for pagination)."""
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM notifications WHERE user_id = %s",
+            (user_id,)
+        )
+        row = cur.fetchone()
+        return row[0] if row else 0
     finally:
         if cur: cur.close()
         if conn: conn.close()

@@ -1,6 +1,6 @@
 # routes/certificates.py
 import os
-from flask import Blueprint, render_template, session, flash, redirect, url_for, send_file
+from flask import Blueprint, render_template, request, session, flash, redirect, url_for, send_file
 from helpers.auth_helpers import login_required, admin_required
 from services.user_service import get_user_by_id
 from services.certificate_service import (
@@ -12,14 +12,23 @@ from services.log_service import log_action
 
 bp = Blueprint('certificates', __name__, url_prefix='/certificates')
 
+PER_PAGE = 12
+
 
 @bp.route('/my')
 @login_required
 def my_certificates():
-    user  = get_user_by_id(session['user_id'])
-    certs = get_user_certificates(session['user_id'])
+    page      = request.args.get('page', 1, type=int)
+    user      = get_user_by_id(session['user_id'])
+    all_certs = get_user_certificates(session['user_id'])
+    total     = len(all_certs)
+    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
+    page      = max(1, min(page, total_pages))
+    offset    = (page - 1) * PER_PAGE
+    certs     = all_certs[offset: offset + PER_PAGE]
     return render_template('certificates/list.html',
-                           certificates=certs, user=user, active='certificates')
+                           certificates=certs, user=user, active='certificates',
+                           page=page, total_pages=total_pages, total=total)
 
 
 @bp.route('/generate/<int:event_id>/<int:user_id>', methods=['POST'])

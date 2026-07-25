@@ -18,8 +18,7 @@
     <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <p class="text-indigo-200 text-sm font-medium mb-1">
-                {% set hr = current_time|default(0) %}
-                {% if hr < 12 %}Good morning{% elif hr < 17 %}Good afternoon{% else %}Good evening{% endif %},
+                {{ greeting }},
             </p>
             <h1 class="text-2xl md:text-3xl font-extrabold leading-tight">{{ session.get('name','') }} 👋</h1>
             <p class="text-indigo-200 text-sm mt-1.5">
@@ -57,7 +56,55 @@
     </div>
 </div>
 
-{# ══════════════════════════ STATS GRID ══════════════════════════ #}
+{# ══════════════════════════ QUICK ACTIONS ══════════════════════════ #}
+<div>
+    <h2 style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="zap" style="width:13px;height:13px;color:var(--amber);"></i>
+        Quick Actions
+    </h2>
+    <div class="quick-grid">
+        {% if role == 'admin' %}
+        {% set qa = [
+            ('user-cog', url_for('admin.coordinators'), 'Club Coordinators', 'Assign and manage club coordinators', 'var(--amber-dim)', 'var(--amber)'),
+            ('package', url_for('resources.list_resources'), 'Resources', 'Manage inventory', 'var(--purple-dim)', 'var(--purple)'),
+            ('building-2', url_for('venues.list_venues'), 'Venues', 'Manage spaces', 'var(--emerald-dim)', 'var(--emerald)'),
+            ('bell', url_for('notifications.index'), 'Notifications', 'View alerts', 'var(--blue-dim)', 'var(--blue)'),
+            ('inbox', url_for('resources.all_requests'), 'Pending Requests', 'Approve resource requests' + (' (' + stat_pending_requests|string + ' pending)' if stat_pending_requests else ''), 'var(--red-dim)', 'var(--red)'),
+            ('users', url_for('clubs.list_clubs'), 'Clubs', 'Browse all clubs', 'var(--emerald-dim)', 'var(--emerald)'),
+        ] %}
+        {% elif role == 'club_admin' %}
+        {% set qa = [
+            ('shield', url_for('clubs.detail', club_id=session.get('club_id', 0)) if session.get('club_id') else url_for('clubs.list_clubs'), 'My Club', 'View club page', 'var(--emerald-dim)', 'var(--emerald)'),
+            ('users-2', url_for('clubs.members', club_id=session.get('club_id', 0)) if session.get('club_id') else url_for('clubs.list_clubs'), 'Members', 'Manage members', 'var(--blue-dim)', 'var(--blue)'),
+            ('calendar-check', url_for('events.my_events'), 'My Events', 'Club events', 'var(--purple-dim)', 'var(--purple)'),
+            ('package-plus', url_for('resources.submit_request'), 'Resources', 'Request resources', 'var(--amber-dim)', 'var(--amber)'),
+            ('inbox', url_for('resources.my_requests'), 'My Requests', 'Track requests', 'var(--red-dim)', 'var(--red)'),
+            ('bell', url_for('notifications.index'), 'Notifications', 'View alerts', 'var(--emerald-dim)', 'var(--emerald)'),
+        ] %}
+        {% else %}
+        {% set qa = [
+            ('calendar-days', url_for('events.list_events'), 'Events', 'Browse all events', 'var(--emerald-dim)', 'var(--emerald)'),
+            ('sparkles', url_for('recommendations.index'), 'For You', 'Recommended events', 'var(--purple-dim)', 'var(--purple)'),
+            ('check-circle', url_for('attendance.my_attendance'), 'Attendance', 'My history', 'var(--blue-dim)', 'var(--blue)'),
+            ('award', url_for('certificates.my_certificates'), 'Certificates', 'My certificates', 'var(--amber-dim)', 'var(--amber)'),
+            ('bell', url_for('notifications.index'), 'Notifications', 'View alerts', 'var(--red-dim)', 'var(--red)'),
+            ('users', url_for('clubs.list_clubs'), 'Clubs', 'Browse clubs', 'var(--emerald-dim)', 'var(--emerald)'),
+        ] %}
+        {% endif %}
+        {% for icon, href, label, sub, bg, color in qa %}
+        <a href="{{ href }}" class="quick-card">
+            <div class="quick-card-icon" style="background:{{ bg }};">
+                <i data-lucide="{{ icon }}" style="width:18px;height:18px;color:{{ color }};"></i>
+            </div>
+            <div>
+                <div class="quick-card-label">{{ label }}</div>
+                <div class="quick-card-sub">{{ sub }}</div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
 {% if role == 'admin' %}
 <div class="stats-grid">
     {% set stats = [
@@ -329,7 +376,8 @@
     </div>
     {% endif %}
 
-    <!-- Recommendations -->
+    <!-- Recommendations (Students only) -->
+    {% if role == 'student' %}
     <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
         <h3 class="text-sm font-bold text-gray-100 text-gray-100 mb-4 flex items-center gap-2">
             <i data-lucide="sparkles" class="w-4 h-4 text-violet-500"></i>
@@ -369,6 +417,7 @@
         </div>
         {% endif %}
     </div>
+    {% endif %}{# /role == student #}
 
 </div>
 
