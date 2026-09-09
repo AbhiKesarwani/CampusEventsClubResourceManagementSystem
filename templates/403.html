@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 — Access Denied · CECRMS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body.error-page {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 20% 20%, rgba(245,158,11,0.08), transparent 45%),
+                        radial-gradient(circle at 80% 80%, rgba(239,68,68,0.06), transparent 45%),
+                        var(--bg);
+            padding: 24px; margin: 0;
+        }
+        .error-card {
+            max-width: 480px; width: 100%; text-align: center;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 48px 32px;
+        }
+        .error-code {
+            font-size: 5rem; font-weight: 900; line-height: 1;
+            background: linear-gradient(135deg, var(--amber), var(--red));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            margin-bottom: 8px; user-select: none;
+        }
+        .error-icon-wrap {
+            width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 20px;
+            background: var(--amber-dim); display: flex; align-items: center; justify-content: center;
+        }
+        .error-title { font-size: 1.3rem; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+        .error-desc { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 28px; line-height: 1.6; }
+        .error-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    </style>
+</head>
+<body class="error-page">
+    <div class="error-card">
+        <div class="error-icon-wrap">
+            <i data-lucide="shield-alert" style="width:28px;height:28px;color:var(--amber);"></i>
+        </div>
+        <div class="error-code">403</div>
+        <h1 class="error-title">Access Denied</h1>
+        <p class="error-desc">You don't have permission to view this page. If you think this is a mistake, contact your admin or club coordinator.</p>
+        <div class="error-actions">
+            <a href="{{ url_for('dashboard.index') if user else url_for('auth.login') }}" class="btn btn-primary">
+                <i data-lucide="home" style="width:14px;height:14px;"></i> Go to Dashboard
+            </a>
+            <button onclick="history.back()" class="btn btn-secondary">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Go Back
+            </button>
+        </div>
+    </div>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,22 +1,107 @@
-# Cache files (cace)
+# ==============================================================================
+# Python / Bytecode & Caches
+# ==============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.mypy_cache/
+.ruff_cache/
 
-# Virtual environment
+# ==============================================================================
+# Testing & Code Coverage
+# ==============================================================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+.tox/
+.nox/
+
+# ==============================================================================
+# Virtual Environments
+# ==============================================================================
 dbmsenv/
-dbmsenv
 env/
 venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Environment variables
+# ==============================================================================
+# Environment Variables & Secrets
+# ==============================================================================
 .env
+.env.*
+*.env
+!.env.example
 
-# Video files
-*.mp4
-DBMS Project Video - Made with Clipchamp.mp4
+# ==============================================================================
+# Operating System & IDE Files
+# ==============================================================================
+# Windows
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
 
-# OS and IDE files
+# macOS
+.DS_Store
+.DS_Store?
+._*
+
+# Editors & IDEs
 .vscode/
 .idea/
-.DS_Store
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# ==============================================================================
+# Logs, Temporary Files & Databases
+# ==============================================================================
+*.log
+logs/
+*.tmp
+*.temp
+*.sqlite
+*.sqlite3
+*.db
+
+# ==============================================================================
+# Build & Distribution
+# ==============================================================================
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# ==============================================================================
+# Large Media & Video Files
+# ==============================================================================
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.mkv
+
+# ==============================================================================
+# Runtime-Generated Application Content
+# (Keep folder structure via .gitkeep, ignore generated assets)
+# ==============================================================================
+static/uploads/*
+!static/uploads/.gitkeep
+static/certificates/*
+!static/certificates/.gitkeep
+static/qrcodes/*
+!static/qrcodes/.gitkeep
+docs/screenshots/*
+!docs/screenshots/.gitkeep

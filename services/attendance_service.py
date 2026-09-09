@@ -130,67 +130,6 @@ def submit_otp_self(otp: str, user_id: int) -> dict:
 
 
 
-def generate_attendance_code(event_id: int) -> str:
-    """
-    Generate (or regenerate) a unique attendance code for an event.
-    The code expires at the event's end_time on the event date.
-    Returns the generated code.
-    """
-    conn = cur = None
-    try:
-        conn = get_db_connection()
-        cur  = conn.cursor(dictionary=True)
-
-        # Fetch event end details
-        cur.execute(
-            "SELECT date, end_time FROM events WHERE event_id = %s",
-            (event_id,)
-        )
-        event = cur.fetchone()
-        if not event:
-            raise ValueError("Event not found.")
-
-        # Build expiry datetime
-        expires_at = None
-        if event['date'] and event['end_time']:
-            d = event['date']
-            t = event['end_time']
-            if isinstance(t, str):
-                from datetime import time as dtime
-                parts = t.split(':')
-                t = dtime(int(parts[0]), int(parts[1]))
-            expires_at = datetime.combine(d, t) if not isinstance(t, datetime) else t
-
-        # Try up to 10 times to get a unique code
-        code = None
-        cur2 = conn.cursor()
-        for _ in range(10):
-            candidate = _generate_code()
-            cur2.execute(
-                "SELECT 1 FROM events WHERE attendance_code = %s AND event_id != %s",
-                (candidate, event_id)
-            )
-            if not cur2.fetchone():
-                code = candidate
-                break
-
-        if not code:
-            raise RuntimeError("Could not generate unique code.")
-
-        cur2.execute(
-            "UPDATE events SET attendance_code = %s, code_expires_at = %s WHERE event_id = %s",
-            (code, expires_at, event_id)
-        )
-        conn.commit()
-        return code
-    except Exception:
-        if conn: conn.rollback()
-        raise
-    finally:
-        if cur: cur.close()
-        if conn: conn.close()
-
-
 def get_event_by_attendance_code(code: str) -> dict | None:
     """Look up an event by its attendance code. Returns None if not found or expired."""
     conn = cur = None
@@ -329,23 +268,26 @@ def has_attended(event_id: int, user_id: int) -> bool:
         if conn: conn.close()
 
 
-def submit_code_self(code: str, user_id: int) -> dict:
-    """
-    Student self-submits an attendance code.
-    Returns dict: {success, message, event_title}
-    """
-    event = get_event_by_attendance_code(code)
-    if not event:
-        return {'success': False, 'message': 'Invalid or expired attendance code. Please check the code and try again.'}
-
-    is_new = mark_attendance(event['event_id'], user_id, scan_by=None)
-    if is_new:
-        return {
-            'success': True,
-            'message': f"Attendance marked for \u201c{event['title']}\u201d!",
-            'event_title': event['title']
-        }
-    return {'success': False, 'message': 'You have already submitted attendance for this event.'}
+def get_all_attendance_records(limit: int = 5000) -> list[dict]:
+    """System-wide attendance records for admin exports."""
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor(dictionary=True)
+        cur.execute("""
+            SELECT a.attendance_id, u.name AS student_name, u.email AS student_email,
+                   e.title AS event_title, c.club_name, a.scan_time
+            FROM attendance a
+            JOIN users u  ON a.user_id  = u.user_id
+            JOIN events e ON a.event_id = e.event_id
+            LEFT JOIN clubs c ON e.club_id = c.club_id
+            ORDER BY a.scan_time DESC
+            LIMIT %s
+        """, (limit,))
+        return cur.fetchall()
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
 
 
 def get_upcoming_events_for_user(user_id: int) -> list:

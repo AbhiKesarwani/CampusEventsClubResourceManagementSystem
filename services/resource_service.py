@@ -1,12 +1,14 @@
 # services/resource_service.py
-from datetime import datetime
 from database import get_db_connection
 
 
 def release_expired_allocations() -> int:
     """
-    Check all Approved resource_requests where the associated event's
-    end_time + date have passed. Mark them Completed and reduce event_resources.
+    Check all Approved resource_requests where EITHER:
+      (a) the explicit return_date + return_time has passed, OR
+      (b) the associated event's end_time + date has passed.
+    Whichever comes first triggers the release.
+    Mark them Completed, restore resource quantity, and notify.
     Called on dashboard / resource page loads — no cron needed.
     Returns number of requests auto-released.
     """
@@ -15,10 +17,11 @@ def release_expired_allocations() -> int:
         conn = get_db_connection()
         cur  = conn.cursor(dictionary=True)
 
-        # Find approved requests whose event has already ended
+        # Find approved requests where return window has passed
         cur.execute("""
             SELECT rr.request_id, rr.resource_id, rr.quantity,
                    rr.event_id, rr.requested_by,
+                   rr.return_date, rr.return_time,
                    r.resource_name,
                    e.title AS event_title, e.date, e.end_time
             FROM resource_requests rr
@@ -26,35 +29,63 @@ def release_expired_allocations() -> int:
             JOIN resources r ON r.resource_id  = rr.resource_id
             WHERE rr.status = 'Approved'
               AND rr.auto_released = 0
-              AND e.date IS NOT NULL
-              AND e.end_time IS NOT NULL
-              AND TIMESTAMP(e.date, e.end_time) < NOW()
+              AND (
+                -- Explicit return datetime has passed
+                (rr.return_date IS NOT NULL AND rr.return_time IS NOT NULL
+                 AND TIMESTAMP(rr.return_date, rr.return_time) < NOW())
+                OR
+                -- Event end time has passed (fallback)
+                (e.date IS NOT NULL AND e.end_time IS NOT NULL
+                 AND TIMESTAMP(e.date, e.end_time) < NOW())
+              )
         """)
         expired = cur.fetchall()
         if not expired:
             return 0
 
+        ids = [req['request_id'] for req in expired]
+        placeholders = ','.join(['%s'] * len(ids))
+
         cur2 = conn.cursor()
-        for req in expired:
-            # Mark request completed
-            cur2.execute("""
-                UPDATE resource_requests
+
+        # Mark all expired requests completed in one statement.
+        cur2.execute(
+            f"""UPDATE resource_requests
                 SET status='Completed', auto_released=1, updated_at=NOW()
-                WHERE request_id=%s
-            """, (req['request_id'],))
+                WHERE request_id IN ({placeholders})""",
+            ids
+        )
 
-            # Reduce event_resources (remove allocation)
-            cur2.execute("""
-                UPDATE event_resources
-                SET quantity = GREATEST(0, quantity - %s)
-                WHERE event_id=%s AND resource_id=%s
-            """, (req['quantity'], req['event_id'], req['resource_id']))
+        # Restore resource quantities in one statement (grouped per resource,
+        # in case several expired requests share the same resource).
+        cur2.execute(
+            f"""UPDATE resources r
+                JOIN (
+                    SELECT resource_id, SUM(quantity) AS qty
+                    FROM resource_requests
+                    WHERE request_id IN ({placeholders})
+                    GROUP BY resource_id
+                ) t ON t.resource_id = r.resource_id
+                SET r.total_quantity = r.total_quantity + t.qty""",
+            ids
+        )
 
-            # Clean up zero-quantity rows
-            cur2.execute("""
-                DELETE FROM event_resources
-                WHERE event_id=%s AND resource_id=%s AND quantity <= 0
-            """, (req['event_id'], req['resource_id']))
+        # Reduce event_resources allocations in one statement (grouped per
+        # event+resource pair).
+        cur2.execute(
+            f"""UPDATE event_resources er
+                JOIN (
+                    SELECT event_id, resource_id, SUM(quantity) AS qty
+                    FROM resource_requests
+                    WHERE request_id IN ({placeholders})
+                    GROUP BY event_id, resource_id
+                ) t ON t.event_id = er.event_id AND t.resource_id = er.resource_id
+                SET er.quantity = GREATEST(0, er.quantity - t.qty)""",
+            ids
+        )
+
+        # Clean up any allocation rows that dropped to zero.
+        cur2.execute("DELETE FROM event_resources WHERE quantity <= 0")
 
         conn.commit()
 
@@ -82,6 +113,27 @@ def release_expired_allocations() -> int:
         if cur: cur.close()
         if conn: conn.close()
 
+
+
+# ── Request Lookup ─────────────────────────────────────────────────────────────
+
+def get_request_by_id(request_id: int) -> dict | None:
+    """Fetch a single resource request with resource_name and event_title."""
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor(dictionary=True)
+        cur.execute("""
+            SELECT rr.*, r.resource_name, e.title AS event_title
+            FROM resource_requests rr
+            JOIN resources r ON r.resource_id = rr.resource_id
+            JOIN events    e ON e.event_id     = rr.event_id
+            WHERE rr.request_id = %s
+        """, (request_id,))
+        return cur.fetchone()
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
 
 
 # ── Resources ─────────────────────────────────────────────────────────────────
@@ -215,7 +267,7 @@ def get_all_requests(status: str = None) -> list[dict]:
         if conn: conn.close()
 
 
-def get_requests_for_club(club_id: int) -> list[dict]:
+def get_resource_requests_for_club(club_id: int) -> list[dict]:
     conn = cur = None
     try:
         conn = get_db_connection()
@@ -252,7 +304,8 @@ def create_request(event_id: int, club_id: int, resource_id: int,
                    quantity: int, requested_by: int, reason: str = None,
                    required_date=None, req_start_time=None,
                    req_end_time=None, purpose: str = None,
-                   remarks: str = None) -> int:
+                   remarks: str = None,
+                   return_date=None, return_time=None) -> int:
     """Submit a resource request. Raises ValueError on over-allocation."""
     conn = cur = None
     try:
@@ -278,10 +331,12 @@ def create_request(event_id: int, club_id: int, resource_id: int,
         cur2.execute("""
             INSERT INTO resource_requests
               (event_id, club_id, resource_id, quantity, requested_by,
-               reason, required_date, req_start_time, req_end_time, purpose, remarks)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+               reason, required_date, req_start_time, req_end_time,
+               purpose, remarks, return_date, return_time)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """, (event_id, club_id, resource_id, quantity, requested_by,
-              reason, required_date, req_start_time, req_end_time, purpose, remarks))
+               reason, required_date, req_start_time, req_end_time,
+               purpose, remarks, return_date, return_time))
         conn.commit()
         return cur2.lastrowid
     except Exception:
@@ -335,19 +390,9 @@ def approve_request(request_id: int, reviewed_by: int) -> None:
             ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
         """, (req['event_id'], req['resource_id'], req['quantity']))
         conn.commit()
-
-        # Fire notification to requesting coordinator
-        try:
-            from services.notification_service import create_notification
-            create_notification(
-                user_id=req['requested_by'],
-                title='Resource Request Approved',
-                body=f"{req['quantity']}x {req['resource_name']} approved for '{req['event_title']}'.",
-                link='/resources/requests',
-                type='resource_approved'
-            )
-        except Exception:
-            pass  # Never let notification failure break the approval
+        # Note: the caller (routes/resources.py::approve) sends the requester
+        # notification via create_notification_safe() with dedup — do not
+        # duplicate that here.
     except Exception:
         if conn: conn.rollback()
         raise
@@ -361,7 +406,7 @@ def reject_request(request_id: int, reviewed_by: int) -> None:
     try:
         conn = get_db_connection()
         cur  = conn.cursor(dictionary=True)
-        # Fetch request details for notification
+        # Fetch request details (route layer uses this for its own notification)
         cur.execute("""
             SELECT rr.*, r.resource_name, e.title AS event_title
             FROM resource_requests rr
@@ -377,20 +422,9 @@ def reject_request(request_id: int, reviewed_by: int) -> None:
             (reviewed_by, request_id)
         )
         conn.commit()
-
-        # Fire notification to requesting coordinator
-        if req:
-            try:
-                from services.notification_service import create_notification
-                create_notification(
-                    user_id=req['requested_by'],
-                    title='Resource Request Rejected',
-                    body=f"{req['quantity']}x {req['resource_name']} for '{req['event_title']}' was not approved.",
-                    link='/resources/requests',
-                    type='resource_rejected'
-                )
-            except Exception:
-                pass
+        # Note: the caller (routes/resources.py::reject) sends the requester
+        # notification via create_notification_safe() with dedup — do not
+        # duplicate that here.
     except Exception:
         if conn: conn.rollback()
         raise

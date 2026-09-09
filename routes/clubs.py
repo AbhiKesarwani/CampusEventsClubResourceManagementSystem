@@ -1,10 +1,10 @@
 # routes/clubs.py
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from helpers.auth_helpers import (
-    login_required, admin_required, club_admin_required
+    login_required, admin_required
 )
-from helpers.upload_helpers import save_upload, delete_upload
-from services.user_service import get_user_by_id
+from helpers.upload_helpers import save_upload, delete_upload, get_image_path, build_gallery_zip
+from services.user_service import get_user_by_id, get_students_for_select
 from services.club_service import (
     get_all_clubs, count_all_clubs, get_club_by_id, get_club_images,
     create_club, update_club, delete_club,
@@ -20,6 +20,7 @@ from services.membership_service import (
 )
 from services.event_service import get_upcoming_events
 from services.log_service import log_action
+from helpers.pagination import paginate
 
 bp = Blueprint('clubs', __name__, url_prefix='/clubs')
 
@@ -49,9 +50,7 @@ def list_clubs():
 
     total       = count_all_clubs(search=search or None)
     per_page    = PER_PAGE
-    total_pages = max(1, (total + per_page - 1) // per_page)
-    page        = max(1, min(page, total_pages))
-    offset      = (page - 1) * per_page
+    page, total_pages, offset = paginate(total, page, per_page)
 
     clubs = get_all_clubs(search=search or None)
     # Paginate in-memory (dataset is small; service returns all matching)
@@ -129,7 +128,7 @@ def create():
             except Exception as e:
                 flash(f"Error creating club: {e}", "danger")
 
-    users = get_all_users()
+    users = get_students_for_select()
     user  = get_user_by_id(session['user_id'])
     return render_template('clubs/create.html', users=users, user=user, active='clubs')
 
@@ -205,34 +204,21 @@ def delete_image(club_id, img_id):
 @login_required
 def download_image(club_id, img_id):
     import os
-    from flask import send_file, abort
-    images = get_club_images(club_id)
-    img = next((i for i in images if i['img_id'] == img_id), None)
-    if not img:
-        abort(404)
-    path = os.path.join(os.getcwd(), 'static', img['img_path'])
-    if not os.path.exists(path):
-        abort(404)
+    from flask import send_file
+    path = get_image_path(get_club_images(club_id), img_id)
     return send_file(path, as_attachment=True, download_name=os.path.basename(path))
 
 
 @bp.route('/<int:club_id>/gallery/zip')
 @login_required
 def download_gallery_zip(club_id):
-    import os, io, zipfile
     from flask import send_file
     club   = get_club_by_id(club_id)
     images = get_club_images(club_id)
     if not images:
         flash("No images to download.", "warning")
         return redirect(url_for('clubs.detail', club_id=club_id))
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for img in images:
-            path = os.path.join(os.getcwd(), 'static', img['img_path'])
-            if os.path.exists(path):
-                zf.write(path, os.path.basename(path))
-    buf.seek(0)
+    buf = build_gallery_zip(images)
     safe_name = (club['club_name'] if club else f'club_{club_id}').replace(' ', '_')
     return send_file(buf, as_attachment=True,
                      download_name=f'{safe_name}_gallery.zip',

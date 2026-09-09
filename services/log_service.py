@@ -36,20 +36,36 @@ def log_action(user_id: int, action: str, entity_type: str = None,
             conn.close()
 
 
-def get_recent_activity(limit: int = 15) -> list[dict]:
-    """Return recent activity log rows joined with user name."""
+def get_recent_activity(limit: int = 15, user_id: int = None) -> list[dict]:
+    """Return recent activity log rows joined with user name.
+
+    Pass `user_id` to scope to a single user's own activity (used by the
+    profile page); omitted, returns system-wide activity (used by the
+    admin dashboard).
+    """
     conn = cur = None
     try:
         conn = get_db_connection()
         cur  = conn.cursor(dictionary=True)
-        cur.execute(
-            """SELECT al.*, u.name AS user_name
-               FROM activity_logs al
-               LEFT JOIN users u ON al.user_id = u.user_id
-               ORDER BY al.created_at DESC
-               LIMIT %s""",
-            (limit,)
-        )
+        if user_id is not None:
+            cur.execute(
+                """SELECT al.*, u.name AS user_name
+                   FROM activity_logs al
+                   LEFT JOIN users u ON al.user_id = u.user_id
+                   WHERE al.user_id = %s
+                   ORDER BY al.created_at DESC
+                   LIMIT %s""",
+                (user_id, limit)
+            )
+        else:
+            cur.execute(
+                """SELECT al.*, u.name AS user_name
+                   FROM activity_logs al
+                   LEFT JOIN users u ON al.user_id = u.user_id
+                   ORDER BY al.created_at DESC
+                   LIMIT %s""",
+                (limit,)
+            )
         return cur.fetchall()
     finally:
         if cur:

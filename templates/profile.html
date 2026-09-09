@@ -1,0 +1,206 @@
+{% extends 'layout.html' %}
+{% block title %}{{ profile_user.name }} — Profile · CECRMS{% endblock %}
+{% block page_title %}Profile{% endblock %}
+
+{% block content %}
+<div class="page-content anim-fade" style="max-width:960px;">
+
+  <!-- ── Header card ── -->
+  <div class="card" style="padding:28px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
+    <div style="position:relative;flex-shrink:0;">
+      {% if profile_user.avatar_path %}
+      <img src="{{ url_for('static', filename=profile_user.avatar_path) }}" alt="Avatar"
+           style="width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid var(--emerald-dim);">
+      {% else %}
+      <div style="width:84px;height:84px;border-radius:50%;background:var(--emerald-dim);border:3px solid var(--emerald-dim);
+                  display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:var(--emerald);">
+        {{ profile_user.name[0]|upper }}
+      </div>
+      {% endif %}
+      {% if is_own_profile %}
+      <label for="avatar-input" style="position:absolute;bottom:-2px;right:-2px;width:28px;height:28px;border-radius:50%;
+             background:var(--emerald);display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--bg-card);">
+        <i data-lucide="camera" style="width:13px;height:13px;color:#06251c;"></i>
+      </label>
+      <form id="avatar-form" method="POST" action="{{ url_for('profile.upload_avatar') }}" enctype="multipart/form-data" style="display:none;">
+        <input type="file" id="avatar-input" name="avatar" accept="image/*" onchange="document.getElementById('avatar-form').submit()">
+      </form>
+      {% endif %}
+    </div>
+    <div style="flex:1;min-width:200px;">
+      <h1 style="font-size:1.3rem;font-weight:800;color:var(--text);margin:0 0 4px;">{{ profile_user.name }}</h1>
+      <p style="font-size:0.82rem;color:var(--text-subtle);margin:0 0 8px;">{{ profile_user.email }}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <span class="role-badge role-{{ profile_user.role }}">{{ profile_user.role|replace('_',' ')|title }}</span>
+        {% if coordinating_club %}
+        <a href="{{ url_for('clubs.detail', club_id=coordinating_club.club_id) }}" class="badge badge-info">
+          <i data-lucide="shield" style="width:10px;height:10px;"></i> Coordinates {{ coordinating_club.club_name }}
+        </a>
+        {% endif %}
+        {% if profile_user.phone %}
+        <span style="font-size:0.75rem;color:var(--text-subtle);"><i data-lucide="phone" style="width:11px;height:11px;vertical-align:-1px;"></i> {{ profile_user.phone }}</span>
+        {% endif %}
+      </div>
+    </div>
+    {% if is_own_profile %}
+    <div style="display:flex;gap:8px;">
+      <a href="{{ url_for('settings.index') }}" class="btn btn-secondary btn-sm">
+        <i data-lucide="settings" style="width:13px;height:13px;"></i> Settings
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Stats row ── -->
+  <div class="stats-grid" style="margin-bottom:20px;">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--emerald-dim);"><i data-lucide="check-circle" style="width:16px;height:16px;color:var(--emerald);"></i></div>
+      <p class="stat-value" data-count="{{ stat_attended }}">0</p>
+      <p class="stat-label">Events Attended</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--amber-dim);"><i data-lucide="award" style="width:16px;height:16px;color:var(--amber);"></i></div>
+      <p class="stat-value" data-count="{{ stat_certificates }}">0</p>
+      <p class="stat-label">Certificates</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--purple-dim);"><i data-lucide="users" style="width:16px;height:16px;color:var(--purple);"></i></div>
+      <p class="stat-value" data-count="{{ stat_clubs }}">0</p>
+      <p class="stat-label">Clubs Joined</p>
+    </div>
+    {% if is_own_profile %}
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--blue-dim);"><i data-lucide="message-square" style="width:16px;height:16px;color:var(--blue);"></i></div>
+      <p class="stat-value" data-count="{{ unread_messages or 0 }}">0</p>
+      <p class="stat-label">Unread Messages</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" style="display:grid;gap:20px;grid-template-columns:1fr;">
+    <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+
+    <!-- ── Achievements ── -->
+    <div class="card" style="padding:20px;">
+      <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="sparkles" style="width:14px;height:14px;color:var(--amber);"></i> Achievements
+      </h3>
+      {% if achievements %}
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        {% for a in achievements %}
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--{{ a.color }}-dim);">
+          <i data-lucide="{{ a.icon }}" style="width:15px;height:15px;color:var(--{{ a.color }});"></i>
+          <span style="font-size:0.8rem;font-weight:600;color:var(--text);">{{ a.label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="font-size:0.8rem;color:var(--text-subtle);">Attend events and earn certificates to unlock achievements.</p>
+      {% endif %}
+    </div>
+
+    <!-- ── Joined Clubs ── -->
+    <div class="card" style="padding:20px;">
+      <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="users-2" style="width:14px;height:14px;color:var(--purple);"></i> Joined Clubs
+      </h3>
+      {% if clubs %}
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        {% for c in clubs %}
+        <a href="{{ url_for('clubs.detail', club_id=c.club_id) }}" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:10px;text-decoration:none;background:var(--bg-hover);">
+          <span style="font-size:0.8rem;font-weight:600;color:var(--text);">{{ c.club_name }}</span>
+          <span class="badge badge-info">{{ c.position }}</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="font-size:0.8rem;color:var(--text-subtle);">Not a member of any club yet.</p>
+      {% endif %}
+    </div>
+    </div>
+  </div>
+
+  {% if is_own_profile %}
+  <!-- ── Edit Profile ── -->
+  <div class="card" style="padding:20px;margin-top:20px;">
+    <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;">Edit Profile</h3>
+    <form method="POST" action="{{ url_for('profile.edit') }}" style="display:grid;gap:12px;grid-template-columns:1fr 1fr;">
+      <div>
+        <label style="font-size:0.76rem;color:var(--text-muted);display:block;margin-bottom:4px;">Full Name</label>
+        <input type="text" name="name" value="{{ profile_user.name }}" required
+               style="width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.85rem;">
+      </div>
+      <div>
+        <label style="font-size:0.76rem;color:var(--text-muted);display:block;margin-bottom:4px;">Phone</label>
+        <input type="text" name="phone" value="{{ profile_user.phone or '' }}"
+               style="width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.85rem;">
+      </div>
+      <div style="grid-column:1/-1;">
+        <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="save" style="width:13px;height:13px;"></i> Save Changes</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- ── Recent Attendance / Certificates / Activity Timeline ── -->
+  <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:20px;">
+    <div class="card" style="padding:20px;">
+      <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="calendar-check" style="width:14px;height:14px;color:var(--emerald);"></i> Recent Events
+      </h3>
+      {% if attended %}
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        {% for a in attended[:5] %}
+        <div style="padding:8px 10px;border-radius:10px;background:var(--bg-hover);">
+          <p style="font-size:0.8rem;font-weight:600;color:var(--text);margin:0;">{{ a.title }}</p>
+          <p style="font-size:0.7rem;color:var(--text-subtle);margin:2px 0 0;">{{ a.club_name or '' }} · {{ a.scan_time.strftime('%d %b %Y') if a.scan_time and a.scan_time.strftime is defined else '' }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="font-size:0.8rem;color:var(--text-subtle);">No events attended yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="card" style="padding:20px;">
+      <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="activity" style="width:14px;height:14px;color:var(--blue);"></i> Activity Timeline
+      </h3>
+      {% if activity %}
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        {% for act in activity %}
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--emerald);margin-top:6px;flex-shrink:0;"></div>
+          <div>
+            <p style="font-size:0.78rem;font-weight:600;color:var(--text);margin:0;">{{ act.action|replace('_',' ')|title }}</p>
+            <p style="font-size:0.68rem;color:var(--text-subtle);margin:1px 0 0;">{{ act.created_at.strftime('%d %b, %I:%M %p') if act.created_at and act.created_at.strftime is defined else '' }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="font-size:0.8rem;color:var(--text-subtle);">No recent activity.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if is_own_profile %}
+  <!-- ── Change Password ── -->
+  <div class="card" style="padding:20px;margin-top:20px;">
+    <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;">Change Password</h3>
+    <form method="POST" action="{{ url_for('profile.change_password') }}" style="display:grid;gap:12px;grid-template-columns:repeat(3,1fr);">
+      <input type="password" name="current_password" placeholder="Current password" required
+             style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.85rem;">
+      <input type="password" name="new_password" placeholder="New password" required minlength="6"
+             style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.85rem;">
+      <input type="password" name="confirm_password" placeholder="Confirm new password" required minlength="6"
+             style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.85rem;">
+      <div style="grid-column:1/-1;">
+        <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="key-round" style="width:13px;height:13px;"></i> Update Password</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

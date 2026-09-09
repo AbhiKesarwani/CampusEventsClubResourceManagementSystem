@@ -281,6 +281,11 @@
 
             <form method="POST" action="{{ url_for('auth.register') }}" autocomplete="on">
 
+                <!-- CSRF protection (standalone page — not extending layout.html,
+                     so layout.html's global CSRF injector JS never runs here).
+                     This hidden field must be present or Flask-WTF returns 400. -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                 <div class="form-group">
                     <label for="reg-name">Full Name <span style="color:var(--red)">*</span></label>
                     <div class="input-wrap">

@@ -1,8 +1,9 @@
 # routes/recommendations.py
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash
 from helpers.auth_helpers import login_required
-from services.recommendation_service import get_recommendations, log_view
+from services.recommendation_service import get_recommendations
 from services.user_service import get_user_by_id
+from helpers.pagination import paginate
 
 bp = Blueprint('recommendations', __name__, url_prefix='/recommendations')
 
@@ -23,9 +24,7 @@ def index():
     page       = request.args.get('page', 1, type=int)
     all_events = get_recommendations(user_id, limit=120)  # fetch more, paginate in Python
     total      = len(all_events)
-    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
-    page       = max(1, min(page, total_pages))
-    offset     = (page - 1) * PER_PAGE
+    page, total_pages, offset = paginate(total, page, PER_PAGE)
     events     = all_events[offset: offset + PER_PAGE]
 
     return render_template('recommendations.html',

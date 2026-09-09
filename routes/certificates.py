@@ -1,14 +1,14 @@
 # routes/certificates.py
 import os
 from flask import Blueprint, render_template, request, session, flash, redirect, url_for, send_file
-from helpers.auth_helpers import login_required, admin_required
+from helpers.auth_helpers import login_required
 from services.user_service import get_user_by_id
 from services.certificate_service import (
     get_user_certificates, issue_certificate, certificate_exists
 )
-from services.attendance_service import has_attended, get_attendance_for_event
+from services.attendance_service import has_attended
 from services.event_service import get_event_by_id
-from services.log_service import log_action
+from helpers.pagination import paginate
 
 bp = Blueprint('certificates', __name__, url_prefix='/certificates')
 
@@ -22,38 +22,11 @@ def my_certificates():
     user      = get_user_by_id(session['user_id'])
     all_certs = get_user_certificates(session['user_id'])
     total     = len(all_certs)
-    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
-    page      = max(1, min(page, total_pages))
-    offset    = (page - 1) * PER_PAGE
+    page, total_pages, offset = paginate(total, page, PER_PAGE)
     certs     = all_certs[offset: offset + PER_PAGE]
     return render_template('certificates/list.html',
                            certificates=certs, user=user, active='certificates',
                            page=page, total_pages=total_pages, total=total)
-
-
-@bp.route('/generate/<int:event_id>/<int:user_id>', methods=['POST'])
-@admin_required
-def generate(event_id, user_id):
-    """Admin generates certificate for a specific user who attended an event."""
-    event  = get_event_by_id(event_id)
-    target = get_user_by_id(user_id)
-    if not event or not target:
-        flash("Event or user not found.", "danger")
-        return redirect(url_for('attendance.scan', event_id=event_id))
-
-    if not has_attended(event_id, user_id):
-        flash("User has not attended this event.", "danger")
-        return redirect(url_for('attendance.scan', event_id=event_id))
-
-    try:
-        cert = issue_certificate(event_id, user_id, target['name'], event['title'])
-        log_action(session['user_id'], 'GENERATE_CERTIFICATE', 'certificate', cert['cert_id'],
-                   f"{target['name']} | {event['title']}")
-        flash(f"Certificate generated for {target['name']}!", "success")
-    except Exception as e:
-        flash(f"Error generating certificate: {e}", "danger")
-
-    return redirect(url_for('attendance.scan', event_id=event_id))
 
 
 @bp.route('/self_generate/<int:event_id>', methods=['POST'])

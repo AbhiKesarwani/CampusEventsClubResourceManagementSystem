@@ -1,0 +1,112 @@
+{% extends 'layout.html' %}
+{% block title %}Settings · CECRMS{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="page-content anim-fade" style="max-width:760px;">
+  <div class="section-header mb-6">
+    <div>
+      <h1 class="page-title">Settings</h1>
+      <p class="page-subtitle">Manage your account, preferences, and security.</p>
+    </div>
+  </div>
+
+  <!-- ── Profile Picture ── -->
+  <div class="card" style="padding:20px;margin-bottom:16px;">
+    <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+      <i data-lucide="image" style="width:14px;height:14px;color:var(--emerald);"></i> Profile Picture
+    </h3>
+    <div style="display:flex;align-items:center;gap:16px;">
+      {% if user.avatar_path %}
+      <img src="{{ url_for('static', filename=user.avatar_path) }}" alt="Avatar"
+           style="width:56px;height:56px;border-radius:50%;object-fit:cover;">
+      {% else %}
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--emerald-dim);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--emerald);">
+        {{ user.name[0]|upper }}
+      </div>
+      {% endif %}
+      <form method="POST" action="{{ url_for('settings.upload_avatar') }}" enctype="multipart/form-data" style="display:flex;gap:8px;align-items:center;">
+        <input type="file" name="avatar" accept="image/*" style="font-size:0.78rem;color:var(--text-muted);">
+        <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="upload" style="width:12px;height:12px;"></i> Upload</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Change Password ── -->
+  <div class="card" style="padding:20px;margin-bottom:16px;">
+    <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+      <i data-lucide="key-round" style="width:14px;height:14px;color:var(--amber);"></i> Change Password
+    </h3>
+    <form method="POST" action="{{ url_for('settings.change_password') }}" style="display:grid;gap:12px;">
+      <input type="password" name="current_password" placeholder="Current password" required
+             style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:0.85rem;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <input type="password" name="new_password" placeholder="New password" required minlength="6"
+               style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:0.85rem;">
+        <input type="password" name="confirm_password" placeholder="Confirm new password" required minlength="6"
+               style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:0.85rem;">
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary btn-sm">Update Password</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ── Preferences ── -->
+  <div class="card" style="padding:20px;margin-bottom:16px;">
+    <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+      <i data-lucide="sliders-horizontal" style="width:14px;height:14px;color:var(--purple);"></i> Preferences
+    </h3>
+    <form method="POST" action="{{ url_for('settings.preferences') }}" style="display:flex;flex-direction:column;gap:16px;">
+      <label style="display:flex;align-items:center;justify-content:space-between;">
+        <span>
+          <span style="font-size:0.83rem;font-weight:600;color:var(--text);display:block;">In-app Notifications</span>
+          <span style="font-size:0.72rem;color:var(--text-subtle);">Receive notifications for messages, announcements &amp; alerts.</span>
+        </span>
+        <input type="checkbox" name="notifications_enabled" {% if preferences.notifications_enabled %}checked{% endif %}
+               style="width:18px;height:18px;accent-color:var(--emerald);">
+      </label>
+
+      <div>
+        <span style="font-size:0.83rem;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">AI Assistant response style</span>
+        <select name="ai_response_style"
+                style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.83rem;">
+          <option value="concise" {% if preferences.ai_response_style == 'concise' %}selected{% endif %}>Concise — short, to the point</option>
+          <option value="detailed" {% if preferences.ai_response_style == 'detailed' %}selected{% endif %}>Detailed — more context &amp; explanation</option>
+        </select>
+      </div>
+
+      <div>
+        <span style="font-size:0.83rem;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">Profile visibility</span>
+        <select name="profile_visibility"
+                style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.83rem;">
+          <option value="campus" {% if preferences.profile_visibility == 'campus' %}selected{% endif %}>Campus — coordinators/admin can view my profile</option>
+          <option value="private" {% if preferences.profile_visibility == 'private' %}selected{% endif %}>Private — only I can view my profile</option>
+        </select>
+      </div>
+
+      <div>
+        <button type="submit" class="btn btn-primary btn-sm">Save Preferences</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ── Session Information ── -->
+  <div class="card" style="padding:20px;">
+    <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+      <i data-lucide="monitor-smartphone" style="width:14px;height:14px;color:var(--blue);"></i> Session Information
+    </h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;font-size:0.8rem;">
+      <div><span style="color:var(--text-subtle);">Email</span><br><strong style="color:var(--text);">{{ session_email }}</strong></div>
+      <div><span style="color:var(--text-subtle);">Role</span><br><strong style="color:var(--text);">{{ session_role|replace('_',' ')|title }}</strong></div>
+      {% if session_club_id %}
+      <div><span style="color:var(--text-subtle);">Club ID</span><br><strong style="color:var(--text);">#{{ session_club_id }}</strong></div>
+      {% endif %}
+      <div><span style="color:var(--text-subtle);">Session Cookie</span><br><strong style="color:var(--text);">HttpOnly, SameSite=Lax</strong></div>
+    </div>
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-sm" style="margin-top:16px;display:inline-flex;">
+      <i data-lucide="log-out" style="width:12px;height:12px;"></i> Log Out
+    </a>
+  </div>
+</div>
+{% endblock %}

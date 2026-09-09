@@ -1,8 +1,6 @@
 # routes/auth.py
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from services.user_service import get_user_by_email, create_user, verify_password, get_all_users
-from services.club_service import get_clubs_for_select
-from helpers.auth_helpers import login_required
+from services.user_service import get_user_by_email, create_user, verify_password
 
 bp = Blueprint('auth', __name__)
 

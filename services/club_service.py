@@ -78,22 +78,6 @@ def get_club_by_id(club_id: int) -> dict | None:
         if conn: conn.close()
 
 
-def get_club_by_email(email: str) -> dict | None:
-    """Find club where club_email matches (case-insensitive)."""
-    conn = cur = None
-    try:
-        conn = get_db_connection()
-        cur  = conn.cursor(dictionary=True)
-        cur.execute(
-            "SELECT * FROM clubs WHERE LOWER(club_email) = LOWER(%s) LIMIT 1",
-            (email,)
-        )
-        return cur.fetchone()
-    finally:
-        if cur: cur.close()
-        if conn: conn.close()
-
-
 def get_club_images(club_id: int) -> list[dict]:
     conn = cur = None
     try:

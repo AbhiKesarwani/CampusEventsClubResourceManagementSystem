@@ -1,7 +1,7 @@
 # routes/admin.py — Coordinator Management
 from flask import (Blueprint, render_template, request,
                    redirect, url_for, session, flash, jsonify)
-from helpers.auth_helpers import admin_required, login_required
+from helpers.auth_helpers import admin_required
 from services.user_service import (
     get_user_by_id,
     get_students_for_select,
@@ -106,6 +106,21 @@ def assign():
 
         log_action(admin_id, 'ASSIGN_COORDINATOR', 'club', club_id,
                    f"Assigned user_id={user_id} ({new_user['name']}) as coordinator")
+
+        # Notify new coordinator (deduplicated)
+        try:
+            from services.notification_service import create_notification_safe
+            create_notification_safe(
+                user_id=user_id,
+                title=f"You are now Coordinator of {club['club_name']}",
+                body=(f"An admin has assigned you as Club Coordinator for {club['club_name']}. "
+                      f"You can now manage events and resources for your club."),
+                link=f"/clubs/{club_id}",
+                type='success',
+                event_key=f"coord_assigned_{club_id}_{user_id}"
+            )
+        except Exception:
+            pass
 
         flash(f"✓ {new_user['name']} assigned as coordinator for {club['club_name']}.", "success")
 

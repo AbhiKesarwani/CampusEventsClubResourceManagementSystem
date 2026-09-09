@@ -427,17 +427,9 @@
 
 {% block scripts %}
 <script>
-// ── Animated Counters ──
-document.querySelectorAll('.stat-counter').forEach(el => {
-    const target = parseInt(el.dataset.val) || 0;
-    let current = 0;
-    const step  = Math.max(1, Math.ceil(target / 30));
-    const timer = setInterval(() => {
-        current = Math.min(current + step, target);
-        el.textContent = current.toLocaleString();
-        if (current >= target) clearInterval(timer);
-    }, 40);
-});
+// Animated counters for .stat-value[data-count] are handled globally by
+// the [data-count] IntersectionObserver in templates/layout.html — no
+// per-page counter script needed here.
 
 // ── Chart.js colours ──
 const GRAD_COLORS = [

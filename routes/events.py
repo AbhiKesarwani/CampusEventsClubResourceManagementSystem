@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from helpers.auth_helpers import login_required, club_admin_required, admin_required
-from helpers.upload_helpers import save_upload, delete_upload
+from helpers.upload_helpers import save_upload, delete_upload, get_image_path, build_gallery_zip
 from services.user_service import get_user_by_id
 from services.event_service import (
     get_all_events, count_all_events, get_event_by_id, get_event_images, get_event_resources,
@@ -12,6 +12,9 @@ from services.venue_service import get_venues_for_select
 from services.resource_service import get_all_resources
 from services.log_service import log_action
 from services.recommendation_service import log_view
+from services.attendance_service import has_attended
+from services.certificate_service import certificate_exists
+from helpers.pagination import paginate
 
 bp = Blueprint('events', __name__, url_prefix='/events')
 
@@ -28,8 +31,7 @@ def list_events():
 
     # Count total for pagination
     total = count_all_events(club_id=club_id, search=search or None, status=status or None)
-    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
-    page = max(1, min(page, total_pages))
+    page, total_pages, _ = paginate(total, page, PER_PAGE)
 
     # All roles see all events
     events = get_all_events(club_id=club_id, search=search or None, status=status or None,
@@ -99,11 +101,38 @@ def detail(event_id):
     # Log the view for recommendation engine
     log_view(session['user_id'], event_id)
 
+    timeline = _build_event_timeline(event, session['user_id'])
+
     return render_template('events/detail.html',
                            event=event, event_images=images,
                            event_resources=resources,
                            related_events=related,
+                           timeline=timeline,
                            user=user, active='events')
+
+
+def _build_event_timeline(event: dict, user_id: int) -> list[dict]:
+    """Derive the visual Registration -> Certificate pipeline stage-by-stage
+    from existing event/attendance/certificate data (no new schema needed)."""
+    from datetime import date, timedelta
+
+    today = date.today()
+    event_date = event.get('date')
+    is_approved = event.get('approved_status') == 'Approved'
+    is_past = bool(event_date and event_date < today)
+    is_today = bool(event_date and event_date == today)
+    is_soon = bool(event_date and today <= event_date <= today + timedelta(days=2))
+    attended = has_attended(event['event_id'], user_id)
+    has_cert = bool(certificate_exists(event['event_id'], user_id))
+
+    return [
+        {'label': 'Registration', 'icon': 'clipboard-check', 'done': True},
+        {'label': 'Confirmation', 'icon': 'badge-check', 'done': is_approved},
+        {'label': 'Reminder', 'icon': 'bell-ring', 'done': is_approved and (is_soon or is_today or is_past)},
+        {'label': 'Event Starts', 'icon': 'play-circle', 'done': is_approved and (is_today or is_past)},
+        {'label': 'Attendance', 'icon': 'check-circle', 'done': attended},
+        {'label': 'Certificate Generated', 'icon': 'award', 'done': has_cert},
+    ]
 
 
 @bp.route('/create', methods=['GET', 'POST'])
@@ -262,25 +291,15 @@ def delete_image(event_id, img_id):
 def download_image(event_id, img_id):
     """Download a single event image."""
     import os
-    from flask import send_file, abort
-    images = get_event_images(event_id)
-    img = next((i for i in images if i['img_id'] == img_id), None)
-    if not img:
-        abort(404)
-    path = os.path.join(os.getcwd(), 'static', img['img_path'])
-    if not os.path.exists(path):
-        abort(404)
-    filename = os.path.basename(path)
-    return send_file(path, as_attachment=True, download_name=filename)
+    from flask import send_file
+    path = get_image_path(get_event_images(event_id), img_id)
+    return send_file(path, as_attachment=True, download_name=os.path.basename(path))
 
 
 @bp.route('/<int:event_id>/gallery/zip')
 @login_required
 def download_gallery_zip(event_id):
     """Download all event images as a ZIP file."""
-    import os
-    import io
-    import zipfile
     from flask import send_file
     event  = get_event_by_id(event_id)
     images = get_event_images(event_id)
@@ -288,13 +307,7 @@ def download_gallery_zip(event_id):
         flash("No images to download.", "warning")
         return redirect(url_for('events.detail', event_id=event_id))
 
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for img in images:
-            path = os.path.join(os.getcwd(), 'static', img['img_path'])
-            if os.path.exists(path):
-                zf.write(path, os.path.basename(path))
-    buf.seek(0)
+    buf = build_gallery_zip(images)
     safe_name = (event['title'] if event else f"event_{event_id}").replace(' ', '_')
     return send_file(buf, as_attachment=True,
                      download_name=f"{safe_name}_gallery.zip",

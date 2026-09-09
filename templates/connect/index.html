@@ -1,0 +1,832 @@
+{% extends 'layout.html' %}
+{% block title %}Campus Connect — CECRMS{% endblock %}
+{% block page_title %}Campus Connect{% endblock %}
+
+{% block head %}
+<style>
+  /* ── Campus Connect — scoped styles ───────────────────────────────── */
+  .cc-wrap { display: flex; flex-direction: column; gap: 14px; max-width: 1180px; }
+  .cc-tabs {
+    display: flex; gap: 4px; padding: 4px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 12px; overflow-x: auto;
+  }
+  .cc-tab-btn {
+    display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 9px; border: none; background: transparent; cursor: pointer;
+    color: var(--text-muted); font-size: 0.82rem; font-weight: 600; white-space: nowrap;
+    transition: background .15s, color .15s;
+  }
+  .cc-tab-btn:hover { background: var(--bg-hover); color: var(--text); }
+  .cc-tab-btn.active { background: var(--emerald-dim); color: var(--emerald); }
+  .cc-tab-badge {
+    background: var(--red); color: #fff; font-size: 0.62rem; font-weight: 700;
+    border-radius: 999px; padding: 1px 6px; line-height: 1.4;
+  }
+  .cc-panel { display: none; }
+  .cc-panel.active { display: block; }
+
+  /* Layout: split pane for Messages */
+  .cc-split { display: grid; grid-template-columns: 300px 1fr; gap: 14px; min-height: 560px; }
+  @media (max-width: 800px) { .cc-split { grid-template-columns: 1fr; } }
+
+  .cc-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; }
+  .cc-list { display: flex; flex-direction: column; max-height: 620px; overflow-y: auto; }
+  .cc-list-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer;
+    border-bottom: 1px solid var(--border-muted); transition: background .15s; position: relative;
+  }
+  .cc-list-item:hover, .cc-list-item.active { background: var(--bg-hover); }
+  .cc-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--emerald-dim); color: var(--emerald); font-weight: 700; font-size: 0.85rem;
+  }
+  .cc-list-meta { min-width: 0; flex: 1; }
+  .cc-list-name { font-size: 0.83rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cc-list-preview { font-size: 0.74rem; color: var(--text-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+  .cc-unread-dot { min-width: 18px; height: 18px; border-radius: 999px; background: var(--emerald); color: #06251c; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+
+  /* Chat thread */
+  .cc-thread { display: flex; flex-direction: column; height: 620px; }
+  .cc-thread-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .cc-thread-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .cc-bubble-row { display: flex; }
+  .cc-bubble-row.me { justify-content: flex-end; }
+  .cc-bubble {
+    max-width: 72%; padding: 9px 13px; border-radius: 14px; font-size: 0.84rem; line-height: 1.45;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .cc-bubble-row.me .cc-bubble { background: var(--emerald); color: #06251c; border-bottom-right-radius: 3px; }
+  .cc-bubble-row.them .cc-bubble { background: var(--bg-hover); color: var(--text); border-bottom-left-radius: 3px; }
+  .cc-bubble-meta { font-size: 0.62rem; color: var(--text-subtle); margin-top: 3px; }
+  .cc-bubble-row.me .cc-bubble-meta { text-align: right; }
+  .cc-thread-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); }
+  .cc-thread-input textarea {
+    flex: 1; resize: none; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); padding: 9px 12px; font-size: 0.83rem; font-family: inherit; max-height: 90px;
+  }
+  .cc-thread-input textarea:focus { outline: none; border-color: var(--border-focus); }
+
+  .cc-typing { display: flex; gap: 4px; padding: 8px 13px; background: var(--bg-hover); border-radius: 14px; width: fit-content; }
+  .cc-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-subtle); animation: cc-bounce 1.2s infinite ease-in-out; }
+  .cc-typing span:nth-child(2) { animation-delay: .15s; }
+  .cc-typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes cc-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+  .cc-spinner {
+    width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--border);
+    border-top-color: var(--emerald); animation: cc-spin 0.7s linear infinite; margin: 24px auto;
+  }
+  @keyframes cc-spin { to { transform: rotate(360deg); } }
+
+  .cc-ann-card { padding: 14px 16px; border-bottom: 1px solid var(--border-muted); }
+  .cc-ann-card:last-child { border-bottom: none; }
+  .cc-ann-pin { background: var(--amber-dim); color: var(--amber); font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; }
+  .cc-ann-target { background: var(--blue-dim); color: var(--blue); font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; text-transform: capitalize; }
+
+  .cc-modal-backdrop {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 200;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .cc-modal-backdrop.active { display: flex; }
+  .cc-modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 460px; padding: 20px; max-height: 85vh; overflow-y: auto; }
+  .cc-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .cc-field label { font-size: 0.76rem; font-weight: 600; color: var(--text-muted); }
+  .cc-field input, .cc-field select, .cc-field textarea {
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: 9px; color: var(--text);
+    padding: 8px 10px; font-size: 0.82rem; font-family: inherit;
+  }
+  .cc-field textarea { resize: vertical; min-height: 80px; }
+
+  .cc-escalate-box { background: var(--amber-dim); border: 1px solid rgba(245,158,11,.3); border-radius: 12px; padding: 12px 14px; margin-top: 4px; }
+  code.cc-code { background: rgba(0,0,0,.35); padding: 1px 5px; border-radius: 4px; font-size: 0.8em; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-content anim-fade cc-wrap">
+
+  <div class="section-header mb-2">
+    <div>
+      <h1 class="page-title">Campus Connect</h1>
+      <p class="page-subtitle">AI assistant, messages &amp; announcements — all in one place.</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="cc-tabs" id="cc-tabs">
+    <button class="cc-tab-btn" data-tab="ai" onclick="ccSwitchTab('ai')">
+      <i data-lucide="bot" style="width:14px;height:14px;"></i> AI Assistant
+    </button>
+    <button class="cc-tab-btn" data-tab="messages" onclick="ccSwitchTab('messages')">
+      <i data-lucide="message-square" style="width:14px;height:14px;"></i> Messages
+      {% if unread_messages > 0 %}<span class="cc-tab-badge" id="cc-msg-badge">{{ unread_messages }}</span>{% endif %}
+    </button>
+    <button class="cc-tab-btn" data-tab="announcements" onclick="ccSwitchTab('announcements')">
+      <i data-lucide="megaphone" style="width:14px;height:14px;"></i> Announcements
+    </button>
+    {% if role == 'admin' %}
+    <button class="cc-tab-btn" data-tab="broadcast" onclick="ccSwitchTab('broadcast')">
+      <i data-lucide="radio-tower" style="width:14px;height:14px;"></i> Admin Broadcasts
+    </button>
+    {% endif %}
+  </div>
+
+  <!-- ══════════════════ AI ASSISTANT ══════════════════ -->
+  <div class="cc-panel" data-tab="ai">
+    <div class="cc-card" style="display:flex;flex-direction:column;height:620px;">
+      <div class="cc-thread-header">
+        <div class="cc-avatar" style="background:var(--purple-dim);color:var(--purple);"><i data-lucide="bot" style="width:17px;height:17px;"></i></div>
+        <div>
+          <p style="font-size:0.85rem;font-weight:700;color:var(--text);margin:0;">Campus Connect Assistant</p>
+          <p style="font-size:0.7rem;color:var(--text-subtle);margin:0;">Ask about events, clubs, attendance, certificates &amp; more</p>
+        </div>
+        <button class="btn btn-secondary btn-xs" style="margin-left:auto;" onclick="ccClearAiHistory()">
+          <i data-lucide="trash-2" style="width:12px;height:12px;"></i> Clear
+        </button>
+      </div>
+      <div class="cc-thread-body" id="cc-ai-body">
+        {% if not ai_history %}
+        <div class="empty-state" style="padding:30px 10px;">
+          <p style="font-size:0.82rem;color:var(--text-subtle);">👋 Hi! Ask me about events, clubs, attendance, certificates, venues, or resources.</p>
+        </div>
+        {% endif %}
+        {% for h in ai_history %}
+        <div class="cc-bubble-row {{ 'me' if h.role=='user' else 'them' }}">
+          <div>
+            <div class="cc-bubble">{{ h.content if h.role=='user' else '' }}<span class="cc-ai-md" data-raw="{{ h.content|e if h.role=='assistant' else '' }}"></span></div>
+            <div class="cc-bubble-meta">{{ h.created_at.strftime('%I:%M %p') if h.created_at and h.created_at.strftime is defined else '' }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="cc-thread-input">
+        <textarea id="cc-ai-input" rows="1" placeholder="Ask Campus Connect Assistant…" onkeydown="ccAiKeydown(event)"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="ccAskAi()"><i data-lucide="send" style="width:14px;height:14px;"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ MESSAGES ══════════════════ -->
+  <div class="cc-panel" data-tab="messages">
+    <div class="cc-split">
+      <!-- Conversation list -->
+      <div class="cc-card" style="display:flex;flex-direction:column;">
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;">
+          <input type="text" id="cc-conv-search" placeholder="Search conversations…" oninput="ccFilterConversations()"
+                 style="flex:1;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:7px 10px;font-size:0.78rem;">
+          <button class="btn btn-primary btn-xs" onclick="ccOpenNewChat()" title="New chat"><i data-lucide="plus" style="width:13px;height:13px;"></i></button>
+        </div>
+          <div class="cc-list" id="cc-conv-list">
+          {% for c in inbox %}
+          <div class="cc-list-item" data-name="{{ c.partner_name|lower }}" data-user-id="{{ c.partner_id }}"
+               data-user-name="{{ c.partner_name }}" data-user-role="{{ c.partner_role }}" id="cc-conv-{{ c.partner_id }}">
+            <div class="cc-avatar">{{ c.partner_name[0]|upper }}</div>
+            <div class="cc-list-meta">
+              <p class="cc-list-name">{{ c.partner_name }}</p>
+              <p class="cc-list-preview">{{ c.latest_body }}</p>
+            </div>
+            {% if c.unread_count and c.unread_count > 0 %}
+            <span class="cc-unread-dot">{{ c.unread_count }}</span>
+            {% endif %}
+          </div>
+          {% else %}
+          <div class="empty-state" style="padding:30px 12px;">
+            <p style="font-size:0.8rem;color:var(--text-subtle);">No conversations yet.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Thread -->
+      <div class="cc-card cc-thread" id="cc-thread-panel">
+        <div class="empty-state" style="margin:auto;">
+          <div class="empty-state-icon"><i data-lucide="message-circle" style="width:22px;height:22px;"></i></div>
+          <h3>Select a conversation</h3>
+          <p style="font-size:0.8rem;color:var(--text-subtle);">Choose a conversation on the left, or start a new one.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ ANNOUNCEMENTS ══════════════════ -->
+  <div class="cc-panel" data-tab="announcements">
+    <div class="cc-card" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <p style="font-size:0.83rem;color:var(--text-muted);margin:0;">
+        {% if role == 'admin' %}All campus announcements.
+        {% elif role == 'club_admin' %}Announcements for you &amp; your club.
+        {% else %}Announcements from your clubs, coordinators &amp; admin.{% endif %}
+      </p>
+      {% if role in ('admin', 'club_admin') %}
+      <button class="btn btn-primary btn-sm" onclick="ccOpenAnnouncementModal()">
+        <i data-lucide="plus" style="width:13px;height:13px;"></i> New Announcement
+      </button>
+      {% endif %}
+    </div>
+    {% set pinned_anns = announcements|selectattr('is_pinned')|list %}
+    {% if pinned_anns %}
+    <div class="cc-card" id="cc-ann-pinned-list" style="margin-bottom:12px;border:1px solid rgba(245,158,11,.35);">
+      <div style="padding:10px 16px 0;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="pin" style="width:12px;height:12px;color:var(--amber);"></i>
+        <span style="font-size:0.7rem;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;">Pinned</span>
+      </div>
+      {% for a in pinned_anns %}
+      <div class="cc-ann-card">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+          <span class="cc-ann-target">{{ a.target_type }}</span>
+          <p style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0;">{{ a.title }}</p>
+        </div>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin:0 0 6px;white-space:pre-wrap;">{{ a.body }}</p>
+        <span style="font-size:0.7rem;color:var(--text-subtle);">By {{ a.author_name }} · {{ a.created_at.strftime('%d %b, %I:%M %p') if a.created_at and a.created_at.strftime is defined else '' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="cc-card" id="cc-ann-list">
+      {% for a in announcements %}
+      <div class="cc-ann-card" id="cc-ann-{{ a.ann_id }}">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+          {% if a.is_pinned %}<span class="cc-ann-pin"><i data-lucide="pin" style="width:9px;height:9px;"></i> Pinned</span>{% endif %}
+          <span class="cc-ann-target">{{ a.target_type }}</span>
+          <p style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0;">{{ a.title }}</p>
+        </div>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin:0 0 6px;white-space:pre-wrap;">{{ a.body }}</p>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:0.7rem;color:var(--text-subtle);">By {{ a.author_name }} · {{ a.created_at.strftime('%d %b, %I:%M %p') if a.created_at and a.created_at.strftime is defined else '' }}</span>
+          {% if role == 'admin' or (user and a.author_id == user.user_id) %}
+          <button class="btn btn-secondary btn-xs" onclick="ccPinAnnouncement({{ a.ann_id }})"><i data-lucide="pin" style="width:11px;height:11px;"></i></button>
+          <button class="btn btn-danger btn-xs" onclick="ccDeleteAnnouncement({{ a.ann_id }})"><i data-lucide="trash-2" style="width:11px;height:11px;"></i></button>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:30px 12px;">
+        <p style="font-size:0.8rem;color:var(--text-subtle);">No announcements yet.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ══════════════════ ADMIN BROADCASTS ══════════════════ -->
+  {% if role == 'admin' %}
+  <div class="cc-panel" data-tab="broadcast">
+    <div class="cc-card" style="padding:16px;margin-bottom:14px;">
+      <h3 style="font-size:0.9rem;font-weight:700;color:var(--text);margin:0 0 10px;">Send a Broadcast</h3>
+      <p style="font-size:0.78rem;color:var(--text-subtle);margin:0 0 12px;">Target students, coordinators, everyone, a specific club, or a specific user.</p>
+      <button class="btn btn-primary btn-sm" onclick="ccOpenAnnouncementModal()">
+        <i data-lucide="radio-tower" style="width:13px;height:13px;"></i> Compose Broadcast
+      </button>
+    </div>
+
+    <div class="cc-card" style="padding:14px 16px;margin-bottom:14px;">
+      <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 10px;">Moderate Conversations</h3>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" id="cc-mod-search" placeholder="Search by user name…"
+               style="flex:1;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:7px 10px;font-size:0.78rem;">
+        <button class="btn btn-secondary btn-sm" onclick="ccLoadModConversations()">Search</button>
+      </div>
+      <div id="cc-mod-list" style="max-height:340px;overflow-y:auto;"></div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- ══════════════════ New Chat Modal ══════════════════ -->
+<div class="cc-modal-backdrop" id="cc-newchat-modal">
+  <div class="cc-modal">
+    <h3 style="font-size:0.95rem;font-weight:700;color:var(--text);margin:0 0 12px;">Start a Conversation</h3>
+    <input type="text" id="cc-contact-search" placeholder="Search…" oninput="ccSearchContacts(this.value)"
+           style="width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.82rem;margin-bottom:10px;">
+    <div id="cc-contact-list" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-secondary btn-sm" onclick="ccCloseModal('cc-newchat-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ Announcement Compose Modal ══════════════════ -->
+<div class="cc-modal-backdrop" id="cc-ann-modal">
+  <div class="cc-modal">
+    <h3 style="font-size:0.95rem;font-weight:700;color:var(--text);margin:0 0 12px;">New Announcement</h3>
+    <div class="cc-field" id="cc-ann-target-wrap">
+      <label>Target</label>
+      <select id="cc-ann-target-type" onchange="ccOnTargetTypeChange()">
+        {% if role == 'admin' %}
+        <option value="everyone">Everyone</option>
+        <option value="students">All Students</option>
+        <option value="coordinators">All Coordinators</option>
+        <option value="club">Specific Club</option>
+        <option value="user">Specific User</option>
+        {% else %}
+        <option value="club">My Club Members</option>
+        {% endif %}
+      </select>
+    </div>
+    <div class="cc-field" id="cc-ann-club-wrap" style="display:none;">
+      <label>Club</label>
+      <select id="cc-ann-club-id">
+        {% for c in clubs_for_select %}
+        <option value="{{ c.club_id }}">{{ c.club_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="cc-field" id="cc-ann-user-wrap" style="display:none;">
+      <label>User (search by name/email)</label>
+      <input type="text" id="cc-ann-user-search" placeholder="Type to search…" oninput="ccSearchAnnUsers(this.value)">
+      <div id="cc-ann-user-results" style="max-height:140px;overflow-y:auto;"></div>
+      <input type="hidden" id="cc-ann-user-id">
+      <p id="cc-ann-user-selected" style="font-size:0.75rem;color:var(--emerald);margin:4px 0 0;"></p>
+    </div>
+    <div class="cc-field">
+      <label>Title</label>
+      <input type="text" id="cc-ann-title" maxlength="255" placeholder="Announcement title">
+    </div>
+    <div class="cc-field">
+      <label>Message</label>
+      <textarea id="cc-ann-body" maxlength="3000" placeholder="Write your announcement…"></textarea>
+    </div>
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-muted);margin-bottom:12px;">
+      <input type="checkbox" id="cc-ann-pinned"> Pin this announcement
+    </label>
+    <div style="text-align:right;display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-secondary btn-sm" onclick="ccCloseModal('cc-ann-modal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="ccSubmitAnnouncement()">Post</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CC_USER_ID = {{ (user.user_id if user else session.get('user_id', 0)) | tojson }};
+const CC_ROLE    = {{ role | tojson }};
+let ccActiveThreadUserId = null;
+let ccAnnUserSelectedId  = null;
+
+/* ── Utilities ─────────────────────────────────────────────────────── */
+function ccEscapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+
+/** Minimal, XSS-safe markdown: escapes everything first, then applies a
+ *  small whitelist of formatting rules (bold, inline code, bullets, breaks). */
+function ccRenderMarkdownSafe(raw) {
+  let s = ccEscapeHtml(raw);
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/`([^`]+?)`/g, '<code class="cc-code">$1</code>');
+  s = s.replace(/^•\s?(.*)$/gm, '&bull;&nbsp;$1');
+  s = s.replace(/\n/g, '<br>');
+  return s;
+}
+
+function ccFormatTime(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return ''; }
+}
+
+function ccScrollBottom(el) { if (el) el.scrollTop = el.scrollHeight; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Render any server-provided AI history markdown safely.
+  document.querySelectorAll('.cc-ai-md').forEach(el => {
+    const raw = el.getAttribute('data-raw');
+    if (raw) el.innerHTML = ccRenderMarkdownSafe(raw);
+  });
+  ccScrollBottom(document.getElementById('cc-ai-body'));
+
+  const initialTab = {{ initial_tab | tojson }};
+  ccSwitchTab(['ai','messages','announcements','broadcast'].includes(initialTab) ? initialTab : 'ai');
+
+  const initialWith = {{ initial_with | tojson }};
+  if (initialWith) {
+    ccSwitchTab('messages');
+    const item = document.getElementById('cc-conv-' + initialWith);
+    if (item) item.click();
+    else ccFetchThread(initialWith, 'Conversation', '');
+  }
+
+  // Event delegation for the conversation list (avoids inline onclick with
+  // interpolated names, which breaks on quotes/apostrophes and is harder to
+  // keep XSS-safe).
+  const convList = document.getElementById('cc-conv-list');
+  if (convList) {
+    convList.addEventListener('click', (e) => {
+      const item = e.target.closest('.cc-list-item');
+      if (!item || !item.dataset.userId) return;
+      ccOpenThread(Number(item.dataset.userId), item.dataset.userName, item.dataset.userRole);
+    });
+  }
+});
+
+/* ── Tabs ──────────────────────────────────────────────────────────── */
+function ccSwitchTab(tab) {
+  document.querySelectorAll('.cc-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.cc-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === tab));
+  if (tab === 'broadcast') ccLoadModConversations();
+}
+
+function ccCloseModal(id) { document.getElementById(id).classList.remove('active'); }
+
+/* ══════════════════════════ AI ASSISTANT ══════════════════════════ */
+function ccAiKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ccAskAi(); }
+}
+
+function ccAppendBubble(container, who, html, meta) {
+  const row = document.createElement('div');
+  row.className = 'cc-bubble-row ' + (who === 'me' ? 'me' : 'them');
+  row.innerHTML = `<div><div class="cc-bubble">${html}</div><div class="cc-bubble-meta">${meta || ''}</div></div>`;
+  container.appendChild(row);
+  ccScrollBottom(container);
+  return row;
+}
+
+async function ccAskAi() {
+  const input = document.getElementById('cc-ai-input');
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = '';
+
+  const body = document.getElementById('cc-ai-body');
+  ccAppendBubble(body, 'me', ccEscapeHtml(question), ccFormatTime(new Date().toISOString()));
+
+  const typingRow = document.createElement('div');
+  typingRow.className = 'cc-bubble-row them';
+  typingRow.innerHTML = '<div class="cc-typing"><span></span><span></span><span></span></div>';
+  body.appendChild(typingRow);
+  ccScrollBottom(body);
+
+  try {
+    const resp = await fetch('/connect/api/ai/ask', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
+    });
+    const data = await resp.json();
+    typingRow.remove();
+
+    if (data.error) {
+      ccAppendBubble(body, 'them', ccEscapeHtml(data.error), '');
+      return;
+    }
+    ccAppendBubble(body, 'them', ccRenderMarkdownSafe(data.answer), ccFormatTime(new Date().toISOString()));
+
+    if (data.escalate) {
+      const box = document.createElement('div');
+      box.className = 'cc-escalate-box';
+      box.innerHTML = `
+        <p style="font-size:0.8rem;color:var(--text);margin:0 0 8px;">
+          <i data-lucide="alert-triangle" style="width:13px;height:13px;vertical-align:-2px;"></i>
+          I couldn't confidently answer this. Send it to a Club Coordinator?
+        </p>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary btn-xs" onclick="ccEscalate(this, ${JSON.stringify(question)})">Ask Coordinator</button>
+          <button class="btn btn-secondary btn-xs" onclick="this.closest('.cc-escalate-box').remove()">Cancel</button>
+        </div>`;
+      body.appendChild(box);
+      lucide.createIcons();
+      ccScrollBottom(body);
+    }
+  } catch (e) {
+    typingRow.remove();
+    ccAppendBubble(body, 'them', 'Something went wrong reaching the AI assistant. Please try again.', '');
+  }
+}
+
+async function ccEscalate(btn, question) {
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  try {
+    const resp = await fetch('/connect/api/ai/escalate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
+    });
+    const data = await resp.json();
+    const box = btn.closest('.cc-escalate-box');
+    if (data.success) {
+      box.innerHTML = '<p style="font-size:0.8rem;color:var(--emerald);margin:0;">✓ Sent to a coordinator. Check Messages for their reply.</p>';
+    } else {
+      box.innerHTML = `<p style="font-size:0.8rem;color:var(--red);margin:0;">${ccEscapeHtml(data.error || 'No coordinator available.')}</p>`;
+    }
+  } catch (e) {
+    btn.disabled = false; btn.textContent = 'Ask Coordinator';
+  }
+}
+
+async function ccClearAiHistory() {
+  if (!confirm('Clear your AI chat history?')) return;
+  await fetch('/connect/api/ai/history/clear', { method: 'POST' });
+  document.getElementById('cc-ai-body').innerHTML =
+    '<div class="empty-state" style="padding:30px 10px;"><p style="font-size:0.82rem;color:var(--text-subtle);">History cleared. Ask me anything!</p></div>';
+}
+
+/* ══════════════════════════ MESSAGES ══════════════════════════════ */
+function ccFilterConversations() {
+  const q = document.getElementById('cc-conv-search').value.trim().toLowerCase();
+  document.querySelectorAll('#cc-conv-list .cc-list-item').forEach(el => {
+    el.style.display = (!q || el.dataset.name.includes(q)) ? '' : 'none';
+  });
+}
+
+function ccOpenThread(otherId, name, role) {
+  document.querySelectorAll('#cc-conv-list .cc-list-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('cc-conv-' + otherId);
+  if (el) { el.classList.add('active'); const dot = el.querySelector('.cc-unread-dot'); if (dot) dot.remove(); }
+  ccFetchThread(otherId, name, role);
+}
+
+async function ccFetchThread(otherId, name, role) {
+  ccActiveThreadUserId = otherId;
+  const panel = document.getElementById('cc-thread-panel');
+  panel.innerHTML = '<div class="cc-spinner"></div>';
+
+  try {
+    const resp = await fetch(`/connect/api/conversations/${otherId}`);
+    const data = await resp.json();
+    if (data.error) {
+      panel.innerHTML = `<div class="empty-state" style="margin:auto;"><p style="font-size:0.82rem;color:var(--red);">${ccEscapeHtml(data.error)}</p></div>`;
+      return;
+    }
+    const otherName = data.other ? data.other.name : name;
+
+    panel.innerHTML = `
+      <div class="cc-thread-header">
+        <div class="cc-avatar">${ccEscapeHtml(otherName[0] || '?').toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:0.85rem;font-weight:700;color:var(--text);margin:0;">${ccEscapeHtml(otherName)}</p>
+          <p style="font-size:0.7rem;color:var(--text-subtle);margin:0;text-transform:capitalize;">${ccEscapeHtml(data.other ? data.other.role.replace('_',' ') : '')}</p>
+        </div>
+        <button class="btn btn-secondary btn-xs" onclick="ccArchiveConversation(${otherId})" title="Archive"><i data-lucide="archive" style="width:12px;height:12px;"></i></button>
+        <button class="btn btn-danger btn-xs" onclick="ccDeleteConversation(${otherId})" title="Delete"><i data-lucide="trash-2" style="width:12px;height:12px;"></i></button>
+      </div>
+      <div class="cc-thread-body" id="cc-thread-body"></div>
+      <div class="cc-thread-input">
+        <textarea id="cc-thread-input" rows="1" placeholder="Type a message…" onkeydown="ccThreadKeydown(event, ${otherId})"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="ccSendMessage(${otherId})"><i data-lucide="send" style="width:14px;height:14px;"></i></button>
+      </div>`;
+    lucide.createIcons();
+
+    const body = document.getElementById('cc-thread-body');
+    if (!data.messages || !data.messages.length) {
+      body.innerHTML = '<div class="empty-state" style="margin:auto;"><p style="font-size:0.8rem;color:var(--text-subtle);">No messages yet. Say hello!</p></div>';
+    } else {
+      data.messages.forEach(m => {
+        const mine = m.sender_id === CC_USER_ID;
+        const seen = mine && m.is_read ? ' · Seen' : '';
+        ccAppendBubble(body, mine ? 'me' : 'them', ccEscapeHtml(m.body), ccFormatTime(m.created_at) + seen);
+      });
+    }
+    ccScrollBottom(body);
+    ccRefreshUnreadBadge();
+  } catch (e) {
+    panel.innerHTML = '<div class="empty-state" style="margin:auto;"><p style="font-size:0.82rem;color:var(--red);">Failed to load conversation.</p></div>';
+  }
+}
+
+function ccThreadKeydown(e, otherId) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ccSendMessage(otherId); }
+}
+
+async function ccSendMessage(otherId) {
+  const input = document.getElementById('cc-thread-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  try {
+    const resp = await fetch(`/connect/api/conversations/${otherId}/send`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ body: text })
+    });
+    const data = await resp.json();
+    const body = document.getElementById('cc-thread-body');
+    if (data.error) { alert(data.error); return; }
+    if (body.querySelector('.empty-state')) body.innerHTML = '';
+    ccAppendBubble(body, 'me', ccEscapeHtml(text), ccFormatTime(new Date().toISOString()));
+    ccRefreshInbox();
+  } catch (e) { alert('Failed to send message.'); }
+}
+
+async function ccArchiveConversation(otherId) {
+  await fetch(`/connect/api/conversations/${otherId}/archive`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: true })
+  });
+  const el = document.getElementById('cc-conv-' + otherId);
+  if (el) el.remove();
+}
+
+async function ccDeleteConversation(otherId) {
+  if (!confirm('Delete this conversation? It will be removed from your inbox.')) return;
+  await fetch(`/connect/api/conversations/${otherId}/delete`, { method: 'POST' });
+  const el = document.getElementById('cc-conv-' + otherId);
+  if (el) el.remove();
+  document.getElementById('cc-thread-panel').innerHTML =
+    '<div class="empty-state" style="margin:auto;"><p style="font-size:0.8rem;color:var(--text-subtle);">Conversation deleted.</p></div>';
+}
+
+async function ccRefreshInbox() {
+  try {
+    const resp = await fetch('/connect/api/conversations');
+    const rows = await resp.json();
+    const list = document.getElementById('cc-conv-list');
+    list.innerHTML = '';
+    rows.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'cc-list-item' + (c.partner_id === ccActiveThreadUserId ? ' active' : '');
+      div.id = 'cc-conv-' + c.partner_id;
+      div.dataset.name = (c.partner_name || '').toLowerCase();
+      div.onclick = () => ccOpenThread(c.partner_id, c.partner_name, c.partner_role);
+      div.innerHTML = `
+        <div class="cc-avatar">${ccEscapeHtml((c.partner_name || '?')[0]).toUpperCase()}</div>
+        <div class="cc-list-meta">
+          <p class="cc-list-name">${ccEscapeHtml(c.partner_name)}</p>
+          <p class="cc-list-preview">${ccEscapeHtml(c.latest_body || '')}</p>
+        </div>
+        ${c.unread_count > 0 && c.partner_id !== ccActiveThreadUserId ? `<span class="cc-unread-dot">${c.unread_count}</span>` : ''}`;
+      list.appendChild(div);
+    });
+    if (!rows.length) list.innerHTML = '<div class="empty-state" style="padding:30px 12px;"><p style="font-size:0.8rem;color:var(--text-subtle);">No conversations yet.</p></div>';
+    ccRefreshUnreadBadge();
+  } catch (e) {}
+}
+
+async function ccRefreshUnreadBadge() {
+  try {
+    const resp = await fetch('/connect/api/unread-count');
+    const data = await resp.json();
+    const badge = document.getElementById('cc-msg-badge');
+    if (data.unread > 0) {
+      if (badge) badge.textContent = data.unread;
+      else {
+        const btn = document.querySelector('.cc-tab-btn[data-tab="messages"]');
+        const span = document.createElement('span');
+        span.className = 'cc-tab-badge'; span.id = 'cc-msg-badge'; span.textContent = data.unread;
+        btn.appendChild(span);
+      }
+    } else if (badge) badge.remove();
+  } catch (e) {}
+}
+
+/* ── New chat picker ── */
+function ccOpenNewChat() {
+  document.getElementById('cc-newchat-modal').classList.add('active');
+  ccSearchContacts('');
+}
+
+async function ccSearchContacts(q) {
+  const list = document.getElementById('cc-contact-list');
+  list.innerHTML = '<div class="cc-spinner"></div>';
+  try {
+    const resp = await fetch('/connect/api/contacts?q=' + encodeURIComponent(q));
+    const rows = await resp.json();
+    if (!rows.length) { list.innerHTML = '<p style="font-size:0.8rem;color:var(--text-subtle);padding:8px;">No contacts found.</p>'; return; }
+    list.innerHTML = '';
+    rows.forEach(u => {
+      const row = document.createElement('div');
+      row.className = 'cc-list-item';
+      row.style.borderRadius = '9px';
+      row.innerHTML = `
+        <div class="cc-avatar">${ccEscapeHtml((u.name || '?')[0]).toUpperCase()}</div>
+        <div class="cc-list-meta">
+          <p class="cc-list-name">${ccEscapeHtml(u.name)}</p>
+          <p class="cc-list-preview">${ccEscapeHtml(u.club_name || u.role.replace('_',' '))}</p>
+        </div>`;
+      row.onclick = () => {
+        ccCloseModal('cc-newchat-modal');
+        ccSwitchTab('messages');
+        ccOpenThread(u.user_id, u.name, u.role);
+      };
+      list.appendChild(row);
+    });
+  } catch (e) { list.innerHTML = '<p style="font-size:0.8rem;color:var(--red);padding:8px;">Failed to load contacts.</p>'; }
+}
+
+/* ══════════════════════════ ANNOUNCEMENTS ══════════════════════════ */
+function ccOpenAnnouncementModal() {
+  document.getElementById('cc-ann-modal').classList.add('active');
+  document.getElementById('cc-ann-title').value = '';
+  document.getElementById('cc-ann-body').value = '';
+  document.getElementById('cc-ann-pinned').checked = false;
+  ccAnnUserSelectedId = null;
+  document.getElementById('cc-ann-user-selected').textContent = '';
+  ccOnTargetTypeChange();
+}
+
+function ccOnTargetTypeChange() {
+  const type = document.getElementById('cc-ann-target-type').value;
+  document.getElementById('cc-ann-club-wrap').style.display = (type === 'club' && CC_ROLE === 'admin') ? '' : 'none';
+  document.getElementById('cc-ann-user-wrap').style.display = (type === 'user') ? '' : 'none';
+}
+
+async function ccSearchAnnUsers(q) {
+  if (!q || q.length < 2) { document.getElementById('cc-ann-user-results').innerHTML = ''; return; }
+  try {
+    const resp = await fetch('/connect/api/contacts?q=' + encodeURIComponent(q));
+    let rows = await resp.json();
+    // Admin broadcasting to a specific user isn't limited to the "new chat"
+    // contact list, but reusing the same lookup keeps this simple & DRY.
+    const results = document.getElementById('cc-ann-user-results');
+    results.innerHTML = '';
+    rows.forEach(u => {
+      const row = document.createElement('div');
+      row.style.cssText = 'padding:6px 8px;cursor:pointer;border-radius:6px;font-size:0.78rem;color:var(--text);';
+      row.textContent = `${u.name} (${u.email})`;
+      row.onmouseover = () => row.style.background = 'var(--bg-hover)';
+      row.onmouseout = () => row.style.background = 'transparent';
+      row.onclick = () => {
+        ccAnnUserSelectedId = u.user_id;
+        document.getElementById('cc-ann-user-id').value = u.user_id;
+        document.getElementById('cc-ann-user-selected').textContent = 'Selected: ' + u.name;
+        results.innerHTML = '';
+      };
+      results.appendChild(row);
+    });
+  } catch (e) {}
+}
+
+async function ccSubmitAnnouncement() {
+  const targetType = document.getElementById('cc-ann-target-type').value;
+  const title = document.getElementById('cc-ann-title').value.trim();
+  const body = document.getElementById('cc-ann-body').value.trim();
+  const pinned = document.getElementById('cc-ann-pinned').checked;
+  let targetId = null;
+  if (targetType === 'club') targetId = document.getElementById('cc-ann-club-id').value || null;
+  if (targetType === 'user') targetId = ccAnnUserSelectedId;
+
+  if (!title || !body) { alert('Title and message are required.'); return; }
+  if (targetType === 'user' && !targetId) { alert('Please select a user.'); return; }
+
+  try {
+    const resp = await fetch('/connect/announcements/create', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target_type: targetType, target_id: targetId, title, body, pinned })
+    });
+    const data = await resp.json();
+    if (data.error) { alert(data.error); return; }
+    ccCloseModal('cc-ann-modal');
+    location.reload();
+  } catch (e) { alert('Failed to post announcement.'); }
+}
+
+async function ccPinAnnouncement(annId) {
+  const resp = await fetch(`/connect/api/announcements/${annId}/pin`, { method: 'POST' });
+  const data = await resp.json();
+  if (data.error) { alert(data.error); return; }
+  location.reload();
+}
+
+async function ccDeleteAnnouncement(annId) {
+  if (!confirm('Delete this announcement?')) return;
+  const resp = await fetch(`/connect/api/announcements/${annId}/delete`, { method: 'POST' });
+  const data = await resp.json();
+  if (data.error) { alert(data.error); return; }
+  const el = document.getElementById('cc-ann-' + annId);
+  if (el) el.remove();
+}
+
+/* ══════════════════════════ ADMIN MODERATION ══════════════════════════ */
+async function ccLoadModConversations() {
+  const q = document.getElementById('cc-mod-search') ? document.getElementById('cc-mod-search').value : '';
+  const list = document.getElementById('cc-mod-list');
+  if (!list) return;
+  list.innerHTML = '<div class="cc-spinner"></div>';
+  try {
+    const resp = await fetch('/connect/api/admin/conversations?q=' + encodeURIComponent(q));
+    const rows = await resp.json();
+    if (!rows.length) { list.innerHTML = '<p style="font-size:0.8rem;color:var(--text-subtle);">No conversations found.</p>'; return; }
+    list.innerHTML = '';
+    rows.forEach(r => {
+      const row = document.createElement('div');
+      row.className = 'cc-list-item';
+      row.style.borderRadius = '9px';
+      row.innerHTML = `<div class="cc-list-meta">
+          <p class="cc-list-name">${ccEscapeHtml(r.a_name)} &harr; ${ccEscapeHtml(r.b_name)}</p>
+          <p class="cc-list-preview">${ccEscapeHtml((r.latest_body || '').slice(0,80))}</p>
+        </div>`;
+      row.onclick = () => ccViewModThread(r.a_id, r.b_id, r.a_name, r.b_name);
+      list.appendChild(row);
+    });
+  } catch (e) { list.innerHTML = '<p style="font-size:0.8rem;color:var(--red);">Failed to load.</p>'; }
+}
+
+async function ccViewModThread(a, b, aName, bName) {
+  const resp = await fetch(`/connect/api/admin/conversations/${a}/${b}`);
+  const data = await resp.json();
+  const win = document.getElementById('cc-mod-list');
+  win.innerHTML = `<button class="btn btn-secondary btn-xs" style="margin-bottom:8px;" onclick="ccLoadModConversations()">&larr; Back</button>`;
+  const thread = document.createElement('div');
+  thread.style.cssText = 'display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;padding:8px;background:var(--bg-2);border-radius:9px;';
+  (data.messages || []).forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'cc-bubble-row ' + (m.sender_id === a ? 'me' : 'them');
+    row.innerHTML = `<div><div class="cc-bubble">${ccEscapeHtml(m.body)}</div><div class="cc-bubble-meta">${ccEscapeHtml(m.sender_name)} · ${ccFormatTime(m.created_at)}</div></div>`;
+    thread.appendChild(row);
+  });
+  win.appendChild(thread);
+}
+</script>
+{% endblock %}

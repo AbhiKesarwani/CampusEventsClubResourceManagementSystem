@@ -1,0 +1,168 @@
+{% extends 'layout.html' %}
+{% block title %}Calendar · CECRMS{% endblock %}
+{% block page_title %}Calendar{% endblock %}
+
+{% block head %}
+<style>
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-dow { text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--text-subtle); text-transform: uppercase; padding: 6px 0; }
+  .cal-cell {
+    min-height: 92px; border-radius: 10px; padding: 6px; background: var(--bg-2);
+    border: 1px solid var(--border-muted); cursor: pointer; transition: background .15s, border-color .15s;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .cal-cell:hover { background: var(--bg-hover); border-color: var(--border-focus); }
+  .cal-cell.cal-empty { background: transparent; border: none; cursor: default; }
+  .cal-cell.cal-today { border-color: var(--emerald); box-shadow: 0 0 0 1px var(--emerald); }
+  .cal-daynum { font-size: 0.74rem; font-weight: 700; color: var(--text-muted); }
+  .cal-today .cal-daynum { color: var(--emerald); }
+  .cal-event-pill {
+    font-size: 0.63rem; font-weight: 600; padding: 2px 6px; border-radius: 5px;
+    background: var(--emerald-dim); color: var(--emerald); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cal-event-pill.pending { background: var(--amber-dim); color: var(--amber); }
+  .cal-more { font-size: 0.62rem; color: var(--text-subtle); padding-left: 4px; }
+  @media (max-width: 720px) { .cal-cell { min-height: 60px; } .cal-event-pill { display: none; } .cal-more { display: none; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-content anim-fade">
+
+  <div class="section-header mb-4" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <h1 class="page-title" style="margin:0;">{{ month_name }} {{ year }}</h1>
+      <div style="display:flex;gap:4px;">
+        <a href="{{ url_for('calendar.index', year=prev_year, month=prev_month, view=view) }}" class="btn btn-secondary btn-xs"><i data-lucide="chevron-left" style="width:13px;height:13px;"></i></a>
+        <a href="{{ url_for('calendar.index') }}" class="btn btn-secondary btn-xs">Today</a>
+        <a href="{{ url_for('calendar.index', year=next_year, month=next_month, view=view) }}" class="btn btn-secondary btn-xs"><i data-lucide="chevron-right" style="width:13px;height:13px;"></i></a>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="cmdk-footer" style="border:none;padding:0;gap:4px;">
+        <a href="{{ url_for('calendar.index', year=year, month=month, view='month') }}" class="btn {{ 'btn-primary' if view=='month' else 'btn-secondary' }} btn-xs">Month</a>
+        <a href="{{ url_for('calendar.index', year=year, month=month, view='agenda') }}" class="btn {{ 'btn-primary' if view=='agenda' else 'btn-secondary' }} btn-xs">Agenda</a>
+      </div>
+      {% if role in ('admin', 'club_admin') %}
+      <a href="{{ url_for('events.create') }}" class="btn btn-primary btn-sm"><i data-lucide="plus" style="width:13px;height:13px;"></i> New Event</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if view == 'month' %}
+  <div class="card" style="padding:16px;">
+    <div class="cal-grid" style="margin-bottom:6px;">
+      {% for dow in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}
+      <div class="cal-dow">{{ dow }}</div>
+      {% endfor %}
+    </div>
+    <div class="cal-grid">
+      {% for week in weeks %}
+        {% for day in week %}
+          {% if day == 0 %}
+          <div class="cal-cell cal-empty"></div>
+          {% else %}
+          {% set day_events = events_by_day.get(day, []) %}
+          <div class="cal-cell {% if year==today.year and month==today.month and day==today.day %}cal-today{% endif %}"
+               onclick="openDayDetail('{{ '%04d-%02d-%02d'|format(year, month, day) }}')">
+            <span class="cal-daynum">{{ day }}</span>
+            {% for ev in day_events[:2] %}
+            <span class="cal-event-pill {% if ev.approved_status == 'Pending' %}pending{% endif %}">{{ ev.title }}</span>
+            {% endfor %}
+            {% if day_events|length > 2 %}
+            <span class="cal-more">+{{ day_events|length - 2 }} more</span>
+            {% endif %}
+          </div>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="card" style="padding:8px;">
+    {% if agenda_events %}
+    <div style="display:flex;flex-direction:column;">
+      {% for ev in agenda_events %}
+      <a href="{{ url_for('events.detail', event_id=ev.event_id) }}"
+         style="display:flex;align-items:center;gap:14px;padding:12px 14px;border-bottom:1px solid var(--border-muted);text-decoration:none;">
+        <div style="width:52px;text-align:center;flex-shrink:0;">
+          <div style="font-size:0.72rem;color:var(--text-subtle);text-transform:uppercase;">{{ ev.date.strftime('%b') if ev.date else '' }}</div>
+          <div style="font-size:1.1rem;font-weight:800;color:var(--text);">{{ ev.date.strftime('%d') if ev.date else '?' }}</div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:0.85rem;font-weight:700;color:var(--text);margin:0;">{{ ev.title }}</p>
+          <p style="font-size:0.73rem;color:var(--text-subtle);margin:2px 0 0;">{{ ev.club_name or '' }} · {{ ev.venue_name or 'TBD' }} · {{ ev.start_time or '' }}</p>
+        </div>
+        <span class="badge badge-{{ 'approved' if ev.approved_status=='Approved' else 'pending' if ev.approved_status=='Pending' else 'rejected' }}">{{ ev.approved_status }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon" style="background:var(--emerald-dim);"><i data-lucide="calendar-x" style="width:28px;height:28px;color:var(--emerald);"></i></div>
+      <h3>No events this month</h3>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Day detail modal -->
+<div class="cc-modal-backdrop" id="day-detail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:16px;">
+  <div class="cc-modal" style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:460px;padding:20px;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 id="day-detail-title" style="font-size:0.95rem;font-weight:700;color:var(--text);margin:0;"></h3>
+      <button onclick="document.getElementById('day-detail-modal').style.display='none'" style="background:none;border:none;color:var(--text-subtle);cursor:pointer;">
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+    <div id="day-detail-body" style="display:flex;flex-direction:column;gap:10px;">
+      <div class="skel skel-card"></div>
+    </div>
+    {% if role in ('admin', 'club_admin') %}
+    <a id="day-detail-new-event" href="#" class="btn btn-primary btn-sm" style="margin-top:14px;width:100%;justify-content:center;">
+      <i data-lucide="plus" style="width:13px;height:13px;"></i> New Event This Day
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function openDayDetail(dateStr) {
+    const modal = document.getElementById('day-detail-modal');
+    const body  = document.getElementById('day-detail-body');
+    const title = document.getElementById('day-detail-title');
+    const newEventLink = document.getElementById('day-detail-new-event');
+    modal.style.display = 'flex';
+    title.textContent = dateStr;
+    body.innerHTML = '<div class="skel skel-card"></div>';
+    if (newEventLink) newEventLink.href = "{{ url_for('events.create') }}?date=" + dateStr;
+
+    try {
+        const resp = await fetch(`/calendar/api/day?date=${dateStr}`);
+        const data = await resp.json();
+        if (!data.events || !data.events.length) {
+            body.innerHTML = '<p style="font-size:0.82rem;color:var(--text-subtle);">No events on this day.</p>';
+            return;
+        }
+        body.innerHTML = data.events.map(ev => `
+            <a href="${escapeHtml(ev.url)}" style="display:block;padding:12px;border-radius:10px;background:var(--bg-hover);text-decoration:none;">
+                <p style="font-size:0.85rem;font-weight:700;color:var(--text);margin:0 0 4px;">${escapeHtml(ev.title)}</p>
+                <p style="font-size:0.75rem;color:var(--text-subtle);margin:0;">
+                    ${escapeHtml(ev.club_name || '')} ${ev.venue_name ? '· ' + escapeHtml(ev.venue_name) : ''}<br>
+                    ${ev.start_time ? '&#128337; ' + escapeHtml(ev.start_time) + (ev.end_time ? ' - ' + escapeHtml(ev.end_time) : '') : ''}<br>
+                    ${ev.coordinator_name ? '&#128100; Coordinator: ' + escapeHtml(ev.coordinator_name) : ''}<br>
+                    Status: <strong>${escapeHtml(ev.approved_status)}</strong> ·
+                    Attendance: <strong style="color:${ev.attended ? 'var(--emerald)' : 'var(--text-subtle)'}">${ev.attended ? 'Marked' : 'Not marked'}</strong>
+                </p>
+            </a>
+        `).join('');
+    } catch (e) {
+        body.innerHTML = '<p style="font-size:0.82rem;color:var(--red);">Failed to load events.</p>';
+    }
+}
+</script>
+{% endblock %}

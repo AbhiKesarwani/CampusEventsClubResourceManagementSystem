@@ -61,3 +61,37 @@ def delete_upload(relative_path: str):
             os.remove(full_path)
         except OSError:
             pass
+
+
+# ── Gallery download helpers ────────────────────────────────────────────────
+# Shared by routes/events.py and routes/clubs.py, which both offer a
+# "download single image" / "download all as ZIP" gallery feature.
+
+def get_image_path(images: list, img_id: int) -> str:
+    """
+    Find an image dict (each having 'img_id' and 'img_path' keys) by id and
+    return its absolute filesystem path.
+    Aborts with 404 if not found or the file is missing on disk.
+    """
+    from flask import abort
+    img = next((i for i in images if i['img_id'] == img_id), None)
+    if not img:
+        abort(404)
+    path = os.path.join(os.getcwd(), 'static', img['img_path'])
+    if not os.path.exists(path):
+        abort(404)
+    return path
+
+
+def build_gallery_zip(images: list):
+    """Build an in-memory ZIP archive containing every given image. Returns a BytesIO."""
+    import io
+    import zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for img in images:
+            path = os.path.join(os.getcwd(), 'static', img['img_path'])
+            if os.path.exists(path):
+                zf.write(path, os.path.basename(path))
+    buf.seek(0)
+    return buf

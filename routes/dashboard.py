@@ -8,7 +8,7 @@ from services.event_service import get_upcoming_events, count_events, get_events
 from services.club_service import get_all_clubs, get_club_by_id
 from services.venue_service import count_venues
 from services.resource_service import (
-    count_resources, count_pending_requests, get_requests_for_club,
+    count_resources, count_pending_requests, get_resource_requests_for_club,
     release_expired_allocations
 )
 from services.attendance_service import (
@@ -17,7 +17,7 @@ from services.attendance_service import (
     get_top_students_by_attendance, get_club_monthly_attendance,
     get_most_attended_event
 )
-from services.certificate_service import count_user_certificates, get_user_certificates
+from services.certificate_service import get_user_certificates
 from services.recommendation_service import get_recommendations
 from services.log_service import get_recent_activity
 from services.member_service import get_member_count
@@ -113,7 +113,7 @@ def _club_admin_stats(club_id) -> dict:
         }
     my_club     = get_club_by_id(club_id)
     my_events   = get_events_for_club(club_id)
-    my_requests = get_requests_for_club(club_id)
+    my_requests = get_resource_requests_for_club(club_id)
     member_cnt  = get_member_count(club_id)
 
     monthly = get_club_monthly_attendance(club_id, 6)

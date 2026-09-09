@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+{% block title %}Export Data · CECRMS{% endblock %}
+{% block page_title %}Export Data{% endblock %}
+
+{% block content %}
+<div class="page-content anim-fade" style="max-width:800px;">
+  <div class="section-header mb-6">
+    <div>
+      <h1 class="page-title">Export Data</h1>
+      <p class="page-subtitle">Download campus data as CSV, Excel, or PDF.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    {% for key, spec in datasets.items() %}
+    <div class="card" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <p style="font-size:0.88rem;font-weight:700;color:var(--text);margin:0;">{{ spec.label }}</p>
+        <p style="font-size:0.74rem;color:var(--text-subtle);margin:2px 0 0;">{{ spec.columns|length }} columns</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <a href="{{ url_for('export.download', dataset=key, fmt='csv') }}" class="btn btn-secondary btn-sm">
+          <i data-lucide="file-text" style="width:13px;height:13px;"></i> CSV
+        </a>
+        <a href="{{ url_for('export.download', dataset=key, fmt='xlsx') }}" class="btn btn-secondary btn-sm">
+          <i data-lucide="file-spreadsheet" style="width:13px;height:13px;"></i> Excel
+        </a>
+        <a href="{{ url_for('export.download', dataset=key, fmt='pdf') }}" class="btn btn-secondary btn-sm">
+          <i data-lucide="file-down" style="width:13px;height:13px;"></i> PDF
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

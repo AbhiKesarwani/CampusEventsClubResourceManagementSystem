@@ -128,3 +128,45 @@ def get_member_count(club_id: int) -> int:
     finally:
         if cur: cur.close()
         if conn: conn.close()
+
+
+def get_clubs_for_user(user_id: int) -> list[dict]:
+    """Return every club a user belongs to (used by the profile page's
+    "Joined Clubs" section) with their position in each."""
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor(dictionary=True)
+        cur.execute("""
+            SELECT c.club_id, c.club_name, cm.position, cm.joined_at
+            FROM club_members cm
+            JOIN clubs c ON cm.club_id = c.club_id
+            WHERE cm.user_id = %s
+            ORDER BY cm.joined_at DESC
+        """, (user_id,))
+        return cur.fetchall()
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+
+def get_all_club_memberships(limit: int = 5000) -> list[dict]:
+    """Every club_members row across every club, for admin exports."""
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor(dictionary=True)
+        cur.execute("""
+            SELECT c.club_name, u.name AS member_name, u.email, cm.position, cm.joined_at
+            FROM club_members cm
+            JOIN clubs c ON cm.club_id = c.club_id
+            JOIN users u ON cm.user_id = u.user_id
+            ORDER BY c.club_name, FIELD(cm.position,
+                'President','Vice President','Secretary','Treasurer',
+                'Coordinator','Volunteer','Member')
+            LIMIT %s
+        """, (limit,))
+        return cur.fetchall()
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()

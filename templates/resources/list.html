@@ -81,7 +81,7 @@
                                     Edit
                                 </a>
                                 <form method="POST" action="{{ url_for('resources.delete', resource_id=r.resource_id) }}"
-                                      onsubmit="return confirm('Delete {{ r.resource_name }}? This cannot be undone.');">
+                                      data-safe-delete="true" data-name="{{ r.resource_name }}">
                                     <button type="submit" class="btn btn-danger btn-xs">
                                         <i data-lucide="trash-2" style="width:11px;height:11px;"></i>
                                     </button>

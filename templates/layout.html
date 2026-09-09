@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="CECRMS — Campus Event & Club Resource Management System">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}CECRMS{% endblock %}</title>
 
     <!-- Google Fonts -->
@@ -101,6 +102,15 @@
             <span class="sidebar-label">Clubs</span>
         </a>
 
+        <a href="{{ url_for('connect.index') }}"
+           class="sidebar-link {% if active=='connect' %}active-nav{% endif %}">
+            <i data-lucide="message-circle" class="sidebar-icon"></i>
+            <span class="sidebar-label">Campus Connect</span>
+            {% if cc_unread_count is defined and cc_unread_count > 0 %}
+            <span class="sidebar-badge">{{ cc_unread_count if cc_unread_count < 99 else '99+' }}</span>
+            {% endif %}
+        </a>
+
         <!-- ── MY SPACE (student only) ── -->
         {% if role == 'student' %}
         <p class="sidebar-section">My Space</p>
@@ -188,6 +198,12 @@
             <i data-lucide="user-cog" class="sidebar-icon"></i>
             <span class="sidebar-label">Coordinators</span>
         </a>
+
+        <a href="{{ url_for('export.index') }}"
+           class="sidebar-link {% if active=='export' %}active-nav{% endif %}">
+            <i data-lucide="download" class="sidebar-icon"></i>
+            <span class="sidebar-label">Export Data</span>
+        </a>
         {% endif %}
 
         <!-- ── Notifications (all roles) ── -->
@@ -200,6 +216,24 @@
             {% if unread_count > 0 %}
             <span class="sidebar-badge">{{ unread_count if unread_count < 99 else '99+' }}</span>
             {% endif %}
+        </a>
+
+        <a href="{{ url_for('calendar.index') }}"
+           class="sidebar-link {% if active=='calendar' %}active-nav{% endif %}">
+            <i data-lucide="calendar-range" class="sidebar-icon"></i>
+            <span class="sidebar-label">Calendar</span>
+        </a>
+
+        <a href="{{ url_for('profile.index') }}"
+           class="sidebar-link {% if active=='profile' %}active-nav{% endif %}">
+            <i data-lucide="user-circle" class="sidebar-icon"></i>
+            <span class="sidebar-label">Profile</span>
+        </a>
+
+        <a href="{{ url_for('settings.index') }}"
+           class="sidebar-link {% if active=='settings' %}active-nav{% endif %}">
+            <i data-lucide="settings" class="sidebar-icon"></i>
+            <span class="sidebar-label">Settings</span>
         </a>
 
     </nav>
@@ -257,6 +291,9 @@
                    placeholder="Search events, clubs…"
                    id="global-search-input"
                    autocomplete="off">
+            {% if session.get('user_id') %}
+            <kbd class="cmdk-hint" onclick="event.preventDefault(); openCmdPalette();" title="Campus-wide search">Ctrl K</kbd>
+            {% endif %}
         </form>
 
         <!-- Right: actions -->
@@ -337,6 +374,14 @@
         <i data-lucide="users" style="width:19px;height:19px;"></i>
         <span>Clubs</span>
     </a>
+    <a href="{{ url_for('connect.index') }}"
+       class="bnav-item {% if active=='connect' %}active{% endif %}" style="position:relative;">
+        <i data-lucide="message-circle" style="width:19px;height:19px;"></i>
+        {% if cc_unread_count is defined and cc_unread_count > 0 %}
+        <span style="position:absolute;top:4px;right:12px;width:7px;height:7px;background:var(--red);border-radius:50%;border:2px solid var(--bg-2);"></span>
+        {% endif %}
+        <span>Connect</span>
+    </a>
     {% if role == 'student' %}
     <a href="{{ url_for('attendance.my_attendance') }}"
        class="bnav-item {% if active=='attendance' %}active{% endif %}">
@@ -377,11 +422,82 @@
     <img id="lightbox-img" src="" alt="Preview" onclick="event.stopPropagation()">
 </div>
 
+{% if session.get('user_id') %}
+<!-- ═══════════════════════════════════════
+     COMMAND PALETTE (Ctrl+K global search)
+════════════════════════════════════════ -->
+<div id="cmdk-overlay" class="cmdk-overlay" onclick="if(event.target===this) closeCmdPalette();">
+    <div class="cmdk-panel" role="dialog" aria-modal="true" aria-label="Campus-wide search">
+        <div class="cmdk-input-row">
+            <i data-lucide="search" style="width:16px;height:16px;color:var(--text-subtle);flex-shrink:0;"></i>
+            <input type="text" id="cmdk-input" placeholder="Search events, clubs, people, certificates…" autocomplete="off">
+            <kbd class="cmdk-esc">Esc</kbd>
+        </div>
+        <div id="cmdk-results" class="cmdk-results">
+            <div class="cmdk-empty">
+                <i data-lucide="command" style="width:26px;height:26px;color:var(--text-subtle);"></i>
+                <p>Search across the entire campus — events, clubs, people, certificates, announcements &amp; more.</p>
+            </div>
+        </div>
+        <div class="cmdk-footer">
+            <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> Navigate</span>
+            <span><kbd>Enter</kbd> Open</span>
+            <span><kbd>Esc</kbd> Close</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- ═══════════════════════════════════════
      SCRIPTS
 ════════════════════════════════════════ -->
 <script>
-// ── Icons ──
+// -- Global HTML-escaping helper --
+// Any script on any page that builds innerHTML from server/DB-provided
+// strings (event titles, club names, etc.) MUST escape them first to
+// avoid stored XSS — Jinja auto-escapes server-rendered output, but
+// values fetched via JSON APIs and inserted via innerHTML are not
+// automatically escaped by the browser.
+function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str == null ? '' : String(str);
+    return d.innerHTML;
+}
+
+// -- CSRF protection (global) --
+// Flask-WTF's CSRFProtect validates a token on every POST/PUT/PATCH/DELETE.
+// Rather than hand-editing every form and fetch() call across the app,
+// this injects the token into every POST form and every same-origin
+// mutating fetch() request automatically.
+(function() {
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    const token = metaTag ? metaTag.content : '';
+
+    document.querySelectorAll('form').forEach(function(form) {
+        if (form.method.toUpperCase() === 'POST' && !form.querySelector('input[name="csrf_token"]')) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'csrf_token';
+            input.value = token;
+            form.appendChild(input);
+        }
+    });
+
+    const originalFetch = window.fetch;
+    window.fetch = function(input, init) {
+        init = init || {};
+        const method = (init.method || 'GET').toUpperCase();
+        if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+            init.headers = new Headers(init.headers || {});
+            if (!init.headers.has('X-CSRFToken')) {
+                init.headers.set('X-CSRFToken', token);
+            }
+        }
+        return originalFetch(input, init);
+    };
+})();
+
+// -- Icons --
 lucide.createIcons();
 
 // ── Always dark — no toggle ──
@@ -514,8 +630,152 @@ function closeLightbox() {
         document.body.style.overflow = '';
     }
 }
+
+// ── Command Palette (Ctrl+K global search) ──
+let cmdkActiveIndex = -1;
+let cmdkItems = [];
+let cmdkDebounce = null;
+
+function openCmdPalette() {
+    const overlay = document.getElementById('cmdk-overlay');
+    if (!overlay) return;
+    overlay.classList.add('cmdk-open');
+    document.body.style.overflow = 'hidden';
+    const input = document.getElementById('cmdk-input');
+    if (input) { input.value = ''; input.focus(); }
+    cmdkActiveIndex = -1;
+    cmdkItems = [];
+    const results = document.getElementById('cmdk-results');
+    if (results) {
+        results.innerHTML = `<div class="cmdk-empty">
+            <i data-lucide="command" style="width:26px;height:26px;color:var(--text-subtle);"></i>
+            <p>Search across the entire campus — events, clubs, people, certificates, announcements &amp; more.</p>
+        </div>`;
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+function closeCmdPalette() {
+    const overlay = document.getElementById('cmdk-overlay');
+    if (overlay) overlay.classList.remove('cmdk-open');
+    document.body.style.overflow = '';
+}
+
+function cmdkRender(items) {
+    cmdkItems = items;
+    cmdkActiveIndex = items.length ? 0 : -1;
+    const results = document.getElementById('cmdk-results');
+    if (!results) return;
+    if (!items.length) {
+        results.innerHTML = `<div class="cmdk-empty">
+            <i data-lucide="search-x" style="width:26px;height:26px;color:var(--text-subtle);"></i>
+            <p>No results found. Try a different search term.</p>
+        </div>`;
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+    let html = '';
+    let lastCategory = null;
+    items.forEach((item, i) => {
+        if (item.category !== lastCategory) {
+            html += `<div class="cmdk-group-label">${escapeHtml(item.category)}</div>`;
+            lastCategory = item.category;
+        }
+        html += `<a href="${escapeHtml(item.url)}" class="cmdk-item${i === 0 ? ' cmdk-active' : ''}" data-idx="${i}">
+            <div class="cmdk-item-icon"><i data-lucide="${item.icon}" style="width:15px;height:15px;"></i></div>
+            <div style="min-width:0;flex:1;">
+                <div class="cmdk-item-title">${escapeHtml(item.title)}</div>
+                <div class="cmdk-item-sub">${escapeHtml(item.subtitle || '')}</div>
+            </div>
+        </a>`;
+    });
+    results.innerHTML = html;
+    if (window.lucide) lucide.createIcons();
+    results.querySelectorAll('.cmdk-item').forEach(el => {
+        el.addEventListener('mouseenter', () => cmdkSetActive(parseInt(el.dataset.idx)));
+    });
+}
+
+function cmdkSetActive(idx) {
+    cmdkActiveIndex = idx;
+    document.querySelectorAll('.cmdk-item').forEach(el => {
+        el.classList.toggle('cmdk-active', parseInt(el.dataset.idx) === idx);
+    });
+    const active = document.querySelector('.cmdk-item.cmdk-active');
+    if (active) active.scrollIntoView({ block: 'nearest' });
+}
+
+async function cmdkSearch(q) {
+    if (q.length < 2) {
+        cmdkRender([]);
+        document.getElementById('cmdk-results').innerHTML = `<div class="cmdk-empty">
+            <i data-lucide="command" style="width:26px;height:26px;color:var(--text-subtle);"></i>
+            <p>Keep typing — at least 2 characters.</p>
+        </div>`;
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+    // Skeleton loading state while the request is in flight
+    document.getElementById('cmdk-results').innerHTML = `
+        <div style="padding:6px;">
+            <div class="skel-row"><div class="skel skel-avatar"></div><div style="flex:1;"><div class="skel skel-text w-60"></div><div class="skel skel-text w-40" style="margin-bottom:0;"></div></div></div>
+            <div class="skel-row"><div class="skel skel-avatar"></div><div style="flex:1;"><div class="skel skel-text w-80"></div><div class="skel skel-text w-40" style="margin-bottom:0;"></div></div></div>
+            <div class="skel-row"><div class="skel skel-avatar"></div><div style="flex:1;"><div class="skel skel-text w-60"></div><div class="skel skel-text w-80" style="margin-bottom:0;"></div></div></div>
+        </div>`;
+    try {
+        const resp = await fetch('/search/api/quick?q=' + encodeURIComponent(q));
+        const data = await resp.json();
+        cmdkRender(data.items || []);
+    } catch (e) { /* fail silently — network hiccup */ }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('cmdk-input');
+    if (input) {
+        input.addEventListener('input', () => {
+            clearTimeout(cmdkDebounce);
+            const q = input.value.trim();
+            cmdkDebounce = setTimeout(() => cmdkSearch(q), 200);
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (cmdkItems.length) cmdkSetActive(Math.min(cmdkActiveIndex + 1, cmdkItems.length - 1));
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (cmdkItems.length) cmdkSetActive(Math.max(cmdkActiveIndex - 1, 0));
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const active = document.querySelector('.cmdk-item.cmdk-active');
+                if (active) window.location.href = active.getAttribute('href');
+            }
+        });
+    }
+});
+
+// ── Global keyboard shortcuts ──
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeLightbox(); closeSidebar(); }
+    const tag = (e.target.tagName || '').toLowerCase();
+    const typing = tag === 'input' || tag === 'textarea' || e.target.isContentEditable;
+
+    // Ctrl/Cmd+K → open command palette
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        openCmdPalette();
+        return;
+    }
+    // '/' → focus search (when not already typing somewhere)
+    if (e.key === '/' && !typing) {
+        e.preventDefault();
+        openCmdPalette();
+        return;
+    }
+    // Esc → close whatever overlay is open
+    if (e.key === 'Escape') {
+        closeCmdPalette();
+        closeLightbox();
+        closeSidebar();
+    }
 });
 
 // ── Animated counters ──
@@ -574,5 +834,148 @@ document.querySelectorAll('img[loading="lazy"]').forEach(img => {
 </script>
 
 {% block scripts %}{% endblock %}
+
+<!-- ═══════════════════════════════════════════════════
+     SAFE DELETE MODAL — Global reusable 2-step dialog
+     Add data-safe-delete="true" data-name="Item Name"
+     to any <form method="POST"> delete form.
+     ═══════════════════════════════════════════════════ -->
+<div id="sdm-overlay" class="sdm-overlay" role="dialog" aria-modal="true" aria-labelledby="sdm-title">
+  <div class="sdm-dialog">
+    <div class="sdm-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+           fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="m19 6-.867 12.142A2 2 0 0 1 16.138 20H7.862a2 2 0 0 1-1.995-1.858L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>
+    </div>
+
+    <!-- Step 1: Confirm -->
+    <div id="sdm-step1" class="sdm-step sdm-active">
+      <div class="sdm-title" id="sdm-title">Delete this item?</div>
+      <div class="sdm-body" id="sdm-body-step1">
+        This action <strong>cannot be undone</strong>. Are you sure you want to delete
+        <strong id="sdm-name-step1"></strong>?
+      </div>
+      <div class="sdm-actions">
+        <button class="sdm-btn-cancel" onclick="sdmClose()">Cancel</button>
+        <button class="sdm-btn-next" onclick="sdmGoStep2()">
+          Yes, Continue →
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Type name to confirm -->
+    <div id="sdm-step2" class="sdm-step">
+      <div class="sdm-title">Confirm deletion</div>
+      <div class="sdm-body">
+        To permanently delete this item, type its exact name below:
+      </div>
+      <label class="sdm-confirm-label">
+        Type <code id="sdm-name-code"></code> to confirm
+      </label>
+      <input id="sdm-confirm-input" class="sdm-confirm-input"
+             type="text" placeholder="Type name exactly…"
+             autocomplete="off" oninput="sdmCheckInput()">
+      <div class="sdm-actions">
+        <button class="sdm-btn-cancel" onclick="sdmClose()">Cancel</button>
+        <button id="sdm-btn-delete" class="sdm-btn-delete" disabled onclick="sdmExecute()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="m19 6-.867 12.142A2 2 0 0 1 16.138 20H7.862a2 2 0 0 1-1.995-1.858L5 6"/>
+          </svg>
+          Delete permanently
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let _targetForm = null;
+  let _targetName = '';
+
+  // Intercept all forms with data-safe-delete attribute
+  document.addEventListener('submit', function(e) {
+    const form = e.target;
+    if (!form.dataset.safeDelete) return;
+    e.preventDefault();
+    _targetForm = form;
+    _targetName = (form.dataset.name || 'this item').trim();
+    sdmOpen();
+  });
+
+  window.sdmOpen = function() {
+    document.getElementById('sdm-name-step1').textContent = _targetName;
+    document.getElementById('sdm-name-code').textContent  = _targetName;
+    document.getElementById('sdm-confirm-input').value    = '';
+    document.getElementById('sdm-btn-delete').disabled    = true;
+    document.getElementById('sdm-confirm-input').classList.remove('sdm-matched');
+    // Reset to step 1
+    document.getElementById('sdm-step1').classList.add('sdm-active');
+    document.getElementById('sdm-step2').classList.remove('sdm-active');
+    document.getElementById('sdm-overlay').classList.add('sdm-open');
+  };
+
+  window.sdmClose = function() {
+    document.getElementById('sdm-overlay').classList.remove('sdm-open');
+    _targetForm = null;
+  };
+
+  window.sdmGoStep2 = function() {
+    document.getElementById('sdm-step1').classList.remove('sdm-active');
+    document.getElementById('sdm-step2').classList.add('sdm-active');
+    setTimeout(() => document.getElementById('sdm-confirm-input').focus(), 50);
+  };
+
+  window.sdmCheckInput = function() {
+    const input = document.getElementById('sdm-confirm-input');
+    const btn   = document.getElementById('sdm-btn-delete');
+    const match = input.value === _targetName;
+    btn.disabled = !match;
+    input.classList.toggle('sdm-matched', match);
+  };
+
+  window.sdmExecute = function() {
+    if (!_targetForm) return;
+    // Show success toast after brief delay (form submission will reload page)
+    sdmShowToast('Deleted successfully');
+    setTimeout(() => { _targetForm.submit(); }, 200);
+  };
+
+  window.sdmShowToast = function(message) {
+    const toast = document.createElement('div');
+    toast.className = 'sdm-toast';
+    toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/></svg><span>${message}</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('sdm-toast-fade');
+      setTimeout(() => toast.remove(), 350);
+    }, 2500);
+  };
+
+  // Close on overlay click or Escape
+  document.getElementById('sdm-overlay').addEventListener('click', function(e) {
+    if (e.target === this) sdmClose();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') sdmClose();
+  });
+
+  // Enter key in confirm input attempts delete
+  document.getElementById('sdm-confirm-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !document.getElementById('sdm-btn-delete').disabled) {
+      sdmExecute();
+    } else if (e.key === 'Enter') {
+      this.classList.add('sdm-shake');
+      setTimeout(() => this.classList.remove('sdm-shake'), 400);
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

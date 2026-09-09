@@ -61,7 +61,7 @@
 
             {% if role == 'admin' %}
             <form method="POST" action="{{ url_for('events.delete', event_id=event.event_id) }}"
-                  onsubmit="return confirm('Delete this event?')">
+                  data-safe-delete="true" data-name="{{ event.title }}">
                 <button class="btn btn-danger btn-sm" type="submit">
                     <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
                 </button>
@@ -70,6 +70,26 @@
         </div>
     </div>
 </div>
+
+{# ── EVENT TIMELINE ── #}
+{% if timeline %}
+<div class="card" style="padding:20px 24px;margin-bottom:20px;overflow-x:auto;">
+    <h2 style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;">
+        Event Timeline
+    </h2>
+    <div class="event-timeline">
+        {% for stage in timeline %}
+        <div class="event-timeline-stage {% if stage.done %}done{% endif %}">
+            <div class="event-timeline-icon">
+                <i data-lucide="{{ stage.icon }}" style="width:14px;height:14px;"></i>
+            </div>
+            <p class="event-timeline-label">{{ stage.label }}</p>
+        </div>
+        {% if not loop.last %}<div class="event-timeline-connector {% if stage.done %}done{% endif %}"></div>{% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 {# ── MAIN GRID ── #}
 <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;" class="event-layout">

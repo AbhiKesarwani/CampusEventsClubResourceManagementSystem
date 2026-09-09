@@ -5,10 +5,10 @@ from helpers.auth_helpers import login_required
 from services.user_service import get_user_by_id
 from services.event_service import get_event_by_id
 from services.attendance_service import (
-    generate_attendance_code, get_event_by_attendance_code,
+    get_event_by_attendance_code,
     mark_attendance_by_code, mark_attendance,
     get_attendance_for_event, has_attended,
-    submit_code_self, get_upcoming_events_for_user,
+    get_upcoming_events_for_user,
     get_student_attendance_history, expire_attendance_code,
     # OTP
     generate_otp, get_event_by_otp, submit_otp_self,
@@ -88,7 +88,7 @@ def show_code(event_id):
     user    = get_user_by_id(session['user_id'])
 
     # OTP status
-    from datetime import datetime, timedelta
+    from datetime import datetime
     otp_active  = False
     otp_seconds = 0
     gen_at = event.get('otp_generated_at')

@@ -59,7 +59,7 @@
             {% endif %}
             {% if role == 'admin' %}
             <form method="POST" action="{{ url_for('clubs.delete', club_id=club.club_id) }}"
-                  onsubmit="return confirm('Delete {{ club.club_name }}?')">
+                  data-safe-delete="true" data-name="{{ club.club_name }}">
                 <button class="btn btn-danger btn-sm" type="submit">
                     <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
                 </button>

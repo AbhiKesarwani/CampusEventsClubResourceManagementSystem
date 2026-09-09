@@ -5,7 +5,7 @@ from services.user_service import get_user_by_id
 from services.resource_service import (
     get_all_resources, get_resource_by_id,
     create_resource, update_resource, delete_resource,
-    get_all_requests, get_requests_for_club,
+    get_all_requests, get_resource_requests_for_club,
     create_request, approve_request, reject_request,
     release_expired_allocations
 )
@@ -135,6 +135,8 @@ def submit_request():
         end_time    = request.form.get('req_end_time') or None
         purpose     = request.form.get('purpose', '').strip() or None
         remarks     = request.form.get('remarks', '').strip() or None
+        return_date = request.form.get('return_date') or None
+        return_time = request.form.get('return_time') or None
 
         req_club_id = club_id
         if role == 'admin':
@@ -145,7 +147,8 @@ def submit_request():
                 event_id, req_club_id, resource_id, quantity, session['user_id'],
                 reason=reason,
                 required_date=req_date, req_start_time=start_time,
-                req_end_time=end_time, purpose=purpose, remarks=remarks
+                req_end_time=end_time, purpose=purpose, remarks=remarks,
+                return_date=return_date, return_time=return_time
             )
             log_action(session['user_id'], 'REQUEST_RESOURCE', 'resource_request', rid)
             flash("Resource request submitted! Awaiting admin approval.", "success")
@@ -165,8 +168,24 @@ def submit_request():
 @admin_required
 def approve(request_id):
     try:
-        approve_request(request_id, session['user_id'])
+        req_info = approve_request(request_id, session['user_id'])
         log_action(session['user_id'], 'APPROVE_RESOURCE_REQUEST', 'resource_request', request_id)
+        # Notify the requestor (deduplicated)
+        try:
+            from services.notification_service import create_notification_safe
+            from services.resource_service import get_request_by_id
+            req = get_request_by_id(request_id)
+            if req:
+                create_notification_safe(
+                    user_id=req['requested_by'],
+                    title='Resource Request Approved ✓',
+                    body=f"{req['quantity']}x {req.get('resource_name', 'resource')} approved for '{req.get('event_title', 'your event')}'.",
+                    link='/resources/my-requests',
+                    type='success',
+                    event_key=f"resource_approved_{request_id}"
+                )
+        except Exception:
+            pass
         flash("Request approved and resources allocated!", "success")
     except ValueError as e:
         flash(str(e), "danger")
@@ -179,8 +198,28 @@ def approve(request_id):
 @admin_required
 def reject(request_id):
     try:
+        # Fetch before rejecting for notification
+        try:
+            from services.notification_service import create_notification_safe
+            from services.resource_service import get_request_by_id
+            req = get_request_by_id(request_id)
+        except Exception:
+            req = None
         reject_request(request_id, session['user_id'])
         log_action(session['user_id'], 'REJECT_RESOURCE_REQUEST', 'resource_request', request_id)
+        # Notify the requestor (deduplicated)
+        if req:
+            try:
+                create_notification_safe(
+                    user_id=req['requested_by'],
+                    title='Resource Request Rejected',
+                    body=f"Your request for {req['quantity']}x {req.get('resource_name', 'resource')} was rejected.",
+                    link='/resources/my-requests',
+                    type='warning',
+                    event_key=f"resource_rejected_{request_id}"
+                )
+            except Exception:
+                pass
         flash("Request rejected.", "success")
     except Exception as e:
         flash(f"Error: {e}", "danger")
@@ -201,7 +240,7 @@ def my_requests():
         return redirect(url_for('dashboard.index'))
 
     _trigger_auto_release()
-    reqs = get_requests_for_club(club_id)
+    reqs = get_resource_requests_for_club(club_id)
     user = get_user_by_id(session['user_id'])
     return render_template('resources/my_requests.html',
                            requests=reqs, user=user, active='resource_requests')

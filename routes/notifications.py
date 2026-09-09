@@ -8,6 +8,7 @@ from services.notification_service import (
     mark_read, mark_all_read,
     delete_notification, delete_all_notifications, count_unread
 )
+from helpers.pagination import paginate
 
 bp = Blueprint('notifications', __name__, url_prefix='/notifications')
 
@@ -20,8 +21,7 @@ def index():
     user_id     = session['user_id']
     page        = request.args.get('page', 1, type=int)
     total       = count_user_notifications(user_id)
-    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
-    page        = max(1, min(page, total_pages))
+    page, total_pages, offset = paginate(total, page, PER_PAGE)
     notifs      = get_user_notifications(user_id, page=page, per_page=PER_PAGE)
     user        = get_user_by_id(user_id)
     unread_total = count_unread(user_id)

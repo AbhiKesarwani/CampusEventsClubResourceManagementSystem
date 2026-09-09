@@ -24,7 +24,7 @@
                 </button>
             </form>
             <form method="POST" action="{{ url_for('notifications.delete_all') }}"
-                  onsubmit="return confirm('Delete all notifications? This cannot be undone.');"
+                  data-safe-delete="true" data-name="All Notifications"
                   style="display:inline;">
                 <button type="submit" class="btn btn-danger btn-sm">
                     <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
