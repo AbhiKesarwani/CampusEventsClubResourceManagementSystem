@@ -15,7 +15,7 @@ def test_export_index_renders_for_admin(client):
     assert resp.status_code == 200
 
 
-DATASETS = ['students', 'attendance', 'resources', 'events', 'certificates', 'club-members']
+DATASETS = ['students', 'attendance', 'events', 'certificates', 'club-members']
 FORMATS_AND_MIME = {
     'csv': 'text/csv',
     'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

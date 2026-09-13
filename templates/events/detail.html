@@ -1,5 +1,5 @@
 {% extends 'layout.html' %}
-{% block title %}{{ event.title }} — CECRMS{% endblock %}
+{% block title %}{{ event.title }} — CampusOps{% endblock %}
 {% block page_title %}{{ event.title }}{% endblock %}
 
 {% block content %}
@@ -12,18 +12,18 @@
     <img src="{{ url_for('static', filename=event_images[0].img_path) }}"
          style="width:100%;height:100%;object-fit:cover;display:block;" alt="{{ event.title }}">
     {% else %}
-    <div style="width:100%;height:100%;background:linear-gradient(135deg,#0f2027 0%,#203a43 40%,#2c5364 100%);display:flex;align-items:center;justify-content:center;">
-        <i data-lucide="calendar-days" style="width:80px;height:80px;color:rgba(16,185,129,0.3);"></i>
+    <div style="width:100%;height:100%;background:linear-gradient(135deg,#0F172A 0%,#1E3A8A 60%,#2563EB 100%);display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="calendar-days" style="width:80px;height:80px;color:rgba(255,255,255,0.35);"></i>
     </div>
     {% endif %}
 
-    <!-- Dark gradient overlay -->
-    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(13,17,23,0.2) 0%,rgba(13,17,23,0.85) 100%);"></div>
+    <!-- Gradient overlay for text contrast -->
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(15,23,42,0.1) 0%,rgba(15,23,42,0.88) 100%);"></div>
 
     <!-- Date badge -->
     {% if event.date %}
-    <div style="position:absolute;top:18px;right:18px;background:rgba(13,17,23,0.8);border:1px solid var(--border);backdrop-filter:blur(8px);padding:10px 14px;border-radius:12px;text-align:center;">
-        <p style="font-size:1.6rem;font-weight:900;color:var(--emerald);line-height:1;">{{ event.date.strftime('%d') if event.date else '' }}</p>
+    <div style="position:absolute;top:18px;right:18px;background:#FFFFFF;border:1px solid rgba(226,232,240,0.8);box-shadow:0 10px 25px -5px rgba(15,23,42,0.25);padding:10px 14px;border-radius:12px;text-align:center;">
+        <p style="font-size:1.6rem;font-weight:900;color:var(--blue-primary);line-height:1;">{{ event.date.strftime('%d') if event.date else '' }}</p>
         <p style="font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">{{ event.date.strftime('%b %Y') if event.date else '' }}</p>
     </div>
     {% endif %}
@@ -119,23 +119,6 @@
                 <i data-lucide="external-link" style="width:15px;height:15px;"></i>
                 Open Registration Form
             </a>
-        </div>
-        {% endif %}
-
-        {# Resources Used #}
-        {% if event_resources %}
-        <div class="card" style="padding:24px;">
-            <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
-                <i data-lucide="package" style="width:14px;height:14px;color:var(--purple);"></i> Resources Used
-            </h2>
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;">
-                {% for r in event_resources %}
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-hover);border-radius:8px;border:1px solid var(--border);">
-                    <span style="font-size:0.82rem;color:var(--text);">{{ r.resource_name }}</span>
-                    <span style="font-size:0.8rem;font-weight:700;color:var(--purple);background:var(--purple-dim);padding:2px 8px;border-radius:99px;">×{{ r.quantity }}</span>
-                </div>
-                {% endfor %}
-            </div>
         </div>
         {% endif %}
 

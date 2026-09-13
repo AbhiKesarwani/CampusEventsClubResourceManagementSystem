@@ -1,5 +1,5 @@
 {% extends 'layout.html' %}
-{% block title %}Settings · CECRMS{% endblock %}
+{% block title %}Settings · CampusOps{% endblock %}
 {% block page_title %}Settings{% endblock %}
 
 {% block content %}
@@ -38,13 +38,10 @@
       <i data-lucide="key-round" style="width:14px;height:14px;color:var(--amber);"></i> Change Password
     </h3>
     <form method="POST" action="{{ url_for('settings.change_password') }}" style="display:grid;gap:12px;">
-      <input type="password" name="current_password" placeholder="Current password" required
-             style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:0.85rem;">
+      <input type="password" name="current_password" placeholder="Current password" required class="form-input">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <input type="password" name="new_password" placeholder="New password" required minlength="6"
-               style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:0.85rem;">
-        <input type="password" name="confirm_password" placeholder="Confirm new password" required minlength="6"
-               style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:0.85rem;">
+        <input type="password" name="new_password" placeholder="New password" required minlength="6" class="form-input">
+        <input type="password" name="confirm_password" placeholder="Confirm new password" required minlength="6" class="form-input">
       </div>
       <div>
         <button type="submit" class="btn btn-primary btn-sm">Update Password</button>
@@ -69,8 +66,7 @@
 
       <div>
         <span style="font-size:0.83rem;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">AI Assistant response style</span>
-        <select name="ai_response_style"
-                style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.83rem;">
+        <select name="ai_response_style" class="form-input">
           <option value="concise" {% if preferences.ai_response_style == 'concise' %}selected{% endif %}>Concise — short, to the point</option>
           <option value="detailed" {% if preferences.ai_response_style == 'detailed' %}selected{% endif %}>Detailed — more context &amp; explanation</option>
         </select>
@@ -78,8 +74,7 @@
 
       <div>
         <span style="font-size:0.83rem;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">Profile visibility</span>
-        <select name="profile_visibility"
-                style="background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.83rem;">
+        <select name="profile_visibility" class="form-input">
           <option value="campus" {% if preferences.profile_visibility == 'campus' %}selected{% endif %}>Campus — coordinators/admin can view my profile</option>
           <option value="private" {% if preferences.profile_visibility == 'private' %}selected{% endif %}>Private — only I can view my profile</option>
         </select>

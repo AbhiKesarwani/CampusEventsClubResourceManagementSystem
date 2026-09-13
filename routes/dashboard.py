@@ -7,10 +7,6 @@ from services.user_service import get_user_by_id
 from services.event_service import get_upcoming_events, count_events, get_events_for_club
 from services.club_service import get_all_clubs, get_club_by_id
 from services.venue_service import count_venues
-from services.resource_service import (
-    count_resources, count_pending_requests, get_resource_requests_for_club,
-    release_expired_allocations
-)
 from services.attendance_service import (
     count_attendance, get_user_attendance,
     get_top_events_by_attendance, get_top_clubs_by_attendance,
@@ -48,16 +44,11 @@ def index():
 
     upcoming = get_upcoming_events(limit=6)
     ctx['upcoming_events'] = upcoming
-
     if role == 'admin':
-        try: release_expired_allocations()
-        except Exception: pass
         ctx.update(_admin_stats())
         ctx['recommended_events'] = []  # Admin never gets recommendations
 
     elif role == 'club_admin':
-        try: release_expired_allocations()
-        except Exception: pass
         club_id = session.get('club_id')
         ctx.update(_club_admin_stats(club_id))
         ctx['recommended_events'] = []  # Coordinator never gets recommendations
@@ -87,10 +78,8 @@ def _admin_stats() -> dict:
     return {
         'stat_events':          count_events(),
         'stat_clubs':           len(clubs),
-        'stat_resources':       count_resources(),
         'stat_venues':          count_venues(),
         'stat_attendance':      count_attendance(),
-        'stat_pending_requests': count_pending_requests(),
         'recent_activity':      recent_act,
         'top_event':            top_event,
         # Chart.js JSON
@@ -107,13 +96,11 @@ def _club_admin_stats(club_id) -> dict:
     if not club_id:
         return {
             'my_club': None, 'my_events': [],
-            'my_requests': [],
             'chart_monthly_labels': json.dumps([]),
             'chart_monthly_data':   json.dumps([]),
         }
     my_club     = get_club_by_id(club_id)
     my_events   = get_events_for_club(club_id)
-    my_requests = get_resource_requests_for_club(club_id)
     member_cnt  = get_member_count(club_id)
 
     monthly = get_club_monthly_attendance(club_id, 6)
@@ -121,10 +108,9 @@ def _club_admin_stats(club_id) -> dict:
     return {
         'my_club':      my_club,
         'my_events':    my_events,
-        'my_requests':  my_requests,
         'stat_events':  len(my_events),
         'stat_members': member_cnt,
-        'stat_pending_requests': sum(1 for r in my_requests if r['status'] == 'Pending'),
+        'stat_attendance': count_attendance(),
         'chart_monthly_labels': json.dumps([m['month'] for m in monthly]),
         'chart_monthly_data':   json.dumps([m['count'] for m in monthly]),
     }

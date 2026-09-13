@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="CECRMS — Campus Event & Club Resource Management System">
+    <meta name="description" content="CampusOps — Club Management System">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{% block title %}CECRMS{% endblock %}</title>
+    <title>{% block title %}CampusOps{% endblock %}</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,19 +16,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
                         brand: {
-                            bg:      '#0B0F14',
-                            surface: '#0F1419',
-                            card:    '#161B22',
-                            hover:   '#1C2333',
-                            border:  'rgba(48,61,78,0.8)',
-                            primary: '#10b981',
-                            accent:  '#f59e0b',
-                            danger:  '#ef4444'
+                            bg:      '#F2F4F7',
+                            surface: '#FFFFFF',
+                            card:    '#FFFFFF',
+                            hover:   '#F1F5F9',
+                            border:  '#E5E7EB',
+                            primary: '#2563EB',
+                            navy:    '#1E3A8A',
+                            accent:  '#F97316',
+                            danger:  '#DC2626'
                         }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
@@ -45,7 +45,7 @@
 
     {% block head %}{% endblock %}
 </head>
-<body class="dark">
+<body class="light">
 
 <!-- ═══════════════════════════════════════
      SIDEBAR
@@ -55,12 +55,12 @@
 
     <!-- Logo + Toggle -->
     <div class="logo-wrap">
-        <div class="logo-icon flex-shrink-0">
+        <div class="logo-icon flex-shrink-0" style="border-radius:50%;">
             <i data-lucide="graduation-cap" style="width:14px;height:14px;color:white;"></i>
         </div>
-        <div class="sidebar-brand-text" style="min-width:0;flex:1;">
-            <p style="font-size:0.88rem;font-weight:800;color:var(--text);white-space:nowrap;line-height:1.2;">CECRMS</p>
-            <p style="font-size:0.62rem;color:var(--text-subtle);white-space:nowrap;">Campus Platform</p>
+        <div class="sidebar-brand-text">
+            <p class="sidebar-brand-name">CampusOps</p>
+            <p class="sidebar-brand-sub">Club Management System</p>
         </div>
         <button id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse sidebar">
             <i data-lucide="panel-left-close" style="width:13px;height:13px;"></i>
@@ -69,13 +69,19 @@
 
     <!-- User chip -->
     {% if session.get('user_id') %}
-    <div class="sidebar-user">
+    <a href="{{ url_for('profile.index') }}" class="sidebar-user" title="View your profile" style="text-decoration:none;display:flex;align-items:center;gap:10px;">
+        {% if current_user and current_user.get('profile_photo') %}
+        <img src="{{ url_for('static', filename=current_user['profile_photo']) }}"
+             class="sidebar-avatar" style="object-fit:cover;font-size:0;"
+             alt="{{ session.get('name','U') }}">
+        {% else %}
         <div class="sidebar-avatar">{{ (session.get('name','U'))[0]|upper }}</div>
+        {% endif %}
         <div class="sidebar-user-info" style="min-width:0;flex:1;">
-            <p class="truncate" style="font-size:0.78rem;font-weight:600;color:var(--text);">{{ session.get('name','User') }}</p>
+            <p class="truncate" style="font-size:0.78rem;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ session.get('name','User') }}</p>
             <span class="role-badge role-{{ role }}">{{ role|replace('_',' ')|title }}</span>
         </div>
-    </div>
+    </a>
     {% endif %}
 
     <!-- Navigation -->
@@ -157,18 +163,6 @@
             <i data-lucide="calendar-check" class="sidebar-icon"></i>
             <span class="sidebar-label">My Events</span>
         </a>
-
-        <a href="{{ url_for('resources.submit_request') }}"
-           class="sidebar-link {% if active=='resource_request' %}active-nav{% endif %}">
-            <i data-lucide="package-plus" class="sidebar-icon"></i>
-            <span class="sidebar-label">Request Resources</span>
-        </a>
-
-        <a href="{{ url_for('resources.my_requests') }}"
-           class="sidebar-link {% if active=='resource_requests' %}active-nav{% endif %}">
-            <i data-lucide="inbox" class="sidebar-icon"></i>
-            <span class="sidebar-label">My Requests</span>
-        </a>
         {% endif %}
 
         <!-- ── MANAGEMENT (admin only) ── -->
@@ -179,18 +173,6 @@
            class="sidebar-link {% if active=='venues' %}active-nav{% endif %}">
             <i data-lucide="building-2" class="sidebar-icon"></i>
             <span class="sidebar-label">Venues</span>
-        </a>
-
-        <a href="{{ url_for('resources.list_resources') }}"
-           class="sidebar-link {% if active=='resources' %}active-nav{% endif %}">
-            <i data-lucide="package" class="sidebar-icon"></i>
-            <span class="sidebar-label">Resources</span>
-        </a>
-
-        <a href="{{ url_for('resources.all_requests') }}"
-           class="sidebar-link {% if active=='resource_requests' %}active-nav{% endif %}">
-            <i data-lucide="inbox" class="sidebar-icon"></i>
-            <span class="sidebar-label">Requests</span>
         </a>
 
         <a href="{{ url_for('admin.coordinators') }}"
@@ -224,12 +206,6 @@
             <span class="sidebar-label">Calendar</span>
         </a>
 
-        <a href="{{ url_for('profile.index') }}"
-           class="sidebar-link {% if active=='profile' %}active-nav{% endif %}">
-            <i data-lucide="user-circle" class="sidebar-icon"></i>
-            <span class="sidebar-label">Profile</span>
-        </a>
-
         <a href="{{ url_for('settings.index') }}"
            class="sidebar-link {% if active=='settings' %}active-nav{% endif %}">
             <i data-lucide="settings" class="sidebar-icon"></i>
@@ -241,10 +217,7 @@
     <!-- Logout -->
     <div class="sidebar-footer">
         <a href="{{ url_for('auth.logout') }}"
-           class="sidebar-link"
-           style="color:var(--red);"
-           onmouseover="this.style.background='var(--red-dim)'"
-           onmouseout="this.style.background='transparent'">
+           class="sidebar-link sidebar-link-danger">
             <i data-lucide="log-out" class="sidebar-icon"></i>
             <span class="sidebar-label">Logout</span>
         </a>
@@ -278,7 +251,7 @@
                 </a>
                 {% block breadcrumb %}
                 <i data-lucide="chevron-right" style="width:11px;height:11px;color:var(--text-subtle);"></i>
-                <span class="current">{% block page_title %}CECRMS{% endblock %}</span>
+                <span class="current">{% block page_title %}CampusOps{% endblock %}</span>
                 {% endblock %}
             </div>
         </div>
@@ -291,9 +264,6 @@
                    placeholder="Search events, clubs…"
                    id="global-search-input"
                    autocomplete="off">
-            {% if session.get('user_id') %}
-            <kbd class="cmdk-hint" onclick="event.preventDefault(); openCmdPalette();" title="Campus-wide search">Ctrl K</kbd>
-            {% endif %}
         </form>
 
         <!-- Right: actions -->
@@ -314,15 +284,17 @@
             </a>
             {% endif %}
 
-            <!-- User chip -->
+            <!-- User avatar chip (sidebar already shows name/role) -->
             {% if session.get('user_id') %}
-            <div class="user-menu" style="margin-left:4px;">
-                <div style="display:none;" id="user-name-area" class="text-right">
-                    <p style="font-size:0.73rem;font-weight:600;color:var(--text);line-height:1.2;">{{ session.get('name','User') }}</p>
-                    <span class="role-badge role-{{ session.get('role','student') }}">{{ session.get('role')|replace('_',' ')|title }}</span>
-                </div>
-                <div class="user-avatar">{{ (session.get('name','U'))[0]|upper }}</div>
-            </div>
+            <a href="{{ url_for('profile.index') }}" class="user-menu" style="margin-left:4px;text-decoration:none;" title="View profile">
+                {% if current_user and current_user.get('profile_photo') %}
+                <img src="{{ url_for('static', filename=current_user['profile_photo']) }}"
+                     class="user-avatar" style="object-fit:cover;font-size:0;"
+                     alt="{{ session.get('name','U') }}">
+                {% else %}
+                <div class="user-avatar" title="{{ session.get('name','User') }}">{{ (session.get('name','U'))[0]|upper }}</div>
+                {% endif %}
+            </a>
             {% else %}
             <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">Sign In</a>
             {% endif %}
@@ -389,16 +361,16 @@
         <span>Attendance</span>
     </a>
     {% elif role == 'club_admin' %}
-    <a href="{{ url_for('resources.submit_request') }}"
-       class="bnav-item {% if active=='resource_request' %}active{% endif %}">
-        <i data-lucide="package-plus" style="width:19px;height:19px;"></i>
-        <span>Request</span>
+    <a href="{{ url_for('events.my_events') }}"
+       class="bnav-item {% if active=='my_events' %}active{% endif %}">
+        <i data-lucide="calendar-check" style="width:19px;height:19px;"></i>
+        <span>My Events</span>
     </a>
     {% else %}
-    <a href="{{ url_for('resources.all_requests') }}"
-       class="bnav-item {% if active=='resource_requests' %}active{% endif %}">
-        <i data-lucide="inbox" style="width:19px;height:19px;"></i>
-        <span>Requests</span>
+    <a href="{{ url_for('admin.coordinators') }}"
+       class="bnav-item {% if active=='admin_coordinators' %}active{% endif %}">
+        <i data-lucide="user-cog" style="width:19px;height:19px;"></i>
+        <span>Admin</span>
     </a>
     {% endif %}
 
@@ -500,22 +472,15 @@ function escapeHtml(str) {
 // -- Icons --
 lucide.createIcons();
 
-// ── Always dark — no toggle ──
-document.body.classList.add('dark');
-document.documentElement.classList.add('dark');
+// ── Light theme defaults ──
+document.body.classList.remove('dark');
+document.documentElement.classList.remove('dark');
 
-// ── Show user name on desktop ──
-(function() {
-    const nameArea = document.getElementById('user-name-area');
-    if (nameArea && window.innerWidth >= 640) nameArea.style.display = 'block';
-    window.addEventListener('resize', () => {
-        if (nameArea) nameArea.style.display = window.innerWidth >= 640 ? 'block' : 'none';
-    });
-})();
+// user-name-area removed — sidebar displays name & role
 
 // ── Sidebar (desktop collapse) ──
 (function() {
-    const collapsed = localStorage.getItem('cecrms_sidebar') === 'collapsed';
+    const collapsed = localStorage.getItem('campusops_sidebar') === 'collapsed';
     const sb = document.getElementById('sidebar');
     const mc = document.getElementById('main-content');
     if (sb && mc && collapsed) {
@@ -534,7 +499,7 @@ function toggleSidebar() {
 
     const isCollapsed = sb.classList.toggle('collapsed');
     mc.classList.toggle('sidebar-collapsed', isCollapsed);
-    localStorage.setItem('cecrms_sidebar', isCollapsed ? 'collapsed' : 'expanded');
+    localStorage.setItem('campusops_sidebar', isCollapsed ? 'collapsed' : 'expanded');
 
     const icon = btn?.querySelector('[data-lucide]');
     if (icon) {

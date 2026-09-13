@@ -40,7 +40,6 @@ def create_app(config_class=Config):
     from routes.clubs           import bp as clubs_bp
     from routes.events          import bp as events_bp
     from routes.venues          import bp as venues_bp
-    from routes.resources       import bp as resources_bp
     from routes.recommendations import bp as recs_bp
     from routes.attendance      import bp as attendance_bp
     from routes.certificates    import bp as certs_bp
@@ -58,7 +57,6 @@ def create_app(config_class=Config):
     app.register_blueprint(clubs_bp)
     app.register_blueprint(events_bp)
     app.register_blueprint(venues_bp)
-    app.register_blueprint(resources_bp)
     app.register_blueprint(recs_bp)
     app.register_blueprint(attendance_bp)
     app.register_blueprint(certs_bp)

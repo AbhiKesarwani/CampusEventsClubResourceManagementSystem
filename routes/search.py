@@ -91,22 +91,6 @@ def _search_venues(like: str, limit: int = 20) -> list[dict]:
         if conn: conn.close()
 
 
-def _search_resources(like: str, limit: int = 20) -> list[dict]:
-    conn = cur = None
-    try:
-        conn = get_db_connection()
-        cur  = conn.cursor(dictionary=True)
-        cur.execute("""
-            SELECT resource_id, resource_name, total_quantity, description
-            FROM resources
-            WHERE resource_name LIKE %s OR description LIKE %s
-            LIMIT %s
-        """, (like, like, limit))
-        return cur.fetchall()
-    finally:
-        if cur: cur.close()
-        if conn: conn.close()
-
 
 def _search_coordinators(like: str, limit: int = 20) -> list[dict]:
     conn = cur = None
@@ -136,7 +120,7 @@ def results():
     page = request.args.get('page', 1, type=int)
     user = get_user_by_id(session['user_id'])
 
-    events, clubs, venues, resources, coordinators = [], [], [], [], []
+    events, clubs, venues, coordinators = [], [], [], []
     events_total = 0
 
     if q:
@@ -146,17 +130,16 @@ def results():
         events       = _search_events(like, limit=PER_PAGE, offset=offset)
         clubs        = _search_clubs(like, limit=20)
         venues       = _search_venues(like, limit=20)
-        resources    = _search_resources(like, limit=20)
         coordinators = _search_coordinators(like, limit=10)
 
     total_pages = max(1, math.ceil(events_total / PER_PAGE)) if q else 1
     page        = max(1, min(page, total_pages))
-    total       = events_total + len(clubs) + len(venues) + len(resources) + len(coordinators)
+    total       = events_total + len(clubs) + len(venues) + len(coordinators)
 
     return render_template('search_results.html',
                            q=q, total=total,
                            events=events, clubs=clubs,
-                           venues=venues, resources=resources,
+                           venues=venues,
                            coordinators=coordinators,
                            events_total=events_total,
                            page=page, total_pages=total_pages,
@@ -203,13 +186,6 @@ def quick():
             'category': 'Venues', 'icon': 'building-2', 'title': v['venue_name'],
             'subtitle': v.get('location') or '',
             'url': url_for('venues.detail', venue_id=v['venue_id']),
-        })
-
-    for r in _search_resources(like, limit=5):
-        items.append({
-            'category': 'Resources', 'icon': 'package', 'title': r['resource_name'],
-            'subtitle': f"{r['total_quantity']} in stock",
-            'url': url_for('resources.list_resources'),
         })
 
     # People: reuses Campus Connect's own RBAC-scoped contact search, so a

@@ -1,5 +1,5 @@
 {% extends 'layout.html' %}
-{% block title %}Search Results — CECRMS{% endblock %}
+{% block title %}Search Results — CampusOps{% endblock %}
 {% block page_title %}Search{% endblock %}
 
 {% block content %}
@@ -156,27 +156,6 @@
     </div>
     {% endif %}
 
-    <!-- Resources Results -->
-    {% if resources %}
-    <div class="mb-8">
-        <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;display:flex;align-items:center;gap:6px;margin-bottom:14px;">
-            <i data-lucide="package" style="width:14px;height:14px;color:var(--purple);"></i>
-            Resources ({{ resources|length }})
-        </h2>
-        <div class="grid-cols-3 stagger">
-            {% for r in resources %}
-            <div class="card p-4">
-                <p style="font-weight:700;color:var(--text);font-size:0.875rem;">{{ r.resource_name }}</p>
-                <p style="font-size:0.72rem;color:var(--text-subtle);margin-top:3px;">Total: {{ r.total_quantity }}</p>
-                {% if r.description %}
-                <p class="line-clamp-2" style="font-size:0.72rem;color:var(--text-subtle);margin-top:4px;">{{ r.description }}</p>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
     <!-- No Results -->
     {% if total == 0 %}
     <div class="card" style="padding:60px 24px;text-align:center;">
@@ -185,7 +164,7 @@
         </div>
         <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:8px;">Nothing found</h2>
         <p style="font-size:0.84rem;color:var(--text-subtle);max-width:360px;margin:0 auto 20px;line-height:1.6;">
-            No events, clubs, coordinators, venues or resources matched "<strong style="color:var(--text);">{{ q }}</strong>".
+            No events, clubs, coordinators or venues matched "<strong style="color:var(--text);">{{ q }}</strong>".
             Try different keywords.
         </p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
@@ -207,9 +186,9 @@
         <div style="width:72px;height:72px;border-radius:50%;background:var(--emerald-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
             <i data-lucide="search" style="width:32px;height:32px;color:var(--emerald);"></i>
         </div>
-        <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:8px;">Search CECRMS</h2>
+        <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:8px;">Search CampusOps</h2>
         <p style="font-size:0.84rem;color:var(--text-subtle);max-width:400px;margin:0 auto;line-height:1.6;">
-            Find events, clubs, coordinators, venues, and resources across the entire campus platform.
+            Find events, clubs, coordinators and venues across the entire campus platform.
         </p>
     </div>
     {% endif %}

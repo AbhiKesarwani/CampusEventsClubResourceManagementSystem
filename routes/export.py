@@ -1,6 +1,6 @@
 # routes/export.py
 """Admin data exports (CSV / Excel / PDF) for Students, Attendance,
-Resources, Events, Certificates, and Club Members.
+Events, Certificates, and Club Members.
 
 Reuses existing service getters — no duplicate SQL. A single generic
 export engine handles all three file formats so we never write three
@@ -13,7 +13,6 @@ from flask import Blueprint, Response, render_template, abort, session
 from helpers.auth_helpers import admin_required
 from services.user_service import get_all_users, get_user_by_id
 from services.attendance_service import get_all_attendance_records
-from services.resource_service import get_all_resources
 from services.event_service import get_all_events
 from services.certificate_service import get_all_certificates
 from services.member_service import get_all_club_memberships
@@ -36,11 +35,6 @@ DATASETS = {
         'columns': [('student_name', 'Student'), ('student_email', 'Email'),
                     ('event_title', 'Event'), ('club_name', 'Club'), ('scan_time', 'Marked At')],
         'fetch': get_all_attendance_records,
-    },
-    'resources': {
-        'label': 'Resources',
-        'columns': [('resource_name', 'Resource'), ('total_quantity', 'Total Qty'), ('description', 'Description')],
-        'fetch': get_all_resources,
     },
     'events': {
         'label': 'Events',
@@ -131,7 +125,7 @@ def _export_pdf(rows, columns, filename, label):
                             topMargin=1.5 * cm, bottomMargin=1.5 * cm)
     styles = getSampleStyleSheet()
     elements = [
-        Paragraph(f"CECRMS — {label} Export", styles['Title']),
+        Paragraph(f"CampusOps — {label} Export", styles['Title']),
         Paragraph(f"Generated {datetime.now().strftime('%d %b %Y, %I:%M %p')}", styles['Normal']),
         Spacer(1, 12),
     ]
@@ -172,7 +166,7 @@ def download(dataset, fmt):
         abort(404)
     spec = DATASETS[dataset]
     rows = spec['fetch']()
-    filename = f"cecrms_{dataset}_{date.today().isoformat()}"
+    filename = f"campusops_{dataset}_{date.today().isoformat()}"
 
     if fmt == 'csv':
         return _export_csv(rows, spec['columns'], filename)

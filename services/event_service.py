@@ -139,23 +139,6 @@ def get_event_images(event_id: int) -> list[dict]:
         if conn: conn.close()
 
 
-def get_event_resources(event_id: int) -> list[dict]:
-    conn = cur = None
-    try:
-        conn = get_db_connection()
-        cur  = conn.cursor(dictionary=True)
-        cur.execute("""
-            SELECT r.resource_name, er.quantity
-            FROM event_resources er
-            JOIN resources r ON r.resource_id = er.resource_id
-            WHERE er.event_id = %s
-        """, (event_id,))
-        return cur.fetchall()
-    finally:
-        if cur: cur.close()
-        if conn: conn.close()
-
-
 def get_upcoming_events(limit: int = 10, club_id: int = None) -> list[dict]:
     conn = cur = None
     try:

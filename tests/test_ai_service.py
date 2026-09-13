@@ -21,10 +21,6 @@ def test_detect_intent_certificate():
     assert ai_service.detect_intent("Where can I download my certificate?") == 'certificate'
 
 
-def test_detect_intent_resource():
-    assert ai_service.detect_intent("Is a projector available?") == 'resource'
-
-
 def test_detect_intent_venue():
     assert ai_service.detect_intent("What's the capacity of the auditorium?") == 'venue'
 

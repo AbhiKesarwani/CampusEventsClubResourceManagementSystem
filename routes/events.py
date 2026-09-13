@@ -3,13 +3,12 @@ from helpers.auth_helpers import login_required, club_admin_required, admin_requ
 from helpers.upload_helpers import save_upload, delete_upload, get_image_path, build_gallery_zip
 from services.user_service import get_user_by_id
 from services.event_service import (
-    get_all_events, count_all_events, get_event_by_id, get_event_images, get_event_resources,
+    get_all_events, count_all_events, get_event_by_id, get_event_images,
     create_event, update_event, delete_event,
     add_event_image, delete_event_image, get_related_events
 )
 from services.club_service import get_clubs_for_select, get_club_by_id
 from services.venue_service import get_venues_for_select
-from services.resource_service import get_all_resources
 from services.log_service import log_action
 from services.recommendation_service import log_view
 from services.attendance_service import has_attended
@@ -94,7 +93,6 @@ def detail(event_id):
         return redirect(url_for('events.list_events'))
 
     images    = get_event_images(event_id)
-    resources = get_event_resources(event_id)
     user      = get_user_by_id(session['user_id'])
     related   = get_related_events(event_id, event['club_id'], limit=3)
 
@@ -105,7 +103,6 @@ def detail(event_id):
 
     return render_template('events/detail.html',
                            event=event, event_images=images,
-                           event_resources=resources,
                            related_events=related,
                            timeline=timeline,
                            user=user, active='events')
@@ -141,7 +138,6 @@ def create():
     role    = session.get('role')
     clubs   = get_clubs_for_select() if role == 'admin' else []
     venues  = get_venues_for_select()
-    resources_list = get_all_resources()
 
     # For club_admin, force their club
     default_club_id = None
@@ -191,7 +187,6 @@ def create():
     user = get_user_by_id(session['user_id'])
     return render_template('events/create.html',
                            clubs=clubs, venues=venues,
-                           resources=resources_list,
                            default_club_id=default_club_id,
                            user=user, active='events')
 

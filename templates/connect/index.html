@@ -1,5 +1,5 @@
 {% extends 'layout.html' %}
-{% block title %}Campus Connect — CECRMS{% endblock %}
+{% block title %}Campus Connect — CampusOps{% endblock %}
 {% block page_title %}Campus Connect{% endblock %}
 
 {% block head %}
@@ -7,7 +7,7 @@
   /* ── Campus Connect — scoped styles ───────────────────────────────── */
   .cc-wrap { display: flex; flex-direction: column; gap: 14px; max-width: 1180px; }
   .cc-tabs {
-    display: flex; gap: 4px; padding: 4px; background: var(--bg-card);
+    display: flex; gap: 4px; padding: 4px; background: var(--bg-surface-soft);
     border: 1px solid var(--border); border-radius: 12px; overflow-x: auto;
   }
   .cc-tab-btn {
@@ -16,8 +16,8 @@
     color: var(--text-muted); font-size: 0.82rem; font-weight: 600; white-space: nowrap;
     transition: background .15s, color .15s;
   }
-  .cc-tab-btn:hover { background: var(--bg-hover); color: var(--text); }
-  .cc-tab-btn.active { background: var(--emerald-dim); color: var(--emerald); }
+  .cc-tab-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .cc-tab-btn.active { background: #DBEAFE; color: #1E40AF; font-weight: 700; }
   .cc-tab-badge {
     background: var(--red); color: #fff; font-size: 0.62rem; font-weight: 700;
     border-radius: 999px; padding: 1px 6px; line-height: 1.4;
@@ -29,45 +29,45 @@
   .cc-split { display: grid; grid-template-columns: 300px 1fr; gap: 14px; min-height: 560px; }
   @media (max-width: 800px) { .cc-split { grid-template-columns: 1fr; } }
 
-  .cc-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; }
+  .cc-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-card); }
   .cc-list { display: flex; flex-direction: column; max-height: 620px; overflow-y: auto; }
   .cc-list-item {
     display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer;
-    border-bottom: 1px solid var(--border-muted); transition: background .15s; position: relative;
+    border-bottom: 1px solid var(--border); transition: background .15s; position: relative;
   }
   .cc-list-item:hover, .cc-list-item.active { background: var(--bg-hover); }
   .cc-avatar {
     width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    background: var(--emerald-dim); color: var(--emerald); font-weight: 700; font-size: 0.85rem;
+    background: #DBEAFE; color: #1E40AF; font-weight: 700; font-size: 0.85rem;
   }
   .cc-list-meta { min-width: 0; flex: 1; }
-  .cc-list-name { font-size: 0.83rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cc-list-name { font-size: 0.83rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cc-list-preview { font-size: 0.74rem; color: var(--text-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
-  .cc-unread-dot { min-width: 18px; height: 18px; border-radius: 999px; background: var(--emerald); color: #06251c; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .cc-unread-dot { min-width: 18px; height: 18px; border-radius: 999px; background: #2563EB; color: #ffffff; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
 
   /* Chat thread */
   .cc-thread { display: flex; flex-direction: column; height: 620px; }
-  .cc-thread-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
-  .cc-thread-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .cc-thread-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: #F8FAFC; border-radius: 14px 14px 0 0; }
+  .cc-thread-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; }
   .cc-bubble-row { display: flex; }
   .cc-bubble-row.me { justify-content: flex-end; }
   .cc-bubble {
-    max-width: 72%; padding: 9px 13px; border-radius: 14px; font-size: 0.84rem; line-height: 1.45;
+    max-width: 72%; padding: 10px 14px; border-radius: 14px; font-size: 0.85rem; line-height: 1.45;
     white-space: pre-wrap; word-break: break-word;
   }
-  .cc-bubble-row.me .cc-bubble { background: var(--emerald); color: #06251c; border-bottom-right-radius: 3px; }
-  .cc-bubble-row.them .cc-bubble { background: var(--bg-hover); color: var(--text); border-bottom-left-radius: 3px; }
-  .cc-bubble-meta { font-size: 0.62rem; color: var(--text-subtle); margin-top: 3px; }
+  .cc-bubble-row.me .cc-bubble { background: #1E3A8A; color: #FFFFFF; border-bottom-right-radius: 3px; box-shadow: 0 1px 3px rgba(15,23,42,0.1); }
+  .cc-bubble-row.them .cc-bubble { background: #F1F5F9; color: #0F172A; border-bottom-left-radius: 3px; border: 1px solid #E2E8F0; }
+  .cc-bubble-meta { font-size: 0.65rem; color: var(--text-subtle); margin-top: 3px; }
   .cc-bubble-row.me .cc-bubble-meta { text-align: right; }
-  .cc-thread-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); }
+  .cc-thread-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); background: var(--bg-surface-soft); border-radius: 0 0 14px 14px; }
   .cc-thread-input textarea {
-    flex: 1; resize: none; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px;
-    color: var(--text); padding: 9px 12px; font-size: 0.83rem; font-family: inherit; max-height: 90px;
+    flex: 1; resize: none; background: var(--bg-surface); border: 1px solid var(--border-strong); border-radius: 10px;
+    color: var(--text-primary); padding: 9px 12px; font-size: 0.85rem; font-family: inherit; max-height: 90px;
   }
-  .cc-thread-input textarea:focus { outline: none; border-color: var(--border-focus); }
+  .cc-thread-input textarea:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
 
-  .cc-typing { display: flex; gap: 4px; padding: 8px 13px; background: var(--bg-hover); border-radius: 14px; width: fit-content; }
+  .cc-typing { display: flex; gap: 4px; padding: 8px 13px; background: #F1F5F9; border-radius: 14px; width: fit-content; border: 1px solid #E2E8F0; }
   .cc-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-subtle); animation: cc-bounce 1.2s infinite ease-in-out; }
   .cc-typing span:nth-child(2) { animation-delay: .15s; }
   .cc-typing span:nth-child(3) { animation-delay: .3s; }
@@ -75,25 +75,25 @@
 
   .cc-spinner {
     width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--border);
-    border-top-color: var(--emerald); animation: cc-spin 0.7s linear infinite; margin: 24px auto;
+    border-top-color: #1E3A8A; animation: cc-spin 0.7s linear infinite; margin: 24px auto;
   }
   @keyframes cc-spin { to { transform: rotate(360deg); } }
 
-  .cc-ann-card { padding: 14px 16px; border-bottom: 1px solid var(--border-muted); }
+  .cc-ann-card { padding: 14px 16px; border-bottom: 1px solid var(--border); }
   .cc-ann-card:last-child { border-bottom: none; }
-  .cc-ann-pin { background: var(--amber-dim); color: var(--amber); font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; }
-  .cc-ann-target { background: var(--blue-dim); color: var(--blue); font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; text-transform: capitalize; }
+  .cc-ann-pin { background: var(--warning-bg); color: var(--warning); font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; }
+  .cc-ann-target { background: var(--blue-muted); color: var(--blue-navy); font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; text-transform: capitalize; }
 
   .cc-modal-backdrop {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 200;
     align-items: center; justify-content: center; padding: 16px;
   }
   .cc-modal-backdrop.active { display: flex; }
-  .cc-modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 460px; padding: 20px; max-height: 85vh; overflow-y: auto; }
+  .cc-modal { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 460px; padding: 20px; max-height: 85vh; overflow-y: auto; }
   .cc-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
   .cc-field label { font-size: 0.76rem; font-weight: 600; color: var(--text-muted); }
   .cc-field input, .cc-field select, .cc-field textarea {
-    background: var(--bg-2); border: 1px solid var(--border); border-radius: 9px; color: var(--text);
+    background: var(--bg-surface-soft); border: 1px solid var(--border-strong); border-radius: 9px; color: var(--text-primary);
     padding: 8px 10px; font-size: 0.82rem; font-family: inherit;
   }
   .cc-field textarea { resize: vertical; min-height: 80px; }
@@ -138,7 +138,7 @@
       <div class="cc-thread-header">
         <div class="cc-avatar" style="background:var(--purple-dim);color:var(--purple);"><i data-lucide="bot" style="width:17px;height:17px;"></i></div>
         <div>
-          <p style="font-size:0.85rem;font-weight:700;color:var(--text);margin:0;">Campus Connect Assistant</p>
+          <p style="font-size:0.85rem;font-weight:700;color:var(--text-primary);margin:0;">Campus Connect Assistant</p>
           <p style="font-size:0.7rem;color:var(--text-subtle);margin:0;">Ask about events, clubs, attendance, certificates &amp; more</p>
         </div>
         <button class="btn btn-secondary btn-xs" style="margin-left:auto;" onclick="ccClearAiHistory()">
@@ -148,7 +148,7 @@
       <div class="cc-thread-body" id="cc-ai-body">
         {% if not ai_history %}
         <div class="empty-state" style="padding:30px 10px;">
-          <p style="font-size:0.82rem;color:var(--text-subtle);">👋 Hi! Ask me about events, clubs, attendance, certificates, venues, or resources.</p>
+          <p style="font-size:0.82rem;color:var(--text-subtle);">👋 Hi! Ask me about events, clubs, attendance, certificates, or venues.</p>
         </div>
         {% endif %}
         {% for h in ai_history %}
@@ -174,7 +174,7 @@
       <div class="cc-card" style="display:flex;flex-direction:column;">
         <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;">
           <input type="text" id="cc-conv-search" placeholder="Search conversations…" oninput="ccFilterConversations()"
-                 style="flex:1;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:7px 10px;font-size:0.78rem;">
+                 style="flex:1;background:var(--bg-surface-soft);border:1px solid var(--border);border-radius:9px;color:var(--text-primary);padding:7px 10px;font-size:0.78rem;">
           <button class="btn btn-primary btn-xs" onclick="ccOpenNewChat()" title="New chat"><i data-lucide="plus" style="width:13px;height:13px;"></i></button>
         </div>
           <div class="cc-list" id="cc-conv-list">

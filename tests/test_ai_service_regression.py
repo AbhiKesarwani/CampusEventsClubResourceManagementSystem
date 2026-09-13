@@ -44,9 +44,6 @@ class TestIntentDetection:
         # Attendance
         ('what is my attendance?', 'attendance'),
         ('check my attendance', 'attendance'),
-        # Resources
-        ('available resources projector', 'resource'),
-        ('how many chairs are available?', 'resource'),
         # Announcements
         ('recent announcements', 'announcement'),
         ('latest news', 'announcement'),
@@ -210,7 +207,7 @@ class TestAnswerFromDb:
     """Verify DB queries don't crash and return correct structure."""
 
     @pytest.mark.parametrize('intent', [
-        'event', 'club', 'resource', 'venue',
+        'event', 'club', 'venue',
         'attendance', 'certificate', 'coordinator', 'announcement',
     ])
     def test_answer_from_db_does_not_crash(self, intent, fake_db, monkeypatch):

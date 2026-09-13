@@ -28,9 +28,9 @@
 
         {# Date badge overlay #}
         {% if event.date %}
-        <div style="position:absolute;top:10px;right:10px;background:rgba(11,15,20,0.85);border:1px solid var(--border);backdrop-filter:blur(8px);padding:6px 10px;border-radius:8px;text-align:center;">
-            <p style="font-size:1.1rem;font-weight:900;color:var(--emerald);line-height:1;">{{ event.date | datetimeformat('%d') }}</p>
-            <p style="font-size:0.6rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">{{ event.date | datetimeformat('%b') }}</p>
+        <div style="position:absolute;top:10px;right:10px;background:#0F172A;border:1px solid #1E293B;box-shadow:0 4px 12px rgba(15,23,42,0.25);padding:6px 10px;border-radius:8px;text-align:center;">
+            <p style="font-size:1.1rem;font-weight:900;color:#60A5FA;line-height:1;">{{ event.date | datetimeformat('%d') }}</p>
+            <p style="font-size:0.62rem;font-weight:700;color:#CBD5E1;text-transform:uppercase;">{{ event.date | datetimeformat('%b') }}</p>
         </div>
         {% endif %}
     </div>
@@ -39,7 +39,7 @@
     <div class="club-card-body">
 
         {# Club name #}
-        <p style="font-size:0.7rem;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:0.06em;margin:0;display:flex;align-items:center;gap:3px;">
+        <p style="font-size:0.7rem;font-weight:700;color:var(--blue-primary);text-transform:uppercase;letter-spacing:0.06em;margin:0;display:flex;align-items:center;gap:3px;">
             <i data-lucide="users" style="width:10px;height:10px;"></i>
             {{ event.club_name or '—' }}
         </p>

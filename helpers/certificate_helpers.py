@@ -83,7 +83,7 @@ def generate_certificate(student_name: str, event_title: str, save_path: str,
     wm_font = _load_font(60)
     wm_img  = Image.new('RGBA', (600, 600), (0, 0, 0, 0))
     wm_draw = ImageDraw.Draw(wm_img)
-    wm_draw.text((50, 250), "CECRMS", font=wm_font, fill=(16, 185, 129, 18))
+    wm_draw.text((50, 250), "CampusOps", font=wm_font, fill=(16, 185, 129, 18))
     wm_rotated = wm_img.rotate(30, expand=False)
     img.paste(wm_rotated, (W//2 - 300, H//2 - 300), wm_rotated)
 
@@ -97,9 +97,9 @@ def generate_certificate(student_name: str, event_title: str, save_path: str,
     f_sub     = _load_font(18)
     f_id      = _load_font(15)
 
-    # ── Header: CECRMS logo text ───────────────────────────────────────────────
-    logo_text = "CECRMS"
-    sub_text  = "Campus Event & Club Resource Management System"
+    # ── Header: CampusOps logo text ────────────────────────────────────────────
+    logo_text = "CampusOps"
+    sub_text  = "Club Management System"
     lx = _centered_x(draw, logo_text, f_cert, W)
     draw.text((lx, 38), logo_text, font=f_cert, fill=(16, 185, 129))
     sx = _centered_x(draw, sub_text, f_sub, W)
@@ -169,8 +169,8 @@ def generate_certificate(student_name: str, event_title: str, save_path: str,
     # Right signature
     draw.line([(W-400, sig_y + 60), (W-120, sig_y + 60)],
               fill=(50, 80, 70), width=1)
-    draw.text((_centered_x(draw, "CECRMS Director", f_sub, 520) + W - 460, sig_y + 68),
-              "CECRMS Director", font=f_sub, fill=(100, 130, 120))
+    draw.text((_centered_x(draw, "CampusOps Director", f_sub, 520) + W - 460, sig_y + 68),
+              "CampusOps Director", font=f_sub, fill=(100, 130, 120))
 
     # Centre: Date
     draw.text((_centered_x(draw, f"Date: {issue_date}", f_sub, W), sig_y + 50),

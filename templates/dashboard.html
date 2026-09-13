@@ -1,5 +1,5 @@
 {% extends 'layout.html' %}
-{% block title %}Dashboard — CECRMS{% endblock %}
+{% block title %}Dashboard — CampusOps{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 
 {% block head %}
@@ -7,52 +7,40 @@
 {% endblock %}
 
 {% block content %}
-<div class="space-y-6 anim-fade">
+<div class="anim-fade" style="display:flex;flex-direction:column;gap:20px;">
 
-{# ══════════════════════════ HERO BANNER ══════════════════════════ #}
-<div class="hero-banner">
-    <!-- Background orbs -->
-    <div class="hero-orb" style="width:200px;height:200px;background:rgba(16,185,129,0.12);top:-50px;right:-50px;"></div>
-    <div class="hero-orb" style="width:140px;height:140px;background:rgba(139,92,246,0.08);bottom:-30px;left:-20px;"></div>
-
-    <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <p class="text-indigo-200 text-sm font-medium mb-1">
-                {{ greeting }},
-            </p>
-            <h1 class="text-2xl md:text-3xl font-extrabold leading-tight">{{ session.get('name','') }} 👋</h1>
-            <p class="text-indigo-200 text-sm mt-1.5">
-                {% if role == 'admin' %}
-                    Full system access — {{ stat_clubs or 0 }} clubs, {{ stat_events or 0 }} events
-                {% elif role == 'club_admin' %}
-                    Managing <strong class="text-white">{{ my_club.club_name if my_club else 'your club' }}</strong>
-                {% else %}
-                    Attended {{ stat_attended or 0 }} events · {{ stat_certificates or 0 }} certificates earned
-                {% endif %}
-            </p>
-        </div>
-        <div class="flex gap-2 flex-shrink-0">
-            {% if role in ('admin',) %}
-            <a href="{{ url_for('clubs.create') }}" class="bg-brand-surface text-white/15 hover:bg-brand-surface text-white/25 border border-white/25
-               text-white text-sm font-semibold px-4 py-2 rounded-xl transition inline-flex items-center gap-2">
-                <i data-lucide="plus" class="w-4 h-4"></i> New Club
-            </a>
+{# ══════════════════════ LIGHT PAGE HEADER ══════════════════════ #}
+<div class="hero-banner" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <div style="display:flex;flex-direction:column;gap:4px;">
+        <p style="font-size:0.78rem;font-weight:600;color:var(--text-muted);">{{ greeting }},</p>
+        <h1 style="font-size:1.45rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.01em;">{{ session.get('name','') }} 👋</h1>
+        <p style="font-size:0.83rem;color:var(--text-muted);margin-top:2px;">
+            {% if role == 'admin' %}
+                Full system access — {{ stat_clubs or 0 }} clubs, {{ stat_events or 0 }} events
             {% elif role == 'club_admin' %}
-            <a href="{{ url_for('events.create') }}" class="bg-brand-surface text-white/15 hover:bg-brand-surface text-white/25 border border-white/25
-               text-white text-sm font-semibold px-4 py-2 rounded-xl transition inline-flex items-center gap-2">
-                <i data-lucide="plus" class="w-4 h-4"></i> New Event
-            </a>
+                Managing <strong style="color:var(--text-primary);">{{ my_club.club_name if my_club else 'your club' }}</strong>
             {% else %}
-            <a href="{{ url_for('recommendations.index') }}" class="bg-brand-surface text-white/15 hover:bg-brand-surface text-white/25 border border-white/25
-               text-white text-sm font-semibold px-4 py-2 rounded-xl transition inline-flex items-center gap-2">
-                <i data-lucide="sparkles" class="w-4 h-4"></i> For You
-            </a>
+                Attended {{ stat_attended or 0 }} events &middot; {{ stat_certificates or 0 }} certificates earned
             {% endif %}
-            <a href="{{ url_for('events.list_events') }}" class="bg-brand-surface text-white text-emerald-400
-               text-sm font-bold px-4 py-2 rounded-xl transition hover:bg-emerald-500/10 inline-flex items-center gap-2">
-                <i data-lucide="calendar" class="w-4 h-4"></i> Events
-            </a>
-        </div>
+        </p>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;align-items:center;">
+        {% if role in ('admin',) %}
+        <a href="{{ url_for('clubs.create') }}" class="btn btn-secondary btn-sm">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i> New Club
+        </a>
+        {% elif role == 'club_admin' %}
+        <a href="{{ url_for('events.create') }}" class="btn btn-secondary btn-sm">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i> New Event
+        </a>
+        {% else %}
+        <a href="{{ url_for('recommendations.index') }}" class="btn btn-secondary btn-sm">
+            <i data-lucide="sparkles" style="width:14px;height:14px;"></i> For You
+        </a>
+        {% endif %}
+        <a href="{{ url_for('events.list_events') }}" class="btn btn-primary btn-sm">
+            <i data-lucide="calendar" style="width:14px;height:14px;"></i> Events
+        </a>
     </div>
 </div>
 
@@ -65,35 +53,35 @@
     <div class="quick-grid">
         {% if role == 'admin' %}
         {% set qa = [
-            ('user-cog', url_for('admin.coordinators'), 'Club Coordinators', 'Assign and manage club coordinators', 'var(--amber-dim)', 'var(--amber)'),
-            ('package', url_for('resources.list_resources'), 'Resources', 'Manage inventory', 'var(--purple-dim)', 'var(--purple)'),
-            ('building-2', url_for('venues.list_venues'), 'Venues', 'Manage spaces', 'var(--emerald-dim)', 'var(--emerald)'),
-            ('bell', url_for('notifications.index'), 'Notifications', 'View alerts', 'var(--blue-dim)', 'var(--blue)'),
-            ('inbox', url_for('resources.all_requests'), 'Pending Requests', 'Approve resource requests' + (' (' + stat_pending_requests|string + ' pending)' if stat_pending_requests else ''), 'var(--red-dim)', 'var(--red)'),
-            ('users', url_for('clubs.list_clubs'), 'Clubs', 'Browse all clubs', 'var(--emerald-dim)', 'var(--emerald)'),
+            ('user-cog',      url_for('admin.coordinators'),   'Coordinators', 'Assign club coordinators',  '#EFF6FF', '#2563EB'),
+            ('building-2',    url_for('venues.list_venues'),    'Venues',       'Manage spaces',              '#DCFCE7', '#16A34A'),
+            ('users',         url_for('clubs.list_clubs'),      'Clubs',        'Browse all clubs',           '#F0FDF4', '#15803D'),
+            ('bell',          url_for('notifications.index'),   'Notifications','View alerts',                '#FEF3C7', '#D97706'),
+            ('download',      url_for('export.index'),          'Export',       'Download reports',           '#F5F3FF', '#7C3AED'),
+            ('calendar-days', url_for('events.list_events'),    'Events',       'All events',                 '#E0F2FE', '#0369A1'),
         ] %}
         {% elif role == 'club_admin' %}
         {% set qa = [
-            ('shield', url_for('clubs.detail', club_id=session.get('club_id', 0)) if session.get('club_id') else url_for('clubs.list_clubs'), 'My Club', 'View club page', 'var(--emerald-dim)', 'var(--emerald)'),
-            ('users-2', url_for('clubs.members', club_id=session.get('club_id', 0)) if session.get('club_id') else url_for('clubs.list_clubs'), 'Members', 'Manage members', 'var(--blue-dim)', 'var(--blue)'),
-            ('calendar-check', url_for('events.my_events'), 'My Events', 'Club events', 'var(--purple-dim)', 'var(--purple)'),
-            ('package-plus', url_for('resources.submit_request'), 'Resources', 'Request resources', 'var(--amber-dim)', 'var(--amber)'),
-            ('inbox', url_for('resources.my_requests'), 'My Requests', 'Track requests', 'var(--red-dim)', 'var(--red)'),
-            ('bell', url_for('notifications.index'), 'Notifications', 'View alerts', 'var(--emerald-dim)', 'var(--emerald)'),
+            ('shield',        url_for('clubs.detail', club_id=session.get('club_id', 0)) if session.get('club_id') else url_for('clubs.list_clubs'), 'My Club',    'View club page',   '#DCFCE7', '#16A34A'),
+            ('users-2',       url_for('clubs.members', club_id=session.get('club_id', 0)) if session.get('club_id') else url_for('clubs.list_clubs'), 'Members',    'Manage members',   '#EFF6FF', '#2563EB'),
+            ('calendar-check',url_for('events.my_events'),      'My Events',    'Club events',              '#F5F3FF', '#7C3AED'),
+            ('bell',          url_for('notifications.index'),   'Notifications','View alerts',               '#FFF7ED', '#EA580C'),
+            ('check-square',  url_for('attendance.my_attendance'), 'Attendance', 'Attendance records',       '#DCFCE7', '#16A34A'),
+            ('message-circle',url_for('connect.index'),         'Connect',      'Campus messaging',          '#E0F2FE', '#0369A1'),
         ] %}
         {% else %}
         {% set qa = [
-            ('calendar-days', url_for('events.list_events'), 'Events', 'Browse all events', 'var(--emerald-dim)', 'var(--emerald)'),
-            ('sparkles', url_for('recommendations.index'), 'For You', 'Recommended events', 'var(--purple-dim)', 'var(--purple)'),
-            ('check-circle', url_for('attendance.my_attendance'), 'Attendance', 'My history', 'var(--blue-dim)', 'var(--blue)'),
-            ('award', url_for('certificates.my_certificates'), 'Certificates', 'My certificates', 'var(--amber-dim)', 'var(--amber)'),
-            ('bell', url_for('notifications.index'), 'Notifications', 'View alerts', 'var(--red-dim)', 'var(--red)'),
-            ('users', url_for('clubs.list_clubs'), 'Clubs', 'Browse clubs', 'var(--emerald-dim)', 'var(--emerald)'),
+            ('calendar-days', url_for('events.list_events'),    'Events',       'Browse all events',         '#EFF6FF', '#2563EB'),
+            ('sparkles',      url_for('recommendations.index'), 'For You',      'Recommended events',        '#F5F3FF', '#7C3AED'),
+            ('check-circle',  url_for('attendance.my_attendance'),'Attendance', 'My history',                '#DCFCE7', '#16A34A'),
+            ('award',         url_for('certificates.my_certificates'),'Certificates','My certificates',      '#FEF3C7', '#D97706'),
+            ('bell',          url_for('notifications.index'),   'Notifications','View alerts',                '#FEE2E2', '#DC2626'),
+            ('users',         url_for('clubs.list_clubs'),      'Clubs',        'Browse clubs',              '#F0FDF4', '#15803D'),
         ] %}
         {% endif %}
         {% for icon, href, label, sub, bg, color in qa %}
         <a href="{{ href }}" class="quick-card">
-            <div class="quick-card-icon" style="background:{{ bg }};">
+            <div class="quick-card-icon" style="background:{{ bg }};border-radius:50%;">
                 <i data-lucide="{{ icon }}" style="width:18px;height:18px;color:{{ color }};"></i>
             </div>
             <div>
@@ -108,16 +96,14 @@
 {% if role == 'admin' %}
 <div class="stats-grid">
     {% set stats = [
-        ('calendar-days', 'Events',     stat_events,           'var(--emerald-dim)',  'var(--emerald)'),
-        ('users',         'Clubs',      stat_clubs,            'var(--purple-dim)',   'var(--purple)'),
-        ('building-2',    'Venues',     stat_venues,           'var(--blue-dim)',     'var(--blue)'),
-        ('package',       'Resources',  stat_resources,        'var(--amber-dim)',    'var(--amber)'),
-        ('check-circle',  'Attendance', stat_attendance,       'var(--emerald-dim)',  'var(--emerald)'),
-        ('inbox',         'Pending',    stat_pending_requests, 'var(--red-dim)',      'var(--red)'),
+        ('calendar-days', 'Events',     stat_events,     '#EFF6FF', '#2563EB'),
+        ('users',         'Clubs',       stat_clubs,      '#F0FDF4', '#16A34A'),
+        ('building-2',    'Venues',      stat_venues,     '#E0F2FE', '#0369A1'),
+        ('check-circle',  'Attendance',  stat_attendance, '#DCFCE7', '#15803D'),
     ] %}
     {% for icon, label, val, bg, color in stats %}
     <div class="stat-card">
-        <div class="stat-icon" style="background:{{ bg }};">
+        <div class="stat-icon" style="background:{{ bg }};border-radius:50%;">
             <i data-lucide="{{ icon }}" style="width:16px;height:16px;color:{{ color }};"></i>
         </div>
         <p class="stat-value" data-count="{{ val or 0 }}">0</p>
@@ -127,19 +113,19 @@
 </div>
 
 {# Admin Charts #}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div style="display:grid;grid-template-columns:1fr 320px;gap:16px;" class="grid-2-1">
     <!-- Top Events bar chart -->
-    <div class="lg:col-span-2 bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
-        <h3 class="text-sm font-bold text-gray-100 text-gray-100 mb-4 flex items-center gap-2">
-            <i data-lucide="bar-chart-2" class="w-4 h-4 text-emerald-500"></i>
+    <div class="card p-5">
+        <h3 style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="bar-chart-2" style="width:14px;height:14px;color:var(--success);"></i>
             Top Events by Attendance
         </h3>
         <canvas id="eventsChart" height="180"></canvas>
     </div>
     <!-- Top Clubs doughnut -->
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
-        <h3 class="text-sm font-bold text-gray-100 text-gray-100 mb-4 flex items-center gap-2">
-            <i data-lucide="pie-chart" class="w-4 h-4 text-violet-500"></i>
+    <div class="card p-5">
+        <h3 style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="pie-chart" style="width:14px;height:14px;color:var(--blue);"></i>
             Active Clubs
         </h3>
         <canvas id="clubsChart" height="180"></canvas>
@@ -147,16 +133,14 @@
 </div>
 
 <!-- Top Students leaderboard -->
-<div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
-    <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-bold text-gray-100 text-gray-100 flex items-center gap-2">
-            <i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i>
+<div class="card p-5">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <h3 style="font-size:0.82rem;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:6px;margin:0;">
+            <i data-lucide="trophy" style="width:14px;height:14px;color:var(--warning);"></i>
             Most Active Students
         </h3>
         {% if top_event %}
-        <span class="text-xs text-gray-500 text-gray-500">
-            Top event: <strong class="text-gray-100 text-gray-100">{{ top_event.title }}</strong> ({{ top_event.count }})
-        </span>
+        <span style="font-size:0.72rem;color:var(--text-subtle);">Top event: <strong style="color:var(--text-primary);">{{ top_event.title }}</strong> ({{ top_event.count }})</span>
         {% endif %}
     </div>
     <canvas id="studentsChart" height="80"></canvas>
@@ -182,42 +166,39 @@
 </div>
 
 <!-- Club Admin Chart + Requests -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
-        <h3 class="text-sm font-bold text-gray-100 text-gray-100 mb-4 flex items-center gap-2">
-            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="card p-5">
+        <h3 style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="trending-up" style="width:14px;height:14px;color:var(--success);"></i>
             Monthly Attendance Trend
         </h3>
         <canvas id="monthlyChart" height="180"></canvas>
     </div>
 
     <!-- Pending requests -->
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
-        <h3 class="text-sm font-bold text-gray-100 text-gray-100 mb-4 flex items-center gap-2">
-            <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
+    <div class="card p-5">
+        <h3 style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="clock" style="width:14px;height:14px;color:var(--warning);"></i>
             Pending Resource Requests
             {% if stat_pending_requests %}
-            <span class="ml-auto bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ stat_pending_requests }}</span>
+            <span class="badge badge-pending" style="margin-left:auto;">{{ stat_pending_requests }}</span>
             {% endif %}
         </h3>
         {% if my_requests %}
-        <div class="space-y-2 max-h-64 overflow-y-auto">
+        <div style="display:flex;flex-direction:column;gap:6px;max-height:16rem;overflow-y:auto;">
             {% for req in my_requests %}
             {% if req.status == 'Pending' %}
-            <div class="flex items-center justify-between bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-xl">
-                <div>
-                    <p class="text-sm font-semibold text-white text-gray-100">{{ req.resource_name or 'Resource' }}</p>
-                    <p class="text-xs text-gray-500">Qty: {{ req.quantity }}</p>
-                </div>
-                <span class="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-semibold px-2 py-0.5 rounded-full">Pending</span>
+            <div class="request-card pending" style="padding:10px 12px;">
+                <p style="font-size:0.82rem;font-weight:600;color:var(--text-primary);margin:0;">{{ req.resource_name or 'Resource' }}</p>
+                <p style="font-size:0.73rem;color:var(--text-subtle);margin:2px 0 0;">Qty: {{ req.quantity }}</p>
             </div>
             {% endif %}
             {% endfor %}
         </div>
         {% else %}
-        <div class="text-center py-8">
-            <i data-lucide="package-check" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
-            <p class="text-sm text-gray-500">No pending requests</p>
+        <div class="empty-state" style="padding:24px 12px;">
+            <div class="empty-state-icon"><i data-lucide="package-check" style="width:20px;height:20px;"></i></div>
+            <p>No pending requests</p>
         </div>
         {% endif %}
     </div>
@@ -227,8 +208,8 @@
 {# Student Stats #}
 <div class="stat-row">
     {% for icon, label, val, bg, color in [
-        ('check-circle','Attended',     stat_attended,      'var(--emerald-dim)', 'var(--emerald)'),
-        ('award',       'Certificates', stat_certificates,  'var(--amber-dim)',   'var(--amber)'),
+        ('check-circle','Events Attended', stat_attended,      'var(--success-bg)',  'var(--success)'),
+        ('award',       'Certificates',    stat_certificates,  'var(--warning-bg)',  'var(--warning)'),
     ] %}
     <div class="stat-card">
         <div class="stat-icon" style="background:{{ bg }};">
@@ -238,106 +219,86 @@
         <p class="stat-label">{{ label }}</p>
     </div>
     {% endfor %}
-
-    <!-- Progress rings -->
-    <div class="col-span-2 bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-4 flex items-center justify-around">
-        {% for label, val, max_val, color in [
-            ('Attendance', stat_attended, [stat_attended or 1, 10]|max, '#10b981'),
-            ('Certs', stat_certificates, [stat_certificates or 1, 5]|max, '#f59e0b'),
-        ] %}
-        <div class="flex flex-col items-center gap-2">
-            <div class="relative w-16 h-16">
-                <svg class="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" r="14" fill="none" stroke="#e2e8f0" stroke-width="3"/>
-                    <circle cx="18" cy="18" r="14" fill="none" stroke="{{ color }}" stroke-width="3"
-                            stroke-dasharray="{{ [(val or 0) / max_val * 88, 88]|min }} 88"
-                            stroke-linecap="round"/>
-                </svg>
-                <span class="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-100 text-gray-100">{{ val or 0 }}</span>
-            </div>
-            <p class="text-xs font-medium text-gray-500 text-gray-500">{{ label }}</p>
-        </div>
-        {% endfor %}
-    </div>
 </div>
 {% endif %}
 
 {# ══════════════════════════ UPCOMING EVENTS ══════════════════════════ #}
 <div>
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-base font-bold text-white text-white flex items-center gap-2">
-            <i data-lucide="calendar-days" class="w-4 h-4 text-emerald-500"></i>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-size:0.87rem;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:6px;margin:0;">
+            <i data-lucide="calendar-days" style="width:14px;height:14px;color:var(--success);"></i>
             Upcoming Events
         </h2>
         <a href="{{ url_for('events.list_events') }}"
-           class="text-xs font-semibold text-emerald-500 dark:text-indigo-400 hover:underline flex items-center gap-1">
-            View all <i data-lucide="arrow-right" class="w-3 h-3"></i>
+           style="font-size:0.75rem;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:4px;">
+            View all <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
         </a>
     </div>
 
     {% if upcoming_events %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="club-grid stagger">
         {% for event in upcoming_events %}
         {% include 'components/event_card.html' %}
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-10 text-center">
-        <i data-lucide="calendar-x" class="w-10 h-10 text-slate-300 mx-auto mb-3"></i>
-        <p class="text-gray-500 text-gray-500 font-medium">No upcoming events</p>
-        {% if role in ('admin', 'club_admin') %}
-        <a href="{{ url_for('events.create') }}" class="btn-primary mt-4 mx-auto w-fit">
-            <i data-lucide="plus" class="w-4 h-4"></i> Create Event
-        </a>
-        {% endif %}
+    <div class="card">
+        <div class="empty-state">
+            <div class="empty-state-icon"><i data-lucide="calendar-x" style="width:24px;height:24px;"></i></div>
+            <h3>No upcoming events</h3>
+            <p>Check back soon for new events.</p>
+            {% if role in ('admin', 'club_admin') %}
+            <a href="{{ url_for('events.create') }}" class="btn btn-primary btn-sm" style="margin-top:8px;">
+                <i data-lucide="plus" style="width:14px;height:14px;"></i> Create Event
+            </a>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
 </div>
 
 {# ══════════════════════════ ACTIVITY + RECOMMENDATIONS ══════════════════════════ #}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;">
 
     <!-- Recent Activity (admin) or Attendance History (student) -->
     {% if role == 'admin' and recent_activity %}
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
-        <h3 class="text-sm font-bold text-gray-100 text-gray-100 mb-4 flex items-center gap-2">
-            <i data-lucide="activity" class="w-4 h-4 text-blue-500"></i>
+    <div class="card p-5">
+        <h3 style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="activity" style="width:14px;height:14px;color:var(--blue);"></i>
             Recent Activity
         </h3>
-        <div class="space-y-3">
+        <div style="display:flex;flex-direction:column;gap:10px;">
             {% for act in recent_activity[:6] %}
-            <div class="timeline-item relative pl-8">
-                <div class="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40
-                            flex items-center justify-center">
-                    <i data-lucide="zap" class="w-3 h-3 text-emerald-500 dark:text-indigo-400"></i>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+                <div style="width:26px;height:26px;border-radius:50%;background:var(--blue-light);border:1px solid var(--blue-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i data-lucide="zap" style="width:12px;height:12px;color:var(--blue);"></i>
                 </div>
-                <p class="text-sm font-semibold text-gray-100 text-gray-100">{{ act.action|replace('_',' ')|title }}</p>
-                <p class="text-xs text-gray-500 mt-0.5">
-                    {{ act.user_name or 'User' }} ·
-                    {{ act.created_at.strftime('%d %b %H:%M') if act.created_at else '' }}
-                </p>
+                <div style="min-width:0;flex:1;">
+                    <p style="font-size:0.82rem;font-weight:600;color:var(--text-primary);margin:0;">{{ act.action|replace('_',' ')|title }}</p>
+                    <p style="font-size:0.71rem;color:var(--text-subtle);margin:2px 0 0;">
+                        {{ act.user_name or 'User' }} · {{ act.created_at.strftime('%d %b %H:%M') if act.created_at else '' }}
+                    </p>
+                </div>
             </div>
             {% endfor %}
         </div>
     </div>
 
     {% elif role == 'student' and attendance_history %}
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
-        <h3 class="text-sm font-bold text-gray-100 text-gray-100 mb-4 flex items-center gap-2">
-            <i data-lucide="check-square" class="w-4 h-4 text-emerald-500"></i>
+    <div class="card p-5">
+        <h3 style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="check-square" style="width:14px;height:14px;color:var(--success);"></i>
             Recent Attendance
         </h3>
-        <div class="space-y-2">
+        <div style="display:flex;flex-direction:column;gap:6px;">
             {% for att in attendance_history %}
-            <div class="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-900/20
-                        rounded-xl px-3 py-2.5">
-                <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40
-                            flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="check" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--success-bg);border:1px solid var(--success-border);border-radius:10px;padding:8px 12px;">
+                <div style="width:30px;height:30px;border-radius:50%;background:var(--success-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i data-lucide="check" style="width:14px;height:14px;color:var(--success);"></i>
                 </div>
-                <div class="min-w-0">
-                    <p class="text-sm font-semibold text-gray-100 text-gray-100 truncate">{{ att.title }}</p>
-                    <p class="text-xs text-gray-500">{{ att.club_name or '' }} · {{ att.date.strftime('%d %b %Y') if att.date else '' }}</p>
+                <div style="min-width:0;">
+                    <p style="font-size:0.82rem;font-weight:600;color:var(--text-primary);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ att.title }}</p>
+                    <p style="font-size:0.71rem;color:var(--text-subtle);margin:1px 0 0;">{{ att.club_name or '' }} · {{ att.date.strftime('%d %b %Y') if att.date else '' }}</p>
                 </div>
             </div>
             {% endfor %}
@@ -345,75 +306,72 @@
     </div>
 
     {% elif role == 'club_admin' and my_events %}
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
-        <h3 class="text-sm font-bold text-gray-100 text-gray-100 mb-4 flex items-center gap-2">
-            <i data-lucide="calendar-check" class="w-4 h-4 text-emerald-500"></i>
+    <div class="card p-5">
+        <h3 style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="calendar-check" style="width:14px;height:14px;color:var(--success);"></i>
             My Club Events
         </h3>
-        <div class="space-y-2">
+        <div style="display:flex;flex-direction:column;gap:6px;">
             {% for ev in my_events[:5] %}
             <a href="{{ url_for('events.detail', event_id=ev.event_id) }}"
-               class="flex items-center gap-3 bg-emerald-500/10 bg-emerald-500/10 rounded-xl px-3 py-2.5 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition">
-                <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40
-                            flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="calendar" class="w-4 h-4 text-emerald-500 dark:text-indigo-400"></i>
+               style="display:flex;align-items:center;gap:10px;background:var(--bg-hover);border:1px solid var(--border);border-radius:10px;padding:8px 12px;text-decoration:none;transition:background 0.15s;">
+                <div style="width:30px;height:30px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i data-lucide="calendar" style="width:13px;height:13px;color:var(--blue);"></i>
                 </div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold text-gray-100 text-gray-100 truncate">{{ ev.title }}</p>
-                    <p class="text-xs text-gray-500">{{ ev.date.strftime('%d %b %Y') if ev.date else 'TBD' }}</p>
+                <div style="min-width:0;flex:1;">
+                    <p style="font-size:0.82rem;font-weight:600;color:var(--text-primary);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ ev.title }}</p>
+                    <p style="font-size:0.71rem;color:var(--text-subtle);margin:1px 0 0;">{{ ev.date.strftime('%d %b %Y') if ev.date else 'TBD' }}</p>
                 </div>
-                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
+                <i data-lucide="chevron-right" style="width:14px;height:14px;color:var(--text-subtle);flex-shrink:0;"></i>
             </a>
             {% endfor %}
         </div>
     </div>
     {% else %}
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5 flex items-center justify-center">
-        <div class="text-center">
-            <i data-lucide="inbox" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
-            <p class="text-sm text-gray-500">No recent activity</p>
+    <div class="card p-5">
+        <div class="empty-state" style="padding:24px 12px;">
+            <div class="empty-state-icon"><i data-lucide="inbox" style="width:20px;height:20px;"></i></div>
+            <p>No recent activity</p>
         </div>
     </div>
     {% endif %}
 
     <!-- Recommendations (Students only) -->
     {% if role == 'student' %}
-    <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-5">
-        <h3 class="text-sm font-bold text-gray-100 text-gray-100 mb-4 flex items-center gap-2">
-            <i data-lucide="sparkles" class="w-4 h-4 text-violet-500"></i>
+    <div class="card p-5">
+        <h3 style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="sparkles" style="width:14px;height:14px;color:var(--blue);"></i>
             Recommended for You
         </h3>
         {% if recommended_events %}
-        <div class="space-y-3">
+        <div style="display:flex;flex-direction:column;gap:10px;">
             {% for ev in recommended_events %}
             <a href="{{ url_for('events.detail', event_id=ev.event_id) }}"
-               class="flex gap-3 group hover:bg-violet-50 dark:hover:bg-violet-900/20
-                      rounded-xl p-2 transition -mx-2">
+               style="display:flex;gap:10px;border-radius:10px;padding:6px;text-decoration:none;transition:background 0.15s;">
                 {% if ev.first_image %}
                 <img src="{{ url_for('static', filename=ev.first_image) }}"
-                     class="w-14 h-14 rounded-xl object-cover flex-shrink-0"
+                     style="width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;"
                      alt="{{ ev.title }}">
                 {% else %}
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500
-                            flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="calendar" class="w-5 h-5 text-white"></i>
+                <div style="width:52px;height:52px;border-radius:8px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i data-lucide="calendar" style="width:18px;height:18px;color:var(--blue);"></i>
                 </div>
                 {% endif %}
-                <div class="min-w-0">
-                    <p class="text-sm font-semibold text-gray-100 text-gray-100 group-hover:text-emerald-500 dark:group-hover:text-indigo-400 transition truncate">{{ ev.title }}</p>
-                    <p class="text-xs text-gray-500 mt-0.5">{{ ev.club_name or 'Campus' }} · {{ ev.date.strftime('%d %b') if ev.date else 'TBD' }}</p>
+                <div style="min-width:0;">
+                    <p style="font-size:0.82rem;font-weight:600;color:var(--text-primary);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ ev.title }}</p>
+                    <p style="font-size:0.71rem;color:var(--text-subtle);margin:2px 0 0;">{{ ev.club_name or 'Campus' }} · {{ ev.date.strftime('%d %b') if ev.date else 'TBD' }}</p>
                 </div>
             </a>
             {% endfor %}
         </div>
         <a href="{{ url_for('recommendations.index') }}"
-           class="mt-4 text-xs text-violet-600 dark:text-violet-400 font-semibold hover:underline flex items-center gap-1">
-            See all <i data-lucide="arrow-right" class="w-3 h-3"></i>
+           style="margin-top:12px;font-size:0.75rem;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:4px;">
+            See all <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
         </a>
         {% else %}
-        <div class="text-center py-6">
-            <i data-lucide="sparkles" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
-            <p class="text-sm text-gray-500">Attend events to get recommendations</p>
+        <div class="empty-state" style="padding:24px 12px;">
+            <div class="empty-state-icon"><i data-lucide="sparkles" style="width:20px;height:20px;"></i></div>
+            <p>Attend events to get recommendations</p>
         </div>
         {% endif %}
     </div>
@@ -439,9 +397,8 @@ const GRAD_COLORS = [
 
 // ── Admin Charts ──
 {% if role == 'admin' %}
-const isDark = document.documentElement.classList.contains('dark');
-Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
-Chart.defaults.borderColor = isDark ? '#1e293b' : '#e2e8f0';
+Chart.defaults.color = '#475569';
+Chart.defaults.borderColor = '#e2e8f0';
 
 // Events Bar
 const evCtx = document.getElementById('eventsChart');
@@ -462,7 +419,7 @@ if (evCtx) {
         options: {
             plugins: { legend: { display: false } },
             scales: {
-                y: { beginAtZero: true, grid: { color: isDark ? '#1e293b' : '#f1f5f9' } },
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
                 x: { grid: { display: false } }
             }
         }
@@ -480,7 +437,7 @@ if (clCtx) {
                 data: {{ chart_clubs_data | safe }},
                 backgroundColor: GRAD_COLORS,
                 borderWidth: 2,
-                borderColor: isDark ? '#0f172a' : '#fff',
+                borderColor: '#fff',
                 hoverOffset: 8,
             }]
         },
@@ -501,8 +458,8 @@ if (stCtx) {
             datasets: [{
                 label: 'Events Attended',
                 data: {{ chart_students_data | safe }},
-                backgroundColor: '#10b981cc',
-                borderColor: '#10b981',
+                backgroundColor: '#1E3A8Acc',
+                borderColor: '#1E3A8A',
                 borderWidth: 2,
                 borderRadius: 6,
             }]
@@ -511,7 +468,7 @@ if (stCtx) {
             indexAxis: 'y',
             plugins: { legend: { display: false } },
             scales: {
-                x: { beginAtZero: true, grid: { color: isDark ? '#1e293b' : '#f1f5f9' } },
+                x: { beginAtZero: true, grid: { color: '#f1f5f9' } },
                 y: { grid: { display: false } }
             }
         }
@@ -523,7 +480,6 @@ if (stCtx) {
 {% if role == 'club_admin' %}
 const mCtx = document.getElementById('monthlyChart');
 if (mCtx) {
-    const isDark2 = document.documentElement.classList.contains('dark');
     new Chart(mCtx, {
         type: 'line',
         data: {
@@ -531,18 +487,18 @@ if (mCtx) {
             datasets: [{
                 label: 'Attendance',
                 data: {{ chart_monthly_data | safe }},
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99,102,241,0.1)',
+                borderColor: '#1E3A8A',
+                backgroundColor: 'rgba(30,58,138,0.08)',
                 fill: true,
                 tension: 0.4,
-                pointBackgroundColor: '#6366f1',
+                pointBackgroundColor: '#1E3A8A',
                 pointRadius: 5,
             }]
         },
         options: {
             plugins: { legend: { display: false } },
             scales: {
-                y: { beginAtZero: true, grid: { color: isDark2 ? '#1e293b' : '#f1f5f9' } },
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
                 x: { grid: { display: false } }
             }
         }

@@ -1,5 +1,5 @@
 {% extends 'layout.html' %}
-{% block title %}{{ club.club_name }} — CECRMS{% endblock %}
+{% block title %}{{ club.club_name }} — CampusOps{% endblock %}
 {% block page_title %}{{ club.club_name }}{% endblock %}
 
 {% block content %}
@@ -15,8 +15,8 @@
          style="width:100%;height:100%;object-fit:cover;display:block;"
          alt="{{ club.club_name }} cover">
     {% else %}
-    <div style="width:100%;height:100%;background:linear-gradient(135deg,#0d2137 0%,#163044 40%,#0f1f30 100%);display:flex;align-items:center;justify-content:center;">
-        <i data-lucide="users" style="width:80px;height:80px;color:rgba(16,185,129,0.3);"></i>
+    <div style="width:100%;height:100%;background:linear-gradient(135deg,#0F172A 0%,#1E3A8A 60%,#2563EB 100%);display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="users" style="width:80px;height:80px;color:rgba(255,255,255,0.35);"></i>
     </div>
     {% endif %}
     <!-- Gradient overlay -->

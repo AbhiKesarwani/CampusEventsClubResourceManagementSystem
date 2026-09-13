@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>500 — Server Error · CECRMS</title>
+    <title>500 — Server Error · CampusOps</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -12,8 +12,8 @@
         body.error-page {
             font-family: 'Inter', sans-serif;
             min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            background: radial-gradient(circle at 20% 20%, rgba(239,68,68,0.08), transparent 45%),
-                        radial-gradient(circle at 80% 80%, rgba(245,158,11,0.06), transparent 45%),
+            background: radial-gradient(circle at 20% 20%, rgba(220,38,38,0.06), transparent 45%),
+                        radial-gradient(circle at 80% 80%, rgba(30,58,138,0.05), transparent 45%),
                         var(--bg);
             padding: 24px; margin: 0;
         }
@@ -21,6 +21,7 @@
             max-width: 480px; width: 100%; text-align: center;
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 20px; padding: 48px 32px;
+            box-shadow: var(--shadow-lg);
         }
         .error-code {
             font-size: 5rem; font-weight: 900; line-height: 1;

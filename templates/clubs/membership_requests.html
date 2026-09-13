@@ -7,11 +7,11 @@
 
     <div class="flex items-center gap-3">
         <a href="{{ url_for('clubs.detail', club_id=club.club_id) }}"
-           class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-brand-card transition text-gray-500">
+           class="p-2 rounded-xl hover:bg-slate-100 transition text-gray-500">
             <i data-lucide="arrow-left" class="w-5 h-5"></i>
         </a>
         <div>
-            <h1 class="text-xl font-extrabold text-white text-white">Membership Requests</h1>
+            <h1 class="text-xl font-extrabold text-slate-900">Membership Requests</h1>
             <p class="text-sm text-gray-500">{{ club.club_name }}</p>
         </div>
     </div>
@@ -29,27 +29,25 @@
         {% if pending %}
         <div class="space-y-3">
             {% for req in pending %}
-            <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-4 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40
-                            flex items-center justify-center text-amber-700 dark:text-amber-400 font-bold flex-shrink-0">
+            <div class="card p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-amber-100
+                            flex items-center justify-center text-amber-700 font-bold flex-shrink-0">
                     {{ req.student_name[0]|upper }}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-white text-gray-100">{{ req.student_name }}</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ req.student_name }}</p>
                     <p class="text-xs text-gray-500">{{ req.student_email }} · {{ req.created_at.strftime('%d %b %Y') if req.created_at else '' }}</p>
                 </div>
                 <div class="flex gap-2 flex-shrink-0">
                     <form method="POST" action="{{ url_for('clubs.approve_membership', request_id=req.request_id) }}">
                         <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold
-                                       bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
-                                       hover:bg-emerald-200 transition">
+                                       bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition">
                             <i data-lucide="check" class="w-3.5 h-3.5"></i> Approve
                         </button>
                     </form>
                     <form method="POST" action="{{ url_for('clubs.reject_membership', request_id=req.request_id) }}">
                         <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold
-                                       bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300
-                                       hover:bg-red-200 transition">
+                                       bg-red-100 text-red-800 hover:bg-red-200 transition">
                             <i data-lucide="x" class="w-3.5 h-3.5"></i> Reject
                         </button>
                     </form>
@@ -58,7 +56,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl p-8 text-center">
+        <div class="card p-8 text-center">
             <i data-lucide="inbox" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
             <p class="text-sm text-gray-500">No pending requests</p>
         </div>
@@ -72,19 +70,18 @@
             <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
             Approved ({{ approved|length }})
         </h2>
-        <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl divide-y divide-slate-100 dark:divide-slate-700">
+        <div class="card divide-y divide-slate-100">
             {% for req in approved %}
             <div class="flex items-center gap-3 px-4 py-3">
-                <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40
-                            flex items-center justify-center text-emerald-700 dark:text-emerald-400 font-bold text-sm">
+                <div class="w-8 h-8 rounded-full bg-emerald-100
+                            flex items-center justify-center text-emerald-700 font-bold text-sm">
                     {{ req.student_name[0]|upper }}
                 </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold text-gray-100 text-gray-100 truncate">{{ req.student_name }}</p>
+                    <p class="text-sm font-semibold text-slate-900 truncate">{{ req.student_name }}</p>
                     <p class="text-xs text-gray-500">{{ req.student_email }}</p>
                 </div>
-                <span class="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
-                             font-semibold px-2 py-0.5 rounded-full">Approved</span>
+                <span class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Approved</span>
             </div>
             {% endfor %}
         </div>
@@ -98,18 +95,17 @@
             <span class="w-2 h-2 rounded-full bg-red-400 inline-block"></span>
             Rejected ({{ rejected|length }})
         </h2>
-        <div class="bg-brand-surface border border-white/5 backdrop-blur-md-card bg-brand-card border border-white/5 shadow-md rounded-2xl rounded-2xl divide-y divide-slate-100 dark:divide-slate-700">
+        <div class="card divide-y divide-slate-100">
             {% for req in rejected %}
-            <div class="flex items-center gap-3 px-4 py-3 opacity-60">
-                <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700
-                            flex items-center justify-center text-gray-500 font-bold text-sm">
+            <div class="flex items-center gap-3 px-4 py-3 opacity-75">
+                <div class="w-8 h-8 rounded-full bg-slate-100
+                            flex items-center justify-center text-slate-600 font-bold text-sm">
                     {{ req.student_name[0]|upper }}
                 </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold text-gray-100 text-gray-600 truncate">{{ req.student_name }}</p>
+                    <p class="text-sm font-semibold text-slate-900 truncate">{{ req.student_name }}</p>
                 </div>
-                <span class="text-xs bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400
-                             font-semibold px-2 py-0.5 rounded-full">Rejected</span>
+                <span class="text-xs bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Rejected</span>
             </div>
             {% endfor %}
         </div>

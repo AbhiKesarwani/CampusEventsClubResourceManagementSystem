@@ -105,7 +105,7 @@ def fake_db(monkeypatch):
         'services.certificate_service', 'services.connect_service', 'services.event_service',
         'services.log_service', 'services.membership_service', 'services.recommendation_service',
         'services.notification_service', 'services.member_service', 'services.user_service',
-        'services.resource_service', 'services.venue_service', 'routes.search',
+        'services.venue_service', 'routes.search',
     ]
     import importlib
     for mod_name in modules_with_local_import:

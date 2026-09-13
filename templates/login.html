@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In — CECRMS</title>
+    <title>Sign In — CampusOps</title>
+    <meta name="description" content="Sign in to CampusOps Club Management System">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -12,189 +13,103 @@
         * { font-family: 'Inter', sans-serif; }
 
         :root {
-            --bg:          #0d1117;
-            --bg-2:        #161b22;
-            --bg-card:     #1c2128;
-            --border:      rgba(48,61,78,0.9);
-            --text:        #e6edf3;
-            --text-muted:  #7d8590;
-            --emerald:     #10b981;
-            --emerald-dim: rgba(16,185,129,0.12);
-            --emerald-glow:rgba(16,185,129,0.28);
-            --amber:       #f59e0b;
+            --bg-page:       #F5F7FA;
+            --bg-surface:    #FFFFFF;
+            --bg-hero:       #0F4C6E;   /* deep teal-navy hero */
+            --border:        #E5E7EB;
+            --text-primary:  #111827;
+            --text-body:     #374151;
+            --text-muted:    #6B7280;
+            --text-inverse:  #FFFFFF;
+            --primary:       #0D9488;
+            --primary-hover: #0F766E;
+            --primary-dark:  #115E59;
+            --primary-light: #F0FDFA;
+            --primary-muted: #CCFBF1;
+            --success:       #16A34A;
+            --success-bg:    #DCFCE7;
         }
 
-        /* ── LAYOUT ───────────────────────────────────────────── */
         html, body { height: 100%; }
         body {
-            background: var(--bg);
+            background: var(--bg-page);
             min-height: 100vh;
             overflow-x: hidden;
             display: flex;
         }
 
-        /* ── LEFT HERO ────────────────────────────────────────── */
+        /* ── LEFT HERO — solid navy gradient, no external images ── */
         .hero-side {
-            flex: 0 0 65%;
+            flex: 0 0 62%;
             min-height: 100vh;
-            /* Lighter overlay so image stays visible */
-            background:
-                linear-gradient(135deg,
-                    rgba(11,15,20,0.50) 0%,
-                    rgba(13,17,23,0.62) 60%,
-                    rgba(18,24,33,0.75) 100%),
-                url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80')
-                center / cover no-repeat;
+            background: linear-gradient(160deg, #0C4A6E 0%, #0D9488 55%, #0F766E 100%);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            padding: 72px 80px;
+            justify-content: space-between;
+            padding: 48px 64px 52px;
             position: relative;
             overflow: hidden;
         }
 
-        /* Colour overlays */
-        .hero-side::before {
+        /* Subtle geometric texture */
+        .hero-side::after {
             content: '';
             position: absolute;
             inset: 0;
-            background:
-                radial-gradient(circle at top right,   rgba(16,185,129,0.18), transparent 50%),
-                radial-gradient(circle at bottom left, rgba(245,158,11,0.08), transparent 50%);
-            z-index: 1;
-        }
-
-        /* Subtle dot grid */
-        .grid-overlay {
-            position: absolute; inset: 0;
             background-image:
-                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-            background-size: 44px 44px;
-            z-index: 2;
-        }
-
-        /* Animated orbs */
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(60px);
-            animation: orb-float ease-in-out infinite alternate;
-        }
-        @keyframes orb-float {
-            from { transform: translate(0, 0) scale(1); }
-            to   { transform: translate(20px, -20px) scale(1.05); }
-        }
-
-        /* Floating rings */
-        .float-ring {
-            position: absolute;
-            border-radius: 50%;
-            border: 1px solid rgba(16,185,129,0.18);
-            animation: ring-spin linear infinite;
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.07) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(255,186,0,0.1) 0%, transparent 45%);
+            z-index: 0;
             pointer-events: none;
         }
-        @keyframes ring-spin {
-            from { transform: rotate(0deg); }
-            to   { transform: rotate(360deg); }
-        }
 
-        /* Hero content */
-        .hero-content {
-            position: relative;
-            z-index: 10;
-            max-width: 560px;
-        }
+        .hero-content { position: relative; z-index: 1; }
 
-        .hero-logo {
+        /* Brand block */
+        .hero-brand {
             display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 52px;
-        }
-        .hero-logo-icon {
-            width: 52px; height: 52px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--emerald), #059669);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 8px 24px rgba(16,185,129,0.45);
-            flex-shrink: 0;
-        }
-        .hero-logo h1 {
-            font-size: 1.75rem;
-            font-weight: 900;
-            color: var(--text);
-            line-height: 1;
-            letter-spacing: -0.02em;
-        }
-        .hero-logo p {
-            font-size: 0.78rem;
-            color: rgba(230,237,243,0.65);
-            margin-top: 3px;
-        }
-
-        .hero-headline {
-            font-size: clamp(2.2rem, 3.5vw, 3.4rem);
-            font-weight: 900;
-            color: var(--text);
-            line-height: 1.1;
-            margin-bottom: 18px;
-            letter-spacing: -0.03em;
-        }
-        .hero-headline .gradient-text {
-            background: linear-gradient(135deg, var(--emerald), #34d399);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-sub {
-            font-size: 1rem;
-            color: rgba(230,237,243,0.75);
-            line-height: 1.65;
-            margin-bottom: 40px;
-            max-width: 480px;
-        }
-
-        /* Stats pills */
-        .stats-row {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-bottom: 36px;
-        }
-        .stat-pill {
-            display: inline-flex;
             align-items: center;
             gap: 12px;
-            padding: 14px 20px;
-            background: rgba(13,17,23,0.55);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 14px;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 8px 28px rgba(0,0,0,0.25);
-            transition: transform 0.3s, background 0.3s;
+            margin-bottom: 56px;
         }
-        .stat-pill:hover {
-            transform: translateY(-4px);
-            background: rgba(22,30,42,0.7);
-        }
-        .stat-pill-icon {
+        .hero-brand-icon {
             width: 40px; height: 40px;
             border-radius: 10px;
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.25);
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
-        .stat-num {
-            font-size: 1.3rem;
+        .hero-brand-name {
+            font-size: 1.15rem;
             font-weight: 800;
-            color: var(--text);
-            line-height: 1;
+            color: var(--text-inverse);
+            line-height: 1.2;
+            letter-spacing: -0.01em;
         }
-        .stat-desc {
-            font-size: 0.7rem;
-            color: rgba(230,237,243,0.55);
-            margin-top: 2px;
+        .hero-brand-sub {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 1px;
+        }
+
+        /* Main headline */
+        .hero-headline {
+            font-size: clamp(1.9rem, 3vw, 2.8rem);
+            font-weight: 900;
+            color: var(--text-inverse);
+            line-height: 1.15;
+            margin-bottom: 14px;
+            letter-spacing: -0.03em;
+        }
+        .hero-headline .accent { color: #FCD34D; }
+
+        .hero-sub {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.65;
+            max-width: 420px;
+            margin-bottom: 44px;
         }
 
         /* Feature list */
@@ -207,70 +122,85 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            color: rgba(230,237,243,0.72);
             font-size: 0.875rem;
+            color: rgba(255,255,255,0.75);
         }
-        .feature-dot {
-            width: 20px; height: 20px;
+        .feature-check {
+            width: 18px; height: 18px;
             border-radius: 50%;
-            background: var(--emerald-dim);
-            border: 1px solid rgba(16,185,129,0.3);
+            background: rgba(255,255,255,0.15);
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
 
-        /* ── RIGHT LOGIN PANEL ────────────────────────────────── */
+        /* Bottom stats */
+        .hero-stats {
+            position: relative; z-index: 1;
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+            border-top: 1px solid rgba(255,255,255,0.12);
+            padding-top: 24px;
+            margin-top: 40px;
+        }
+        .hero-stat-num {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-inverse);
+            line-height: 1;
+        }
+        .hero-stat-desc {
+            font-size: 0.68rem;
+            color: rgba(255,255,255,0.55);
+            margin-top: 2px;
+        }
+
+        /* ── RIGHT LOGIN PANEL ── */
         .login-side {
-            flex: 0 0 35%;
+            flex: 0 0 38%;
             min-height: 100vh;
-            background: rgba(10,13,18,0.96);
-            backdrop-filter: blur(24px);
-            border-left: 1px solid rgba(255,255,255,0.05);
+            background: var(--bg-surface);
+            border-left: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 40px 48px;
             position: relative;
             flex-shrink: 0;
-            box-shadow: -24px 0 48px rgba(0,0,0,0.45);
         }
-
-        /* Top accent line */
         .login-side::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--emerald), transparent);
-            opacity: 0.5;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
         }
 
-        /* Inner constrained form box */
         .login-box {
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
         }
 
-        /* Mobile logo */
+        /* Mobile logo (only on mobile) */
         .mobile-logo {
             display: none;
             text-align: center;
             margin-bottom: 28px;
         }
         .mobile-logo-icon {
-            width: 46px; height: 46px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #10b981, #059669);
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            background: var(--primary);
             display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 10px;
+            margin: 0 auto 8px;
         }
 
-        /* Form inputs */
+        /* Form */
         .form-label {
             display: block;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            color: var(--text-muted);
+            color: var(--text-primary);
             margin-bottom: 6px;
         }
         .input-wrap { position: relative; }
@@ -278,123 +208,111 @@
             position: absolute;
             left: 12px; top: 50%;
             transform: translateY(-50%);
-            color: var(--text-muted);
+            color: #9CA3AF;
             pointer-events: none;
             width: 15px; height: 15px;
         }
         .form-input {
             width: 100%;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 11px 14px 11px 40px;
+            background: var(--bg-surface);
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            padding: 10px 14px 10px 38px;
             font-size: 0.875rem;
-            color: var(--text);
+            color: var(--text-primary);
             outline: none;
             transition: border-color 0.15s, box-shadow 0.15s;
         }
         .form-input:focus {
-            border-color: var(--emerald);
-            box-shadow: 0 0 0 3px var(--emerald-dim);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13,148,136,0.12);
         }
-        .form-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+        .form-input::placeholder { color: #9CA3AF; }
 
         /* Flash messages */
         .flash-msg {
             padding: 10px 14px;
-            border-radius: 8px;
+            border-radius: 7px;
             font-size: 0.82rem;
             margin-bottom: 12px;
             display: flex; align-items: center; gap: 8px;
         }
-        .flash-danger  { background: rgba(248,81,73,0.10); border: 1px solid rgba(248,81,73,0.28); color: #f85149; }
-        .flash-success { background: rgba(16,185,129,0.10); border: 1px solid rgba(16,185,129,0.28); color: #10b981; }
+        .flash-danger  { background: #FEE2E2; border: 1px solid #FECACA; color: #DC2626; }
+        .flash-success { background: #DCFCE7; border: 1px solid #BBF7D0; color: #16A34A; }
 
         /* Submit button */
         .btn-submit {
             width: 100%;
-            padding: 12px;
-            background: var(--emerald);
+            padding: 11px;
+            background: var(--primary);
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 0.9rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 16px var(--emerald-glow);
+            transition: all 0.15s;
+            box-shadow: 0 1px 3px rgba(13,148,136,0.3);
             display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-family: inherit;
         }
         .btn-submit:hover {
-            background: #059669;
+            background: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 6px 24px var(--emerald-glow);
+            box-shadow: 0 4px 14px rgba(13,148,136,0.3);
         }
         .btn-submit:active { transform: scale(0.98); }
 
-        /* Divider */
-        .divider {
-            display: flex; align-items: center; gap: 12px;
-            margin: 22px 0;
+        /* Register link */
+        .register-link-row {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
         }
-        .divider-line { flex: 1; height: 1px; background: var(--border); }
-        .divider-text { font-size: 0.72rem; color: var(--text-muted); }
+        .register-link-row a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+            margin-left: 4px;
+        }
+        .register-link-row a:hover { text-decoration: underline; }
 
-        /* ── RESPONSIVE ───────────────────────────────────────── */
-
-        /* Tablet: 55/45 split */
+        /* ── RESPONSIVE ── */
         @media (max-width: 1024px) {
-            .hero-side  { flex: 0 0 55%; padding: 56px 52px; }
-            .login-side { flex: 0 0 45%; padding: 40px 40px; }
-            .hero-headline { font-size: 2.4rem; }
+            .hero-side  { flex: 0 0 55%; padding: 48px 52px; }
+            .login-side { flex: 0 0 45%; padding: 40px 36px; }
+            .hero-headline { font-size: 2rem; }
         }
-
-        /* Laptop-small */
         @media (max-width: 900px) {
-            .hero-side  { flex: 0 0 52%; padding: 44px 44px; }
-            .login-side { flex: 0 0 48%; padding: 36px 32px; }
+            .hero-side  { flex: 0 0 52%; padding: 40px 40px; }
+            .login-side { flex: 0 0 48%; padding: 36px 28px; }
         }
-
-        /* Mobile: stack vertically */
         @media (max-width: 700px) {
             body { flex-direction: column; }
-
-            /* Hero becomes a compact top banner */
             .hero-side {
-                flex: none;
-                width: 100%;
-                min-height: 240px;
-                padding: 36px 24px 32px;
-                justify-content: flex-end;
+                flex: none; width: 100%;
+                min-height: 200px; max-height: 260px;
+                padding: 28px 24px 24px;
+                justify-content: flex-start;
             }
-            .hero-logo { margin-bottom: 20px; }
-            .hero-headline { font-size: 1.9rem; margin-bottom: 12px; }
-            .hero-sub { display: none; }
-            .stats-row { gap: 10px; }
-            .stat-pill { padding: 10px 14px; gap: 8px; }
-            .stat-num { font-size: 1.1rem; }
-            .feature-list { display: none; }
-            .float-ring, .orb { display: none; }
-
+            .hero-sub, .feature-list, .hero-stats { display: none; }
+            .hero-brand { margin-bottom: 16px; }
+            .hero-headline { font-size: 1.7rem; margin-bottom: 0; }
             .login-side {
-                flex: none;
-                width: 100%;
+                flex: none; width: 100%;
                 min-height: unset;
                 border-left: none;
-                border-top: 1px solid rgba(255,255,255,0.05);
-                padding: 36px 24px 48px;
-                box-shadow: none;
+                padding: 32px 24px 48px;
                 align-items: flex-start;
             }
             .login-box { max-width: 100%; }
             .mobile-logo { display: block; }
+            .hero-brand { display: none; }
         }
-
         @media (max-width: 380px) {
-            .hero-side { min-height: 200px; padding: 28px 16px 24px; }
-            .login-side { padding: 28px 16px 40px; }
-            .hero-headline { font-size: 1.6rem; }
-            .stats-row { flex-direction: column; gap: 8px; }
+            .hero-side { max-height: 200px; padding: 24px 16px; }
+            .login-side { padding: 24px 16px 40px; }
         }
     </style>
 </head>
@@ -402,143 +320,89 @@
 
 <!-- ═══ LEFT HERO ═══ -->
 <div class="hero-side">
-    <div class="grid-overlay"></div>
-
-    <!-- Animated orbs -->
-    <div class="orb" style="width:380px;height:380px;background:rgba(16,185,129,0.07);top:-100px;right:-120px;animation-duration:18s;"></div>
-    <div class="orb" style="width:260px;height:260px;background:rgba(88,166,255,0.05);bottom:-70px;left:-90px;animation-duration:24s;animation-direction:reverse;"></div>
-    <div class="orb" style="width:160px;height:160px;background:rgba(167,139,250,0.06);top:45%;left:28%;animation-duration:14s;"></div>
-
-    <!-- Floating rings -->
-    <div class="float-ring" style="width:190px;height:190px;top:8%;right:4%;animation-duration:32s;"></div>
-    <div class="float-ring" style="width:90px;height:90px;bottom:12%;right:18%;animation-duration:22s;animation-direction:reverse;border-color:rgba(88,166,255,0.12);"></div>
-
-    <!-- Content -->
     <div class="hero-content">
 
-        <!-- Logo -->
-        <div class="hero-logo">
-            <div class="hero-logo-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+        <!-- Brand -->
+        <div class="hero-brand">
+            <div class="hero-brand-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                      fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
                 </svg>
             </div>
             <div>
-                <h1>CECRMS</h1>
-                <p>Campus Event &amp; Club Resource Management</p>
+                <div class="hero-brand-name">CampusOps</div>
+                <div class="hero-brand-sub">Club Management System</div>
             </div>
         </div>
 
         <!-- Headline -->
-        <h2 class="hero-headline">
-            Manage Campus Life<br>
-            <span class="gradient-text">Smarter.</span>
-        </h2>
+        <h1 class="hero-headline">
+            Your campus,<br>
+            <span class="accent">organized.</span>
+        </h1>
 
         <p class="hero-sub">
-            The all-in-one platform for students, coordinators, and
-            administrators to organise, discover, and celebrate campus life.
+            Events, clubs, attendance, and certificates —
+            all in one place built for students, coordinators, and administrators.
         </p>
 
-        <!-- Stats pills -->
-        <div class="stats-row">
-            <div class="stat-pill">
-                <div class="stat-pill-icon" style="background:rgba(16,185,129,0.15);">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                         fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="stat-num">50+</div>
-                    <div class="stat-desc">Active Clubs</div>
-                </div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-pill-icon" style="background:rgba(245,158,11,0.15);">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                         fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-                        <line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/>
-                        <line x1="3" x2="21" y1="10" y2="10"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="stat-num">500+</div>
-                    <div class="stat-desc">Events Hosted</div>
-                </div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-pill-icon" style="background:rgba(139,92,246,0.15);">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                         fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="stat-num">2000+</div>
-                    <div class="stat-desc">Engaged Students</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Feature list -->
+        <!-- Features -->
         <div class="feature-list">
             <div class="feature-item">
-                <div class="feature-dot">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
-                         fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <div class="feature-check">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24"
+                         fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
                 </div>
-                Real-time attendance tracking with secure codes
+                Real-time attendance tracking with secure OTP codes
             </div>
             <div class="feature-item">
-                <div class="feature-dot">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
-                         fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <div class="feature-check">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24"
+                         fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
                 </div>
-                Resource allocation &amp; request management
+                Club-wise event creation, attendance tracking, and campus notifications
             </div>
             <div class="feature-item">
-                <div class="feature-dot">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
-                         fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <div class="feature-check">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24"
+                         fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
                 </div>
                 Smart event recommendations &amp; certificates
             </div>
         </div>
-
     </div>
+
+
 </div>
 
 <!-- ═══ RIGHT LOGIN PANEL ═══ -->
 <div class="login-side">
     <div class="login-box">
 
-        <!-- Mobile logo (visible only on mobile) -->
+        <!-- Mobile logo (only on small screens) -->
         <div class="mobile-logo">
             <div class="mobile-logo-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                      fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
                 </svg>
             </div>
-            <h1 style="font-size:1.3rem;font-weight:900;color:var(--text);">CECRMS</h1>
+            <p style="font-size:1.2rem;font-weight:900;color:#111827;">CampusOps</p>
         </div>
 
         <!-- Heading -->
-        <div style="margin-bottom:28px;">
-            <h2 style="font-size:1.65rem;font-weight:800;color:var(--text);margin-bottom:6px;letter-spacing:-0.02em;">
+        <div style="margin-bottom:24px;">
+            <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin-bottom:4px;letter-spacing:-0.02em;">
                 Welcome back
             </h2>
-            <p style="font-size:0.88rem;color:var(--text-muted);">
+            <p style="font-size:0.85rem;color:#6B7280;">
                 Sign in to your campus account to continue
             </p>
         </div>
@@ -567,9 +431,7 @@
         <form method="POST" action="{{ url_for('auth.login') }}"
               style="display:flex;flex-direction:column;gap:14px;">
 
-            <!-- CSRF protection (standalone page — not extending layout.html,
-                 so layout.html's global CSRF injector JS never runs here).
-                 This hidden field must be present or Flask-WTF returns 400. -->
+            <!-- CSRF (standalone page — not extending layout.html) -->
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <!-- Email -->
@@ -588,7 +450,7 @@
                 </div>
             </div>
 
-            <!-- Password -->
+            <!-- Password (no eye toggle per design direction) -->
             <div>
                 <label class="form-label" for="login-password">Password</label>
                 <div class="input-wrap">
@@ -600,27 +462,13 @@
                     <input type="password" name="password" id="login-password" required
                            placeholder="••••••••"
                            class="form-input"
-                           style="padding-right:42px;"
                            autocomplete="current-password">
-                    <button type="button" id="pw-toggle"
-                            onclick="togglePw()"
-                            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
-                                   background:none;border:none;cursor:pointer;
-                                   color:var(--text-muted);padding:2px;line-height:0;"
-                            aria-label="Toggle password visibility">
-                        <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
-                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                    </button>
                 </div>
             </div>
 
             <!-- Submit -->
-            <button type="submit" class="btn-submit" id="login-btn" style="margin-top:6px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            <button type="submit" class="btn-submit" id="login-btn" style="margin-top:4px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                     <polyline points="10 17 15 12 10 7"/>
@@ -630,45 +478,23 @@
             </button>
         </form>
 
-        <!-- Divider -->
-        <div class="divider">
-            <div class="divider-line"></div>
-            <span class="divider-text">OR</span>
-            <div class="divider-line"></div>
+        <!-- Register link -->
+        <div class="register-link-row">
+            New to CampusOps?
+            <a href="{{ url_for('auth.register') }}">Create an account →</a>
         </div>
 
-        <!-- Register link -->
-        <p style="text-align:center;font-size:0.875rem;color:var(--text-muted);">
-            New to CECRMS?
-            <a href="{{ url_for('auth.register') }}"
-               style="color:var(--emerald);font-weight:700;text-decoration:none;margin-left:4px;"
-               onmouseover="this.style.textDecoration='underline'"
-               onmouseout="this.style.textDecoration='none'">
-                Create an account →
-            </a>
-        </p>
-
         <!-- Footer note -->
-        <p style="text-align:center;font-size:0.7rem;color:var(--text-muted);margin-top:28px;opacity:0.5;line-height:1.5;">
-            Campus Event &amp; Club Resource Management System<br>
-            © 2025 CECRMS. All rights reserved.
+        <p style="text-align:center;font-size:0.68rem;color:#9CA3AF;margin-top:32px;line-height:1.6;">
+            CampusOps — Club Management System<br>
+            © 2025 CampusOps. All rights reserved.
         </p>
 
     </div>
 </div>
 
 <script>
-    function togglePw() {
-        const inp = document.getElementById('login-password');
-        const eye = document.getElementById('eye-icon');
-        inp.type = inp.type === 'password' ? 'text' : 'password';
-        const isText = inp.type === 'text';
-        eye.innerHTML = isText
-            ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" x2="23" y1="1" y2="23"/>`
-            : `<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>`;
-    }
-
-    // Subtle loading animation on submit
+    // Subtle loading animation on submit (no eye toggle needed)
     document.getElementById('login-btn')?.addEventListener('click', function() {
         this.style.opacity = '0.8';
         this.style.pointerEvents = 'none';
