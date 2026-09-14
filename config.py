@@ -26,8 +26,17 @@ class Config:
     DB_USER      = os.getenv('DB_USER', 'root')
     DB_PASSWORD  = os.getenv('DB_PASSWORD', '')
     DB_NAME      = os.getenv('DB_NAME', 'cecrms')
-    DB_POOL_SIZE = int(os.getenv('DB_POOL_SIZE', '5'))
+    # Pool size: set >= WAITRESS_THREADS + a few extra for the context
+    # processor (which calls the DB on every request for notifications/user).
+    # Default 10 safely covers 8 Waitress threads + 2 buffer.
+    # Increase if running more than 8 Waitress threads.
+    DB_POOL_SIZE = int(os.getenv('DB_POOL_SIZE', '10'))
     DB_POOL_NAME = os.getenv('DB_POOL_NAME', 'cecrms_pool')
+
+    # ── Production WSGI server (Waitress) ───────────────────────────────────
+    # Number of threads for the Waitress WSGI server. Each thread can handle
+    # one concurrent request. The MySQL pool size should be >= this value.
+    WAITRESS_THREADS = int(os.getenv('WAITRESS_THREADS', '8'))
 
     # ── File uploads ────────────────────────────────────────────────────────
     UPLOAD_FOLDER    = os.getenv('UPLOAD_FOLDER', 'static/uploads')

@@ -7,3 +7,7 @@ requests==2.31.0
 openpyxl==3.1.2
 reportlab==4.0.7
 pytest==7.4.3
+# ── Production server (Windows-compatible WSGI) ──────────────────────────────
+waitress>=3.0.0
+# ── Load / concurrency testing ────────────────────────────────────────────────
+locust>=2.20.0
