@@ -85,7 +85,7 @@ def get_venues_for_select() -> list[dict]:
     try:
         conn = get_db_connection()
         cur  = conn.cursor(dictionary=True)
-        cur.execute("SELECT venue_id, venue_name FROM venues ORDER BY venue_name")
+        cur.execute("SELECT venue_id, venue_name, capacity FROM venues ORDER BY venue_name")
         return cur.fetchall()
     finally:
         if cur: cur.close()

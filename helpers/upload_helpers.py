@@ -71,27 +71,34 @@ def get_image_path(images: list, img_id: int) -> str:
     """
     Find an image dict (each having 'img_id' and 'img_path' keys) by id and
     return its absolute filesystem path.
-    Aborts with 404 if not found or the file is missing on disk.
+    Aborts with 404/403 if not found, invalid traversal, or missing on disk.
     """
     from flask import abort
     img = next((i for i in images if i['img_id'] == img_id), None)
-    if not img:
+    if not img or not img.get('img_path'):
         abort(404)
-    path = os.path.join(os.getcwd(), 'static', img['img_path'])
-    if not os.path.exists(path):
+    if '..' in img['img_path'] or img['img_path'].startswith('/') or img['img_path'].startswith('\\'):
+        abort(403)
+    base_dir = os.path.abspath(os.path.join(os.getcwd(), 'static'))
+    path = os.path.abspath(os.path.join(base_dir, img['img_path']))
+    if not path.startswith(base_dir) or not os.path.exists(path):
         abort(404)
     return path
 
 
 def build_gallery_zip(images: list):
-    """Build an in-memory ZIP archive containing every given image. Returns a BytesIO."""
+    """Build an in-memory ZIP archive containing every given image safely. Returns a BytesIO."""
     import io
     import zipfile
+    base_dir = os.path.abspath(os.path.join(os.getcwd(), 'static'))
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
         for img in images:
-            path = os.path.join(os.getcwd(), 'static', img['img_path'])
-            if os.path.exists(path):
+            img_path = img.get('img_path') if isinstance(img, dict) else getattr(img, 'img_path', None)
+            if not img_path or '..' in img_path:
+                continue
+            path = os.path.abspath(os.path.join(base_dir, img_path))
+            if path.startswith(base_dir) and os.path.exists(path):
                 zf.write(path, os.path.basename(path))
     buf.seek(0)
     return buf

@@ -64,7 +64,7 @@
                     <select name="venue_id" class="form-input">
                         <option value="">No venue</option>
                         {% for v in venues %}
-                        <option value="{{ v.venue_id }}">{{ v.venue_name }}</option>
+                        <option value="{{ v.venue_id }}">{{ v.venue_name }}{% if v.capacity %} — Capacity: {{ v.capacity }}{% endif %}</option>
                         {% endfor %}
                     </select>
                 </div>

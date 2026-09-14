@@ -377,9 +377,14 @@
                 Smart event recommendations &amp; certificates
             </div>
         </div>
+
+        <!-- Campus Educational Illustration -->
+        <div style="margin-top:36px;max-width:540px;width:100%;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+            <img src="{{ url_for('static', filename='images/campus_students_illustration.svg') }}"
+                 alt="CampusOps Students & Clubs"
+                 style="width:100%;height:auto;max-height:280px;object-fit:contain;filter:drop-shadow(0 12px 24px rgba(0,0,0,0.22));">
+        </div>
     </div>
-
-
 </div>
 
 <!-- ═══ RIGHT LOGIN PANEL ═══ -->
@@ -452,7 +457,10 @@
 
             <!-- Password (no eye toggle per design direction) -->
             <div>
-                <label class="form-label" for="login-password">Password</label>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <label class="form-label" for="login-password" style="margin-bottom:0;">Password</label>
+                    <a href="{{ url_for('auth.forgot_password') }}" style="font-size:0.78rem;color:var(--primary);text-decoration:none;font-weight:600;">Forgot password?</a>
+                </div>
                 <div class="input-wrap">
                     <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

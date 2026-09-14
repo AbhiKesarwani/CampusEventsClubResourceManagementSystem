@@ -73,14 +73,6 @@
       </div>
 
       <div>
-        <span style="font-size:0.83rem;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">Profile visibility</span>
-        <select name="profile_visibility" class="form-input">
-          <option value="campus" {% if preferences.profile_visibility == 'campus' %}selected{% endif %}>Campus — coordinators/admin can view my profile</option>
-          <option value="private" {% if preferences.profile_visibility == 'private' %}selected{% endif %}>Private — only I can view my profile</option>
-        </select>
-      </div>
-
-      <div>
         <button type="submit" class="btn btn-primary btn-sm">Save Preferences</button>
       </div>
     </form>
@@ -89,19 +81,33 @@
   <!-- ── Session Information ── -->
   <div class="card" style="padding:20px;">
     <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
-      <i data-lucide="monitor-smartphone" style="width:14px;height:14px;color:var(--blue);"></i> Session Information
+      <i data-lucide="monitor-smartphone" style="width:14px;height:14px;color:var(--primary);"></i> Session Information
     </h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;font-size:0.8rem;">
-      <div><span style="color:var(--text-subtle);">Email</span><br><strong style="color:var(--text);">{{ session_email }}</strong></div>
-      <div><span style="color:var(--text-subtle);">Role</span><br><strong style="color:var(--text);">{{ session_role|replace('_',' ')|title }}</strong></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+      <div style="background:var(--bg-surface-soft);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:10px 14px;min-width:0;">
+        <span style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-subtle);display:block;margin-bottom:3px;">Email</span>
+        <span style="font-size:0.84rem;font-weight:600;color:var(--text-primary);display:block;word-break:break-all;">{{ session_email or '—' }}</span>
+      </div>
+      <div style="background:var(--bg-surface-soft);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:10px 14px;min-width:0;">
+        <span style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-subtle);display:block;margin-bottom:3px;">Role</span>
+        <span style="font-size:0.84rem;font-weight:600;color:var(--text-primary);display:block;">{{ session_role|replace('_',' ')|title }}</span>
+      </div>
       {% if session_club_id %}
-      <div><span style="color:var(--text-subtle);">Club ID</span><br><strong style="color:var(--text);">#{{ session_club_id }}</strong></div>
+      <div style="background:var(--bg-surface-soft);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:10px 14px;min-width:0;">
+        <span style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-subtle);display:block;margin-bottom:3px;">Club ID</span>
+        <span style="font-size:0.84rem;font-weight:600;color:var(--text-primary);display:block;">#{{ session_club_id }}</span>
+      </div>
       {% endif %}
-      <div><span style="color:var(--text-subtle);">Session Cookie</span><br><strong style="color:var(--text);">HttpOnly, SameSite=Lax</strong></div>
+      <div style="background:var(--bg-surface-soft);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:10px 14px;min-width:0;">
+        <span style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-subtle);display:block;margin-bottom:3px;">Session Cookie</span>
+        <span style="font-size:0.84rem;font-weight:600;color:var(--text-primary);display:block;word-break:break-word;">HttpOnly, SameSite=Lax</span>
+      </div>
     </div>
-    <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-sm" style="margin-top:16px;display:inline-flex;">
-      <i data-lucide="log-out" style="width:12px;height:12px;"></i> Log Out
-    </a>
+    <div style="margin-top:16px;">
+      <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+        <i data-lucide="log-out" style="width:12px;height:12px;"></i> Log Out
+      </a>
+    </div>
   </div>
 </div>
 {% endblock %}

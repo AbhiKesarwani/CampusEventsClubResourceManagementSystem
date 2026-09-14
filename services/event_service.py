@@ -270,18 +270,38 @@ def delete_event(event_id: int) -> None:
         if conn: conn.close()
 
 
-# ── Images ────────────────────────────────────────────────────────────────────
+# ── Images & Photos ───────────────────────────────────────────────────────────
 
-def add_event_image(event_id: int, img_path: str) -> None:
+def add_event_image(event_id: int, img_path: str, uploaded_by: int | None = None, original_filename: str | None = None) -> int:
     conn = cur = None
     try:
         conn = get_db_connection()
         cur  = conn.cursor()
-        cur.execute("INSERT INTO event_images (event_id, img_path) VALUES (%s,%s)", (event_id, img_path))
+        try:
+            cur.execute("""
+                INSERT INTO event_images (event_id, img_path, uploaded_by, original_filename)
+                VALUES (%s, %s, %s, %s)
+            """, (event_id, img_path, uploaded_by, original_filename))
+        except Exception:
+            # Fallback if optional columns do not exist in current schema
+            cur.execute("INSERT INTO event_images (event_id, img_path) VALUES (%s,%s)", (event_id, img_path))
         conn.commit()
+        return cur.lastrowid
     except Exception:
         if conn: conn.rollback()
         raise
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+
+def get_event_image_by_id(img_id: int, event_id: int) -> dict | None:
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor(dictionary=True)
+        cur.execute("SELECT * FROM event_images WHERE img_id=%s AND event_id=%s", (img_id, event_id))
+        return cur.fetchone()
     finally:
         if cur: cur.close()
         if conn: conn.close()
@@ -305,6 +325,20 @@ def delete_event_image(img_id: int, event_id: int) -> str | None:
     finally:
         if cur: cur.close()
         if conn: conn.close()
+
+
+def count_event_images(event_id: int) -> int:
+    conn = cur = None
+    try:
+        conn = get_db_connection()
+        cur  = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM event_images WHERE event_id=%s", (event_id,))
+        row = cur.fetchone()
+        return row[0] if row else 0
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
 
 
 # ── Stats ─────────────────────────────────────────────────────────────────────

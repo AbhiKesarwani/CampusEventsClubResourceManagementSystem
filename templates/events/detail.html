@@ -71,22 +71,29 @@
     </div>
 </div>
 
-{# ── EVENT TIMELINE ── #}
+{# ── EVENT TIMELINE (Horizontal) ── #}
 {% if timeline %}
-<div class="card" style="padding:20px 24px;margin-bottom:20px;overflow-x:auto;">
-    <h2 style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;">
-        Event Timeline
-    </h2>
-    <div class="event-timeline">
-        {% for stage in timeline %}
-        <div class="event-timeline-stage {% if stage.done %}done{% endif %}">
-            <div class="event-timeline-icon">
-                <i data-lucide="{{ stage.icon }}" style="width:14px;height:14px;"></i>
+<div class="card" style="padding:20px 24px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <h2 style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin:0;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="git-commit" style="width:14px;height:14px;color:var(--primary);"></i> Event Progress Timeline
+        </h2>
+    </div>
+    <div style="overflow-x:auto;padding-bottom:4px;">
+        <div class="event-timeline-horizontal">
+            {% for stage in timeline %}
+            <div class="event-timeline-step {% if stage.done %}done{% endif %}">
+                <div class="event-timeline-node">
+                    <i data-lucide="{{ stage.icon }}" style="width:16px;height:16px;"></i>
+                </div>
+                <span class="event-timeline-title">{{ stage.label }}</span>
+                <span class="event-timeline-status">{% if stage.done %}Completed{% else %}Upcoming{% endif %}</span>
             </div>
-            <p class="event-timeline-label">{{ stage.label }}</p>
+            {% if not loop.last %}
+            <div class="event-timeline-line {% if stage.done %}done{% endif %}"></div>
+            {% endif %}
+            {% endfor %}
         </div>
-        {% if not loop.last %}<div class="event-timeline-connector {% if stage.done %}done{% endif %}"></div>{% endif %}
-        {% endfor %}
     </div>
 </div>
 {% endif %}
@@ -122,45 +129,88 @@
         </div>
         {% endif %}
 
-        {# Gallery #}
-        {% if event_images|length > 1 %}
-        <div class="card" style="padding:24px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;">
-                    <i data-lucide="images" style="width:14px;height:14px;color:var(--blue);"></i>
-                    Gallery
-                    <span style="font-weight:500;color:var(--text-subtle);font-size:0.75rem;">({{ event_images|length }} images)</span>
-                </h2>
-                <a href="{{ url_for('events.download_gallery_zip', event_id=event.event_id) }}"
-                   class="btn btn-secondary btn-xs">
-                    <i data-lucide="archive" style="width:12px;height:12px;"></i>
-                    Download All (ZIP)
-                </a>
+        {# Event Photos Gallery #}
+        <div class="card" style="padding:24px;" id="event-photos-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+                <div>
+                    <h2 style="font-size:0.85rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:6px;margin:0;">
+                        <i data-lucide="camera" style="width:14px;height:14px;color:var(--primary);"></i>
+                        Event Photos
+                        <span style="font-weight:600;color:var(--text-subtle);font-size:0.75rem;">({{ event_images|length if event_images else 0 }})</span>
+                    </h2>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    {% if event_images %}
+                    <a href="{{ url_for('events.download_gallery_zip', event_id=event.event_id) }}"
+                       class="btn btn-secondary btn-xs" title="Download all photos in a ZIP archive">
+                        <i data-lucide="download" style="width:12px;height:12px;"></i>
+                        Download Photos
+                    </a>
+                    {% endif %}
+
+                    {% if role == 'admin' or (role == 'club_admin' and session.get('club_id') == event.club_id) %}
+                    <button type="button" class="btn btn-primary btn-xs" onclick="togglePhotoUploadForm()" id="btn-toggle-upload">
+                        <i data-lucide="upload" style="width:12px;height:12px;"></i>
+                        Upload Photos
+                    </button>
+                    {% endif %}
+                </div>
             </div>
 
+            {# Coordinator/Admin Upload Form (Collapsible/Inline) #}
+            {% if role == 'admin' or (role == 'club_admin' and session.get('club_id') == event.club_id) %}
+            <div id="photo-upload-panel" style="display:none;background:var(--bg-surface-soft);border:1px dashed var(--border-strong);border-radius:var(--radius-md);padding:16px;margin-bottom:18px;">
+                <form method="POST" action="{{ url_for('events.upload_photos', event_id=event.event_id) }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <div>
+                            <label style="font-size:0.8rem;font-weight:600;color:var(--text-primary);display:block;margin-bottom:4px;">
+                                Select Event Photos (PNG, JPG, WEBP — Max 5MB each)
+                            </label>
+                            <input type="file" name="photos" multiple accept="image/png,image/jpeg,image/webp,image/jpg" required
+                                   style="font-size:0.82rem;color:var(--text-body);width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg-surface);">
+                        </div>
+                        <div style="display:flex;justify-content:flex-end;gap:8px;">
+                            <button type="button" class="btn btn-secondary btn-xs" onclick="togglePhotoUploadForm()">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-xs">
+                                <i data-lucide="check" style="width:12px;height:12px;"></i>
+                                Start Upload
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+            {% if event_images %}
             <div class="gallery-grid">
                 {% for img in event_images %}
                 <div class="gallery-item">
                     <img src="{{ url_for('static', filename=img.img_path) }}"
-                         alt="Event image {{ loop.index }}"
+                         alt="Event Photo {{ loop.index }}"
                          onclick="openLightbox(this.src)">
                     <div class="gallery-overlay">
-                        <button onclick="openLightbox('{{ url_for('static', filename=img.img_path) }}')"
-                                style="width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;">
+                        <button type="button" onclick="openLightbox('{{ url_for('static', filename=img.img_path) }}')"
+                                style="width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,0.2);border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;"
+                                title="Zoom View">
                             <i data-lucide="zoom-in" style="width:14px;height:14px;"></i>
                         </button>
                         <a href="{{ url_for('events.download_image', event_id=event.event_id, img_id=img.img_id) }}"
-                           style="width:30px;height:30px;border-radius:6px;background:rgba(16,185,129,0.7);border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;text-decoration:none;"
+                           style="width:30px;height:30px;border-radius:6px;background:rgba(16,185,129,0.85);border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;text-decoration:none;"
+                           title="Download Photo"
                            onclick="event.stopPropagation()">
                             <i data-lucide="download" style="width:14px;height:14px;"></i>
                         </a>
-                        {% if role in ('admin','club_admin') %}
+                        {% if role == 'admin' or (role == 'club_admin' and session.get('club_id') == event.club_id) %}
                         <form method="POST"
                               action="{{ url_for('events.delete_image', event_id=event.event_id, img_id=img.img_id) }}"
                               onclick="event.stopPropagation()"
-                              onsubmit="return confirm('Delete this image?')">
+                              onsubmit="return confirm('Are you sure you want to delete this event photo?')"
+                              style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit"
-                                    style="width:30px;height:30px;border-radius:6px;background:rgba(248,81,73,0.7);border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;">
+                                    style="width:30px;height:30px;border-radius:6px;background:rgba(244,63,94,0.85);border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;"
+                                    title="Delete Photo">
                                 <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
                             </button>
                         </form>
@@ -169,8 +219,20 @@
                 </div>
                 {% endfor %}
             </div>
+            {% else %}
+            <div style="padding:28px 16px;text-align:center;background:var(--bg-surface-soft);border-radius:var(--radius-md);border:1px dashed var(--border);">
+                <i data-lucide="image" style="width:32px;height:32px;color:var(--text-subtle);margin-bottom:8px;"></i>
+                <p style="font-size:0.85rem;font-weight:600;color:var(--text-primary);margin-bottom:2px;">No event photos yet</p>
+                <p style="font-size:0.75rem;color:var(--text-muted);margin:0;">
+                    {% if role == 'admin' or (role == 'club_admin' and session.get('club_id') == event.club_id) %}
+                    Click "Upload Photos" above to add highlights from this event.
+                    {% else %}
+                    Photos from this event will be shared here after the session.
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
 
         {# Certificate (student) #}
         {% if role == 'student' %}
@@ -324,4 +386,20 @@
 
 </div><!-- /grid -->
 </div>
+
+{% block scripts %}
+<script>
+function togglePhotoUploadForm() {
+    const panel = document.getElementById('photo-upload-panel');
+    if (!panel) return;
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+        const fileInput = panel.querySelector('input[type="file"]');
+        if (fileInput) fileInput.focus();
+    } else {
+        panel.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
 {% endblock %}

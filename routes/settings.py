@@ -67,6 +67,7 @@ def upload_avatar():
         if user.get('avatar_path'):
             delete_upload(user['avatar_path'])
         update_avatar(session['user_id'], new_path)
+        session['avatar_path'] = new_path
         flash("Profile picture updated.", "success")
     except ValueError as e:
         flash(str(e), "danger")
@@ -80,7 +81,6 @@ def preferences():
         session['user_id'],
         notifications_enabled=request.form.get('notifications_enabled') == 'on',
         ai_response_style=request.form.get('ai_response_style', 'concise'),
-        profile_visibility=request.form.get('profile_visibility', 'campus'),
     )
     flash("Preferences saved.", "success")
     return redirect(url_for('settings.index'))

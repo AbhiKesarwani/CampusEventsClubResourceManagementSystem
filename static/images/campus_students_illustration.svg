@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420" fill="none" width="100%" height="100%">
+  <!-- Background Ambient Shapes (Transparent Vector Elements) -->
+  <defs>
+    <linearGradient id="grad-teal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2DD4BF" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0D9488" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="grad-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#F59E0B" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#2563EB" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="grad-card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Ambient glow backdrop -->
+  <circle cx="300" cy="210" r="160" fill="url(#grad-teal)" opacity="0.12" filter="url(#glow)"/>
+  <circle cx="460" cy="140" r="90" fill="url(#grad-gold)" opacity="0.1" filter="url(#glow)"/>
+
+  <!-- Campus Building / Pillars Silhouette (Abstract Minimalist) -->
+  <path d="M 90 350 L 510 350" stroke="rgba(255,255,255,0.25)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 120 350 L 120 220 L 150 200 L 180 220 L 180 350" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  <path d="M 420 350 L 420 210 L 455 185 L 490 210 L 490 350" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  
+  <!-- Modern Floating Hub / Interface Mockup Cards -->
+  <!-- Center Screen Card -->
+  <rect x="200" y="100" width="200" height="135" rx="14" fill="url(#grad-card)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" backdrop-filter="blur(10px)"/>
+  <!-- Card Header -->
+  <circle cx="220" cy="120" r="6" fill="#F43F5E"/>
+  <circle cx="236" cy="120" r="6" fill="#FBBF24"/>
+  <circle cx="252" cy="120" r="6" fill="#10B981"/>
+  <rect x="274" y="116" width="105" height="8" rx="4" fill="rgba(255,255,255,0.25)"/>
+  
+  <!-- Card Inner Content (Event Banner & Stats) -->
+  <rect x="216" y="138" width="168" height="34" rx="8" fill="url(#grad-blue)" opacity="0.75"/>
+  <text x="228" y="160" fill="#FFFFFF" font-family="'Inter', sans-serif" font-weight="700" font-size="12">Campus Hackathon</text>
+  <rect x="216" y="180" width="78" height="42" rx="6" fill="rgba(255,255,255,0.15)"/>
+  <text x="224" y="198" fill="#FDE047" font-family="'Inter', sans-serif" font-weight="800" font-size="11">240+ Reg</text>
+  <text x="224" y="212" fill="rgba(255,255,255,0.7)" font-family="'Inter', sans-serif" font-size="8">Attendees</text>
+  
+  <rect x="306" y="180" width="78" height="42" rx="6" fill="rgba(255,255,255,0.15)"/>
+  <text x="314" y="198" fill="#34D399" font-family="'Inter', sans-serif" font-weight="800" font-size="11">Verified</text>
+  <text x="314" y="212" fill="rgba(255,255,255,0.7)" font-family="'Inter', sans-serif" font-size="8">Certificates</text>
+
+  <!-- Left Floating Badge - Club Community -->
+  <g transform="translate(85, 120)">
+    <rect x="0" y="0" width="115" height="48" rx="12" fill="url(#grad-card)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+    <circle cx="24" cy="24" r="14" fill="url(#grad-gold)"/>
+    <!-- Users Icon -->
+    <path d="M 19 28 C 19 25 21 23 24 23 C 27 23 29 25 29 28 Z" fill="#FFFFFF"/>
+    <circle cx="24" cy="19" r="4" fill="#FFFFFF"/>
+    <text x="44" y="22" fill="#FFFFFF" font-family="'Inter', sans-serif" font-weight="700" font-size="10">Active Clubs</text>
+    <text x="44" y="34" fill="rgba(255,255,255,0.7)" font-family="'Inter', sans-serif" font-size="8">18 Clubs</text>
+  </g>
+
+  <!-- Right Floating Badge - Live Attendance -->
+  <g transform="translate(415, 125)">
+    <rect x="0" y="0" width="125" height="48" rx="12" fill="url(#grad-card)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+    <circle cx="24" cy="24" r="14" fill="url(#grad-teal)"/>
+    <!-- Checkmark Icon -->
+    <path d="M 18 24 L 22 28 L 30 19" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="44" y="22" fill="#FFFFFF" font-family="'Inter', sans-serif" font-weight="700" font-size="10">Live Check-in</text>
+    <text x="44" y="34" fill="#34D399" font-family="'Inter', sans-serif" font-size="8" font-weight="600">● OTP Verified</text>
+  </g>
+
+  <!-- Center-Left Student Figure (Collaborating, with Laptop) -->
+  <g transform="translate(150, 215)">
+    <!-- Shadow -->
+    <ellipse cx="65" cy="135" rx="35" ry="7" fill="rgba(0,0,0,0.2)"/>
+    <!-- Body / Jacket -->
+    <path d="M 40 75 C 40 60 55 58 65 58 C 75 58 90 60 90 75 L 85 130 L 45 130 Z" fill="url(#grad-blue)"/>
+    <!-- Inner Shirt -->
+    <polygon points="60,58 70,58 65,80" fill="#FFFFFF"/>
+    <!-- Head -->
+    <circle cx="65" cy="40" r="16" fill="#FCD34D"/>
+    <!-- Hair -->
+    <path d="M 50 36 C 50 24 60 22 72 22 C 82 22 83 30 81 38 C 76 33 65 30 50 36 Z" fill="#1E293B"/>
+    <!-- Arm with Laptop -->
+    <path d="M 42 75 L 25 100 L 60 102" stroke="#FCD34D" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Laptop -->
+    <polygon points="15,100 55,100 50,85 20,85" fill="#E2E8F0"/>
+    <rect x="18" y="86" width="30" height="13" rx="2" fill="#0EA5E9"/>
+  </g>
+
+  <!-- Center-Right Student Figure (Reading/Taking Notes) -->
+  <g transform="translate(320, 205)">
+    <!-- Shadow -->
+    <ellipse cx="65" cy="145" rx="35" ry="7" fill="rgba(0,0,0,0.2)"/>
+    <!-- Body / Hoodie -->
+    <path d="M 40 85 C 40 70 52 68 65 68 C 78 68 90 70 90 85 L 86 140 L 44 140 Z" fill="url(#grad-teal)"/>
+    <!-- Head -->
+    <circle cx="65" cy="48" r="16" fill="#FDE68A"/>
+    <!-- Hair / Cap -->
+    <path d="M 48 46 C 48 32 60 30 75 30 C 84 30 84 40 82 48 C 75 42 60 40 48 46 Z" fill="#F43F5E"/>
+    <!-- Arm holding Notebook -->
+    <path d="M 85 85 L 98 108 L 75 112" stroke="#FDE68A" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Notepad -->
+    <rect x="70" y="98" width="26" height="34" rx="4" transform="rotate(-15 70 98)" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <line x1="76" y1="106" x2="88" y2="103" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+    <line x1="78" y1="114" x2="90" y2="111" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Floating Sparkles / Stars / Dots -->
+  <path d="M 285 70 L 288 78 L 296 81 L 288 84 L 285 92 L 282 84 L 274 81 L 282 78 Z" fill="#FDE047" opacity="0.9"/>
+  <path d="M 480 270 L 482 276 L 488 278 L 482 280 L 480 286 L 478 280 L 472 278 L 478 276 Z" fill="#38BDF8" opacity="0.8"/>
+  <circle cx="130" cy="270" r="3" fill="#F43F5E" opacity="0.7"/>
+  <circle cx="470" cy="90" r="4" fill="#34D399" opacity="0.8"/>
+</svg>

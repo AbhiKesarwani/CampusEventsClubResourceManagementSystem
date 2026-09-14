@@ -49,13 +49,16 @@
         {% for c in clubs %}
         <div class="club-card {% if not c.coordinator_name %}unassigned-club{% endif %}">
 
-            <!-- Club Image (16:9, object-fit: cover) -->
-            <div class="club-card-image">
+            <!-- Club Image (Interactive link to club photos/detail) -->
+            <a href="{{ url_for('clubs.detail', club_id=c.club_id) }}#gallery"
+               class="club-card-image"
+               style="display:block;cursor:pointer;text-decoration:none;position:relative;overflow:hidden;"
+               title="View {{ c.club_name }} photos & gallery">
                 {% if c.first_image %}
                 <img src="/static/{{ c.first_image }}"
                      alt="{{ c.club_name }}"
                      loading="lazy"
-                     style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;transition:transform 0.5s ease;">
+                     style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;transition:transform 0.35s ease;">
                 {% else %}
                 <div class="club-card-image-placeholder">
                     <div style="text-align:center;">
@@ -80,7 +83,7 @@
                     <span style="font-size:0.63rem;font-weight:700;color:var(--text-primary);">{{ c.event_count }} event{{ 's' if c.event_count != 1 else '' }}</span>
                 </div>
                 {% endif %}
-            </div>
+            </a>
 
             <!-- Card Body -->
             <div class="club-card-body">
@@ -122,16 +125,6 @@
                        class="btn btn-primary btn-sm flex-1 justify-center">
                         <i data-lucide="eye" style="width:12px;height:12px;"></i>
                         View
-                    </a>
-
-                    <a href="{{ url_for('clubs.detail', club_id=c.club_id) }}#gallery"
-                       class="btn btn-secondary btn-sm btn-icon" title="Gallery">
-                        <i data-lucide="image" style="width:12px;height:12px;"></i>
-                    </a>
-
-                    <a href="{{ url_for('clubs.download_gallery_zip', club_id=c.club_id) }}"
-                       class="btn btn-secondary btn-sm btn-icon" title="Download Images">
-                        <i data-lucide="download" style="width:12px;height:12px;"></i>
                     </a>
 
                     {% if role == 'admin' or (role == 'club_admin' and session.get('club_id') == c.club_id) %}

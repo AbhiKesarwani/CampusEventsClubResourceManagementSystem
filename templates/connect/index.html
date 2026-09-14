@@ -25,14 +25,38 @@
   .cc-panel { display: none; }
   .cc-panel.active { display: block; }
 
-  /* Layout: split pane for Messages */
-  .cc-split { display: grid; grid-template-columns: 300px 1fr; gap: 14px; min-height: 560px; }
-  @media (max-width: 800px) { .cc-split { grid-template-columns: 1fr; } }
+  /* Layout: split pane for Messages with bounded internal scroll */
+  .cc-split {
+    display: grid;
+    grid-template-columns: 310px 1fr;
+    gap: 14px;
+    height: clamp(520px, calc(100vh - 210px), 720px);
+    min-height: 520px;
+  }
+  @media (max-width: 820px) {
+    .cc-split {
+      grid-template-columns: 1fr;
+      height: auto;
+      min-height: 520px;
+    }
+  }
 
-  .cc-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-card); }
-  .cc-list { display: flex; flex-direction: column; max-height: 620px; overflow-y: auto; }
+  .cc-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+  .cc-list {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    max-height: 100%;
+  }
   .cc-list-item {
-    display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer;
     border-bottom: 1px solid var(--border); transition: background .15s; position: relative;
   }
   .cc-list-item:hover, .cc-list-item.active { background: var(--bg-hover); }
@@ -47,25 +71,117 @@
   .cc-unread-dot { min-width: 18px; height: 18px; border-radius: 999px; background: #2563EB; color: #ffffff; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
 
   /* Chat thread */
-  .cc-thread { display: flex; flex-direction: column; height: 620px; }
-  .cc-thread-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: #F8FAFC; border-radius: 14px 14px 0 0; }
-  .cc-thread-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; }
-  .cc-bubble-row { display: flex; }
+  .cc-thread {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    position: relative;
+    background: #FFFFFF;
+  }
+  .cc-thread-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: #F8FAFC;
+    flex-shrink: 0;
+  }
+  .cc-thread-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #FFFFFF;
+  }
+  .cc-bubble-row { display: flex; margin-bottom: 2px; }
   .cc-bubble-row.me { justify-content: flex-end; }
+  .cc-bubble-row.them { justify-content: flex-start; }
+  .cc-bubble-row > div { max-width: 72%; display: flex; flex-direction: column; min-width: 0; }
+  .cc-bubble-row.me > div { align-items: flex-end; }
+  .cc-bubble-row.them > div { align-items: flex-start; }
   .cc-bubble {
-    max-width: 72%; padding: 10px 14px; border-radius: 14px; font-size: 0.85rem; line-height: 1.45;
-    white-space: pre-wrap; word-break: break-word;
+    display: inline-block;
+    width: fit-content;
+    min-width: 32px;
+    padding: 9px 14px;
+    border-radius: 14px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: normal;
+    overflow-wrap: anywhere;
   }
   .cc-bubble-row.me .cc-bubble { background: #1E3A8A; color: #FFFFFF; border-bottom-right-radius: 3px; box-shadow: 0 1px 3px rgba(15,23,42,0.1); }
   .cc-bubble-row.them .cc-bubble { background: #F1F5F9; color: #0F172A; border-bottom-left-radius: 3px; border: 1px solid #E2E8F0; }
   .cc-bubble-meta { font-size: 0.65rem; color: var(--text-subtle); margin-top: 3px; }
   .cc-bubble-row.me .cc-bubble-meta { text-align: right; }
-  .cc-thread-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); background: var(--bg-surface-soft); border-radius: 0 0 14px 14px; }
-  .cc-thread-input textarea {
-    flex: 1; resize: none; background: var(--bg-surface); border: 1px solid var(--border-strong); border-radius: 10px;
-    color: var(--text-primary); padding: 9px 12px; font-size: 0.85rem; font-family: inherit; max-height: 90px;
+
+  /* Messaging Composer (Sticky, correctly aligned) */
+  .cc-thread-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-surface-soft);
+    flex-shrink: 0;
   }
-  .cc-thread-input textarea:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+  .cc-thread-input textarea {
+    flex: 1;
+    resize: none;
+    height: 42px;
+    min-height: 42px;
+    max-height: 110px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    color: var(--text-primary);
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    line-height: 1.35;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .cc-thread-input textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  }
+  .cc-send-btn {
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.84rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-shrink: 0;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .cc-send-btn:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(37,99,235,0.25);
+  }
+  .cc-send-btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .cc-send-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+  }
 
   .cc-typing { display: flex; gap: 4px; padding: 8px 13px; background: #F1F5F9; border-radius: 14px; width: fit-content; border: 1px solid #E2E8F0; }
   .cc-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-subtle); animation: cc-bounce 1.2s infinite ease-in-out; }
@@ -125,16 +241,11 @@
     <button class="cc-tab-btn" data-tab="announcements" onclick="ccSwitchTab('announcements')">
       <i data-lucide="megaphone" style="width:14px;height:14px;"></i> Announcements
     </button>
-    {% if role == 'admin' %}
-    <button class="cc-tab-btn" data-tab="broadcast" onclick="ccSwitchTab('broadcast')">
-      <i data-lucide="radio-tower" style="width:14px;height:14px;"></i> Admin Broadcasts
-    </button>
-    {% endif %}
   </div>
 
   <!-- ══════════════════ AI ASSISTANT ══════════════════ -->
   <div class="cc-panel" data-tab="ai">
-    <div class="cc-card" style="display:flex;flex-direction:column;height:620px;">
+    <div class="cc-card" style="display:flex;flex-direction:column;height:clamp(520px, calc(100vh - 210px), 720px);">
       <div class="cc-thread-header">
         <div class="cc-avatar" style="background:var(--purple-dim);color:var(--purple);"><i data-lucide="bot" style="width:17px;height:17px;"></i></div>
         <div>
@@ -161,8 +272,11 @@
         {% endfor %}
       </div>
       <div class="cc-thread-input">
-        <textarea id="cc-ai-input" rows="1" placeholder="Ask Campus Connect Assistant…" onkeydown="ccAiKeydown(event)"></textarea>
-        <button class="btn btn-primary btn-sm" onclick="ccAskAi()"><i data-lucide="send" style="width:14px;height:14px;"></i></button>
+        <textarea id="cc-ai-input" rows="1" placeholder="Ask Campus Connect Assistant… (Enter to send, Shift+Enter for new line)" onkeydown="ccAiKeydown(event)"></textarea>
+        <button class="cc-send-btn" id="cc-ai-send-btn" onclick="ccAskAi()">
+          <span>Send</span>
+          <i data-lucide="send" style="width:13px;height:13px;"></i>
+        </button>
       </div>
     </div>
   </div>
@@ -233,7 +347,7 @@
       {% for a in pinned_anns %}
       <div class="cc-ann-card">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-          <span class="cc-ann-target">{{ a.target_type }}</span>
+          <span class="cc-ann-target">{{ 'Students + Coordinators' if a.target_type == 'everyone' else (a.target_type|replace('_',' ')|title) }}</span>
           <p style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0;">{{ a.title }}</p>
         </div>
         <p style="font-size:0.8rem;color:var(--text-muted);margin:0 0 6px;white-space:pre-wrap;">{{ a.body }}</p>
@@ -247,7 +361,7 @@
       <div class="cc-ann-card" id="cc-ann-{{ a.ann_id }}">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
           {% if a.is_pinned %}<span class="cc-ann-pin"><i data-lucide="pin" style="width:9px;height:9px;"></i> Pinned</span>{% endif %}
-          <span class="cc-ann-target">{{ a.target_type }}</span>
+          <span class="cc-ann-target">{{ 'Students + Coordinators' if a.target_type == 'everyone' else (a.target_type|replace('_',' ')|title) }}</span>
           <p style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0;">{{ a.title }}</p>
         </div>
         <p style="font-size:0.8rem;color:var(--text-muted);margin:0 0 6px;white-space:pre-wrap;">{{ a.body }}</p>
@@ -266,29 +380,6 @@
       {% endfor %}
     </div>
   </div>
-
-  <!-- ══════════════════ ADMIN BROADCASTS ══════════════════ -->
-  {% if role == 'admin' %}
-  <div class="cc-panel" data-tab="broadcast">
-    <div class="cc-card" style="padding:16px;margin-bottom:14px;">
-      <h3 style="font-size:0.9rem;font-weight:700;color:var(--text);margin:0 0 10px;">Send a Broadcast</h3>
-      <p style="font-size:0.78rem;color:var(--text-subtle);margin:0 0 12px;">Target students, coordinators, everyone, a specific club, or a specific user.</p>
-      <button class="btn btn-primary btn-sm" onclick="ccOpenAnnouncementModal()">
-        <i data-lucide="radio-tower" style="width:13px;height:13px;"></i> Compose Broadcast
-      </button>
-    </div>
-
-    <div class="cc-card" style="padding:14px 16px;margin-bottom:14px;">
-      <h3 style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0 0 10px;">Moderate Conversations</h3>
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" id="cc-mod-search" placeholder="Search by user name…"
-               style="flex:1;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:7px 10px;font-size:0.78rem;">
-        <button class="btn btn-secondary btn-sm" onclick="ccLoadModConversations()">Search</button>
-      </div>
-      <div id="cc-mod-list" style="max-height:340px;overflow-y:auto;"></div>
-    </div>
-  </div>
-  {% endif %}
 
 </div>
 
@@ -313,13 +404,14 @@
       <label>Target</label>
       <select id="cc-ann-target-type" onchange="ccOnTargetTypeChange()">
         {% if role == 'admin' %}
-        <option value="everyone">Everyone</option>
+        <option value="everyone">Students + Coordinators (All Campus)</option>
         <option value="students">All Students</option>
         <option value="coordinators">All Coordinators</option>
         <option value="club">Specific Club</option>
         <option value="user">Specific User</option>
-        {% else %}
+        {% elif role == 'club_admin' %}
         <option value="club">My Club Members</option>
+        <option value="students">All Students</option>
         {% endif %}
       </select>
     </div>
@@ -401,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
   ccScrollBottom(document.getElementById('cc-ai-body'));
 
   const initialTab = {{ initial_tab | tojson }};
-  ccSwitchTab(['ai','messages','announcements','broadcast'].includes(initialTab) ? initialTab : 'ai');
+  ccSwitchTab(['ai','messages','announcements'].includes(initialTab) ? initialTab : 'ai');
 
   const initialWith = {{ initial_with | tojson }};
   if (initialWith) {
@@ -428,7 +520,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function ccSwitchTab(tab) {
   document.querySelectorAll('.cc-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.cc-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === tab));
-  if (tab === 'broadcast') ccLoadModConversations();
 }
 
 function ccCloseModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -449,9 +540,11 @@ function ccAppendBubble(container, who, html, meta) {
 
 async function ccAskAi() {
   const input = document.getElementById('cc-ai-input');
+  const btn = document.getElementById('cc-ai-send-btn');
   const question = input.value.trim();
   if (!question) return;
   input.value = '';
+  if (btn) btn.disabled = true;
 
   const body = document.getElementById('cc-ai-body');
   ccAppendBubble(body, 'me', ccEscapeHtml(question), ccFormatTime(new Date().toISOString()));
@@ -495,6 +588,9 @@ async function ccAskAi() {
   } catch (e) {
     typingRow.remove();
     ccAppendBubble(body, 'them', 'Something went wrong reaching the AI assistant. Please try again.', '');
+  } finally {
+    if (btn) btn.disabled = false;
+    input.focus();
   }
 }
 
@@ -566,8 +662,11 @@ async function ccFetchThread(otherId, name, role) {
       </div>
       <div class="cc-thread-body" id="cc-thread-body"></div>
       <div class="cc-thread-input">
-        <textarea id="cc-thread-input" rows="1" placeholder="Type a message…" onkeydown="ccThreadKeydown(event, ${otherId})"></textarea>
-        <button class="btn btn-primary btn-sm" onclick="ccSendMessage(${otherId})"><i data-lucide="send" style="width:14px;height:14px;"></i></button>
+        <textarea id="cc-thread-input" rows="1" placeholder="Type a message… (Enter to send, Shift+Enter for new line)" onkeydown="ccThreadKeydown(event, ${otherId})"></textarea>
+        <button class="cc-send-btn" id="cc-thread-send-btn" onclick="ccSendMessage(${otherId})">
+          <span>Send</span>
+          <i data-lucide="send" style="width:13px;height:13px;"></i>
+        </button>
       </div>`;
     lucide.createIcons();
 
@@ -594,9 +693,12 @@ function ccThreadKeydown(e, otherId) {
 
 async function ccSendMessage(otherId) {
   const input = document.getElementById('cc-thread-input');
+  const btn = document.getElementById('cc-thread-send-btn');
   const text = input.value.trim();
   if (!text) return;
   input.value = '';
+  if (btn) btn.disabled = true;
+
   try {
     const resp = await fetch(`/connect/api/conversations/${otherId}/send`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -608,7 +710,12 @@ async function ccSendMessage(otherId) {
     if (body.querySelector('.empty-state')) body.innerHTML = '';
     ccAppendBubble(body, 'me', ccEscapeHtml(text), ccFormatTime(new Date().toISOString()));
     ccRefreshInbox();
-  } catch (e) { alert('Failed to send message.'); }
+  } catch (e) {
+    alert('Failed to send message.');
+  } finally {
+    if (btn) btn.disabled = false;
+    input.focus();
+  }
 }
 
 async function ccArchiveConversation(otherId) {

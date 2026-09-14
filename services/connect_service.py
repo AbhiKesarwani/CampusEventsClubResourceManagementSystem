@@ -408,11 +408,14 @@ def create_announcement(author_id: int, author_role: str, author_club_id: int | 
     if author_role == 'student':
         raise PermissionError("Students cannot post announcements.")
     if author_role == 'club_admin':
-        if target_type != 'club':
-            raise PermissionError("Coordinators may only broadcast to their own club.")
-        if not author_club_id or (target_id and int(target_id) != int(author_club_id)):
-            raise PermissionError("Coordinators may only broadcast to their own club.")
-        target_id = author_club_id
+        if target_type == 'club':
+            if not author_club_id or (target_id and int(target_id) != int(author_club_id)):
+                raise PermissionError("Coordinators may only broadcast to their own club.")
+            target_id = author_club_id
+        elif target_type == 'students':
+            target_id = None
+        else:
+            raise PermissionError("Coordinators may only broadcast to their own club or all students.")
     elif author_role != 'admin':
         raise PermissionError("Access denied.")
 
@@ -521,7 +524,8 @@ def get_announcements_for_user(user_id: int, role: str,
             cur.execute(
                 """SELECT a.*, u.name AS author_name, u.role AS author_role
                    FROM cc_announcements a JOIN users u ON a.author_id=u.user_id
-                   WHERE a.target_type='everyone'
+                   WHERE a.author_id=%s
+                      OR a.target_type='everyone'
                       OR (a.target_type='students' AND %s='student')
                       OR (a.target_type='coordinators' AND %s='club_admin')
                       OR (a.target_type='club' AND a.target_id IN (
@@ -530,7 +534,7 @@ def get_announcements_for_user(user_id: int, role: str,
                       OR (a.target_type='user' AND a.target_id=%s)
                    ORDER BY a.is_pinned DESC, a.created_at DESC
                    LIMIT %s OFFSET %s""",
-                (role, role, user_id, club_id, user_id, per_page, offset)
+                (user_id, role, role, user_id, club_id, user_id, per_page, offset)
             )
         return cur.fetchall()
     finally:
@@ -548,14 +552,15 @@ def count_announcements_for_user(user_id: int, role: str, club_id: int | None) -
         else:
             cur.execute(
                 """SELECT COUNT(*) FROM cc_announcements
-                   WHERE target_type='everyone'
+                   WHERE author_id=%s
+                      OR target_type='everyone'
                       OR (target_type='students' AND %s='student')
                       OR (target_type='coordinators' AND %s='club_admin')
                       OR (target_type='club' AND target_id IN (
                             SELECT club_id FROM club_members WHERE user_id=%s
                             UNION SELECT %s))
                       OR (target_type='user' AND target_id=%s)""",
-                (role, role, user_id, club_id, user_id)
+                (user_id, role, role, user_id, club_id, user_id)
             )
         return cur.fetchone()[0]
     finally:

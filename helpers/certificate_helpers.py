@@ -38,6 +38,8 @@ def generate_certificate(student_name: str, event_title: str, save_path: str,
                          cert_id: str = None) -> str:
     """
     Generate a premium dark-theme certificate PNG (1400×900, landscape).
+    Utilizes the full canvas area with balanced vertical rhythm.
+    Signatures removed per Phase 3D specifications.
     Returns save_path on success.
     """
     os.makedirs(os.path.dirname(os.path.abspath(save_path)), exist_ok=True)
@@ -50,7 +52,7 @@ def generate_certificate(student_name: str, event_title: str, save_path: str,
     img  = Image.new('RGB', (W, H), color=(11, 15, 20))
     draw = ImageDraw.Draw(img)
 
-    # ── Dark gradient overlay (simulate) ──────────────────────────────────────
+    # ── Dark gradient background ──────────────────────────────────────────────
     for y in range(H):
         ratio = y / H
         r = int(11  + (22 - 11)  * ratio)
@@ -58,130 +60,113 @@ def generate_certificate(student_name: str, event_title: str, save_path: str,
         b = int(20  + (42 - 20)  * ratio)
         draw.line([(0, y), (W, y)], fill=(r, g, b))
 
-    # ── Accent borders ────────────────────────────────────────────────────────
-    # Outer border — emerald
-    draw.rectangle([0, 0, W-1, H-1],  outline=(16, 185, 129), width=4)
-    # Inner border — dimmer
-    draw.rectangle([14, 14, W-15, H-15], outline=(22, 60, 44), width=1)
-
-    # Top accent bar
-    draw.rectangle([0, 0, W, 8], fill=(16, 185, 129))
-    draw.rectangle([0, H-8, W, H], fill=(16, 185, 129))
-
-    # Left/right accent columns
-    draw.rectangle([0, 0, 8, H], fill=(16, 185, 129))
-    draw.rectangle([W-8, 0, W, H], fill=(16, 185, 129))
+    # ── Accent borders (Continuous Green & Purple Frames on all 4 sides) ───────
+    emerald = (16, 185, 129)
+    purple  = (124, 58, 237)
+    # 1. Outer solid border — 8px continuous emerald frame on all 4 edges
+    draw.rectangle([0, 0, W-1, H-1], outline=emerald, width=8)
+    # 2. Continuous purple accent border on all 4 sides — cleanly connecting corners
+    draw.rectangle([14, 14, W-15, H-15], outline=purple, width=2)
+    # 3. Inner green border — clean inset line continuous on all 4 sides
+    draw.rectangle([22, 22, W-23, H-23], outline=emerald, width=2)
+    # 4. Secondary subtle decorative line
+    draw.rectangle([28, 28, W-29, H-29], outline=(22, 60, 44), width=1)
 
     # ── Corner ornaments ──────────────────────────────────────────────────────
-    corner_size = 40
-    emerald = (16, 185, 129)
-    for cx, cy in [(28, 28), (W-28, 28), (28, H-28), (W-28, H-28)]:
-        draw.rectangle([cx-2, cy-2, cx+2, cy+2], fill=emerald)
+    for cx, cy in [(40, 40), (W-40, 40), (40, H-40), (W-40, H-40)]:
+        draw.rectangle([cx-3, cy-3, cx+3, cy+3], fill=emerald)
         draw.ellipse([cx-14, cy-14, cx+14, cy+14], outline=emerald, width=1)
 
     # ── Watermark diagonal text ───────────────────────────────────────────────
-    wm_font = _load_font(60)
-    wm_img  = Image.new('RGBA', (600, 600), (0, 0, 0, 0))
+    wm_font = _load_font(72)
+    wm_img  = Image.new('RGBA', (700, 700), (0, 0, 0, 0))
     wm_draw = ImageDraw.Draw(wm_img)
-    wm_draw.text((50, 250), "CampusOps", font=wm_font, fill=(16, 185, 129, 18))
+    wm_draw.text((80, 300), "CampusOps", font=wm_font, fill=(16, 185, 129, 20))
     wm_rotated = wm_img.rotate(30, expand=False)
-    img.paste(wm_rotated, (W//2 - 300, H//2 - 300), wm_rotated)
+    img.paste(wm_rotated, (W//2 - 350, H//2 - 350), wm_rotated)
 
     # ── Fonts ─────────────────────────────────────────────────────────────────
-    f_logo    = _load_font(20)
-    f_cert    = _load_font(52)
-    f_certify = _load_font(22)
-    f_name    = _load_font(58)
-    f_body    = _load_font(22)
-    f_event   = _load_font(36)
-    f_sub     = _load_font(18)
-    f_id      = _load_font(15)
+    f_brand   = _load_font(54)
+    f_sub     = _load_font(20)
+    f_title   = _load_font(28)
+    f_lead    = _load_font(24)
+    f_name    = _load_font(64)
+    f_event   = _load_font(42)
+    f_info    = _load_font(22)
+    f_id      = _load_font(18)
 
-    # ── Header: CampusOps logo text ────────────────────────────────────────────
-    logo_text = "CampusOps"
-    sub_text  = "Club Management System"
-    lx = _centered_x(draw, logo_text, f_cert, W)
-    draw.text((lx, 38), logo_text, font=f_cert, fill=(16, 185, 129))
+    # ── Header: CampusOps Branding ─────────────────────────────────────────────
+    brand_text = "CampusOps"
+    sub_text   = "Club Management System"
+    bx = _centered_x(draw, brand_text, f_brand, W)
+    draw.text((bx, 50), brand_text, font=f_brand, fill=(16, 185, 129))
     sx = _centered_x(draw, sub_text, f_sub, W)
-    draw.text((sx, 105), sub_text, font=f_sub, fill=(100, 150, 130))
+    draw.text((sx, 120), sub_text, font=f_sub, fill=(110, 165, 145))
 
-    # Separator line
-    draw.line([(100, 140), (W-100, 140)], fill=(22, 60, 44), width=1)
+    # Top separator line
+    draw.line([(140, 160), (W-140, 160)], fill=(28, 75, 55), width=2)
 
     # ── Title: Certificate of Participation ───────────────────────────────────
     title_text = "CERTIFICATE OF PARTICIPATION"
-    tx = _centered_x(draw, title_text, f_certify, W)
-    draw.text((tx, 165), title_text, font=f_certify, fill=(180, 220, 200))
+    tx = _centered_x(draw, title_text, f_title, W)
+    draw.text((tx, 185), title_text, font=f_title, fill=(190, 235, 215))
 
-    # ── Body ──────────────────────────────────────────────────────────────────
-    cy_text = "This certifies that"
-    draw.text((_centered_x(draw, cy_text, f_body, W), 230), cy_text,
-              font=f_body, fill=(130, 160, 150))
+    # ── Recipient Intro ───────────────────────────────────────────────────────
+    cy_text = "This is proudly presented to"
+    draw.text((_centered_x(draw, cy_text, f_lead, W), 255), cy_text,
+              font=f_lead, fill=(140, 175, 165))
 
-    # Student name — highlight box
+    # ── Student Name ──────────────────────────────────────────────────────────
     name_bbox = draw.textbbox((0, 0), student_name, font=f_name)
     nw = name_bbox[2] - name_bbox[0]
     name_x = (W - nw) // 2
-    # Background highlight
-    pad = 14
-    draw.rectangle([name_x - pad, 268, name_x + nw + pad, 340],
-                   fill=(16, 185, 129, 0), outline=(16, 185, 129, 0))
-    draw.text((name_x, 270), student_name, font=f_name, fill=(230, 255, 245))
+    name_y = 300
+    draw.text((name_x, name_y), student_name, font=f_name, fill=(240, 255, 250))
 
-    # Underline name
-    draw.line([(name_x, 342), (name_x + nw, 342)],
+    # Underline below name
+    draw.line([(name_x - 20, name_y + 80), (name_x + nw + 20, name_y + 80)],
               fill=(16, 185, 129), width=2)
 
-    participated_text = "has successfully participated in"
-    draw.text((_centered_x(draw, participated_text, f_body, W), 362),
-              participated_text, font=f_body, fill=(130, 160, 150))
+    # ── Participation Body ────────────────────────────────────────────────────
+    participated_text = "for successfully participating in"
+    draw.text((_centered_x(draw, participated_text, f_lead, W), 415),
+              participated_text, font=f_lead, fill=(140, 175, 165))
 
-    # Event title
-    # Wrap if too long
-    max_event_chars = 55
-    if len(event_title) > max_event_chars:
-        event_title = event_title[:max_event_chars].rstrip() + "…"
-    draw.text((_centered_x(draw, event_title, f_event, W), 398),
-              event_title, font=f_event, fill=(16, 185, 129))
+    # ── Event Title ───────────────────────────────────────────────────────────
+    max_event_chars = 52
+    display_event_title = event_title
+    if len(display_event_title) > max_event_chars:
+        display_event_title = display_event_title[:max_event_chars].rstrip() + "…"
+    draw.text((_centered_x(draw, display_event_title, f_event, W), 465),
+              display_event_title, font=f_event, fill=(16, 185, 129))
 
-    # Club / organizer
-    y_info = 460
+    # ── Club & Organizer Info ─────────────────────────────────────────────────
     if club_name:
-        club_label = f"Organised by  {club_name}"
-        draw.text((_centered_x(draw, club_label, f_body, W), y_info),
-                  club_label, font=f_body, fill=(100, 150, 130))
-        y_info += 32
+        club_label = f"Organized by {club_name}"
+        draw.text((_centered_x(draw, club_label, f_info, W), 540),
+                  club_label, font=f_info, fill=(120, 170, 150))
 
-    # ── Separator ─────────────────────────────────────────────────────────────
-    draw.line([(100, y_info + 10), (W-100, y_info + 10)],
-              fill=(22, 60, 44), width=1)
+    # ── Date ──────────────────────────────────────────────────────────────────
+    date_label = f"Issued on {issue_date}"
+    draw.text((_centered_x(draw, date_label, f_info, W), 605),
+              date_label, font=f_info, fill=(140, 175, 165))
 
-    # ── Footer: signatures & certificate ID ───────────────────────────────────
-    sig_y = y_info + 40
+    # ── Bottom Separator ──────────────────────────────────────────────────────
+    draw.line([(140, 675), (W-140, 675)], fill=(28, 75, 55), width=2)
 
-    # Left signature
-    draw.line([(120, sig_y + 60), (400, sig_y + 60)],
-              fill=(50, 80, 70), width=1)
-    left_label = organizer_name if organizer_name else "Event Coordinator"
-    draw.text((_centered_x(draw, left_label, f_sub, 520) + 60, sig_y + 68),
-              left_label, font=f_sub, fill=(100, 130, 120))
-
-    # Right signature
-    draw.line([(W-400, sig_y + 60), (W-120, sig_y + 60)],
-              fill=(50, 80, 70), width=1)
-    draw.text((_centered_x(draw, "CampusOps Director", f_sub, 520) + W - 460, sig_y + 68),
-              "CampusOps Director", font=f_sub, fill=(100, 130, 120))
-
-    # Centre: Date
-    draw.text((_centered_x(draw, f"Date: {issue_date}", f_sub, W), sig_y + 50),
-              f"Date: {issue_date}", font=f_sub, fill=(100, 150, 130))
-
-    # Certificate ID badge
-    id_text = f"Certificate ID: {cert_id}"
+    # ── Footer: Certificate ID & Verification Info ────────────────────────────
+    id_text = f"Certificate ID: #{cert_id}"
     id_x    = _centered_x(draw, id_text, f_id, W)
-    draw.rectangle([id_x - 10, H - 54, id_x + draw.textlength(id_text, f_id) + 10, H - 34],
-                   fill=(16, 40, 32), outline=(16, 185, 129))
-    draw.text((id_x, H - 54), id_text, font=f_id, fill=(100, 185, 150))
+    id_box_y = 725
+    id_w    = draw.textlength(id_text, f_id)
+    draw.rectangle([id_x - 16, id_box_y - 8, id_x + id_w + 16, id_box_y + 30],
+                   fill=(14, 38, 30), outline=(16, 185, 129), width=1)
+    draw.text((id_x, id_box_y), id_text, font=f_id, fill=(120, 210, 175))
+
+    verify_sub = "Verified Academic Credential · CampusOps Verification System"
+    vx = _centered_x(draw, verify_sub, _load_font(14), W)
+    draw.text((vx, 780), verify_sub, font=_load_font(14), fill=(80, 125, 110))
 
     img.save(save_path, "PNG", optimize=True)
     return save_path
+

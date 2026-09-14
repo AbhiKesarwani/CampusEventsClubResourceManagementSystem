@@ -262,49 +262,119 @@ def delete(event_id):
 
 
 @bp.route('/<int:event_id>/delete_image/<int:img_id>', methods=['POST'])
-@club_admin_required
+@login_required
 def delete_image(event_id, img_id):
     event = get_event_by_id(event_id)
-    role  = session.get('role')
-    if role == 'club_admin' and event and event['club_id'] != session.get('club_id'):
-        flash("Access denied.", "danger")
-        return redirect(url_for('events.edit', event_id=event_id))
+    if not event:
+        flash("Event not found.", "danger")
+        return redirect(url_for('events.list_events'))
+
+    role = session.get('role')
+    # Only Admin or the event's Club Coordinator can delete photos
+    if role != 'admin' and (role != 'club_admin' or event['club_id'] != session.get('club_id')):
+        flash("Access denied. Only authorized coordinators or admins can delete photos.", "danger")
+        return redirect(url_for('events.detail', event_id=event_id))
+
     try:
         path = delete_event_image(img_id, event_id)
         if path:
             delete_upload(path)
-        flash("Image deleted.", "success")
+        log_action(session['user_id'], 'DELETE_EVENT_PHOTO', 'event', event_id, f"Photo #{img_id}")
+        flash("Photo deleted successfully.", "success")
     except Exception as e:
-        flash(f"Error: {e}", "danger")
-    return redirect(url_for('events.edit', event_id=event_id))
+        flash(f"Error deleting photo: {e}", "danger")
+
+    # If redirected from edit page, return to edit; otherwise detail
+    referer = request.headers.get('Referer', '')
+    if '/edit' in referer:
+        return redirect(url_for('events.edit', event_id=event_id))
+    return redirect(url_for('events.detail', event_id=event_id))
+
+
+# ── Event Photos Upload & Gallery ─────────────────────────────────────────────
+
+@bp.route('/<int:event_id>/photos/upload', methods=['POST'])
+@bp.route('/<int:event_id>/upload_photos', methods=['POST'])
+@login_required
+def upload_photos(event_id):
+    """Upload one or more photos to an event's gallery (Admin or assigned Coordinator only)."""
+    from werkzeug.utils import secure_filename
+    event = get_event_by_id(event_id)
+    if not event:
+        flash("Event not found.", "danger")
+        return redirect(url_for('events.list_events'))
+
+    role = session.get('role')
+    if role != 'admin' and (role != 'club_admin' or event['club_id'] != session.get('club_id')):
+        flash("Access denied. Only authorized coordinators or admins can upload event photos.", "danger")
+        return redirect(url_for('events.detail', event_id=event_id))
+
+    files = request.files.getlist('photos') or request.files.getlist('event_images')
+    if not files or all(not f or not f.filename for f in files):
+        flash("No photo files selected for upload.", "warning")
+        return redirect(url_for('events.detail', event_id=event_id))
+
+    uploaded_count = 0
+    errors = []
+    for f in files:
+        if not f or not f.filename:
+            continue
+        try:
+            original_name = secure_filename(f.filename)
+            saved_path = save_upload(f, f"event_{event_id}")
+            add_event_image(event_id, saved_path, uploaded_by=session['user_id'], original_filename=original_name)
+            uploaded_count += 1
+        except ValueError as e:
+            errors.append(f"{f.filename}: {str(e)}")
+        except Exception as e:
+            errors.append(f"{f.filename}: Upload failed ({str(e)})")
+
+    if uploaded_count > 0:
+        log_action(session['user_id'], 'UPLOAD_EVENT_PHOTOS', 'event', event_id, f"Uploaded {uploaded_count} photos")
+        flash(f"Successfully uploaded {uploaded_count} event photo{'s' if uploaded_count != 1 else ''}!", "success")
+    if errors:
+        for err in errors[:3]:  # show up to 3 errors
+            flash(err, "warning")
+
+    return redirect(url_for('events.detail', event_id=event_id))
 
 
 # ── Gallery Download ───────────────────────────────────────────────────────────
 
 @bp.route('/<int:event_id>/image/<int:img_id>/download')
+@bp.route('/<int:event_id>/photos/<int:img_id>/download')
 @login_required
 def download_image(event_id, img_id):
     """Download a single event image."""
     import os
     from flask import send_file
-    path = get_image_path(get_event_images(event_id), img_id)
+    images = get_event_images(event_id)
+    path = get_image_path(images, img_id)
     return send_file(path, as_attachment=True, download_name=os.path.basename(path))
 
 
 @bp.route('/<int:event_id>/gallery/zip')
+@bp.route('/<int:event_id>/photos/download')
 @login_required
 def download_gallery_zip(event_id):
-    """Download all event images as a ZIP file."""
+    """Download all event photos as a secure ZIP file."""
+    import re
     from flask import send_file
     event  = get_event_by_id(event_id)
+    if not event:
+        flash("Event not found.", "danger")
+        return redirect(url_for('events.list_events'))
+
     images = get_event_images(event_id)
     if not images:
-        flash("No images to download.", "warning")
+        flash("No photos available to download for this event.", "warning")
         return redirect(url_for('events.detail', event_id=event_id))
 
     buf = build_gallery_zip(images)
-    safe_name = (event['title'] if event else f"event_{event_id}").replace(' ', '_')
+    clean_title = re.sub(r'[^a-zA-Z0-9_\-]', '_', event.get('title', f"event_{event_id}"))[:40]
+    zip_name = f"{clean_title}_event_{event_id}_photos.zip"
+
     return send_file(buf, as_attachment=True,
-                     download_name=f"{safe_name}_gallery.zip",
+                     download_name=zip_name,
                      mimetype='application/zip')
 

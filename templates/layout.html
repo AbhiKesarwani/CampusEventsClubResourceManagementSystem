@@ -70,9 +70,10 @@
     <!-- User chip -->
     {% if session.get('user_id') %}
     <a href="{{ url_for('profile.index') }}" class="sidebar-user" title="View your profile" style="text-decoration:none;display:flex;align-items:center;gap:10px;">
-        {% if current_user and current_user.get('profile_photo') %}
-        <img src="{{ url_for('static', filename=current_user['profile_photo']) }}"
-             class="sidebar-avatar" style="object-fit:cover;font-size:0;"
+        {% set u_avatar = (current_user.get('avatar_path') or current_user.get('profile_photo')) if current_user else session.get('avatar_path') %}
+        {% if u_avatar %}
+        <img src="{{ url_for('static', filename=u_avatar) }}"
+             class="sidebar-avatar" style="object-fit:cover;font-size:0;width:30px;height:30px;border-radius:50%;"
              alt="{{ session.get('name','U') }}">
         {% else %}
         <div class="sidebar-avatar">{{ (session.get('name','U'))[0]|upper }}</div>
@@ -287,9 +288,10 @@
             <!-- User avatar chip (sidebar already shows name/role) -->
             {% if session.get('user_id') %}
             <a href="{{ url_for('profile.index') }}" class="user-menu" style="margin-left:4px;text-decoration:none;" title="View profile">
-                {% if current_user and current_user.get('profile_photo') %}
-                <img src="{{ url_for('static', filename=current_user['profile_photo']) }}"
-                     class="user-avatar" style="object-fit:cover;font-size:0;"
+                {% set u_avatar = (current_user.get('avatar_path') or current_user.get('profile_photo')) if current_user else session.get('avatar_path') %}
+                {% if u_avatar %}
+                <img src="{{ url_for('static', filename=u_avatar) }}"
+                     class="user-avatar" style="object-fit:cover;font-size:0;width:30px;height:30px;border-radius:50%;"
                      alt="{{ session.get('name','U') }}">
                 {% else %}
                 <div class="user-avatar" title="{{ session.get('name','User') }}">{{ (session.get('name','U'))[0]|upper }}</div>

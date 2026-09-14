@@ -145,6 +145,7 @@ def upload_avatar():
         if user.get('avatar_path'):
             delete_upload(user['avatar_path'])
         update_avatar(session['user_id'], new_path)
+        session['avatar_path'] = new_path
         flash("Profile picture updated.", "success")
     except ValueError as e:
         flash(str(e), "danger")

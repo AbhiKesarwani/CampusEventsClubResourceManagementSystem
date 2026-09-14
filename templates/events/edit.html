@@ -63,7 +63,7 @@
                         <option value="">No venue</option>
                         {% for v in venues %}
                         <option value="{{ v.venue_id }}" {% if v.venue_id == event.venue_id %}selected{% endif %}>
-                            {{ v.venue_name }}
+                            {{ v.venue_name }}{% if v.capacity %} — Capacity: {{ v.capacity }}{% endif %}
                         </option>
                         {% endfor %}
                     </select>

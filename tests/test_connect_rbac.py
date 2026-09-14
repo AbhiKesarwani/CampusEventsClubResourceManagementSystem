@@ -111,3 +111,13 @@ def test_admin_can_broadcast_to_everyone(monkeypatch, fake_db):
         target_type='everyone', target_id=None, title='Hi', body='Body'
     )
     assert ann_id == 1
+
+
+def test_coordinator_can_broadcast_to_all_students(monkeypatch, fake_db):
+    monkeypatch.setattr(connect_service, '_fanout_announcement_notifications', lambda *a, **k: None)
+    ann_id = connect_service.create_announcement(
+        author_id=1, author_role='club_admin', author_club_id=3,
+        target_type='students', target_id=None, title='Campus Notice', body='Welcome students!'
+    )
+    assert ann_id == 1
+

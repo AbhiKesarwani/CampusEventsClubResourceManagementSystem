@@ -22,12 +22,12 @@
 {% if certificates %}
 <div class="club-grid stagger">
     {% for cert in certificates %}
-    <div class="card" style="display:flex;flex-direction:column;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;"
-         onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 40px rgba(0,0,0,0.5)'"
+    <div class="card cert-card" style="display:flex;flex-direction:column;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;border:2px solid var(--accent-purple);"
+         onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 40px rgba(124,58,237,0.18)'"
          onmouseout="this.style.transform='';this.style.boxShadow=''">
 
         <!-- Header stripe -->
-        <div style="height:6px;background:linear-gradient(90deg,#8b5cf6,#6d28d9);"></div>
+        <div style="height:6px;background:linear-gradient(90deg,var(--accent-purple),var(--accent-green));"></div>
 
         <div style="padding:20px;display:flex;flex-direction:column;gap:12px;flex:1;">
             <!-- Icon + title -->
