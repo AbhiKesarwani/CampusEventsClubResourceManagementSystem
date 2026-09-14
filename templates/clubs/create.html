@@ -56,15 +56,14 @@
             <!-- File Upload -->
             <div class="form-group">
                 <label class="form-label">Club Images</label>
-                <label class="upload-zone" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px;border-radius:var(--radius-lg);border:2px dashed var(--border);background:var(--bg-hover);transition:border-color 0.2s;"
-                       id="upload-label">
-                    <i data-lucide="upload-cloud" style="width:28px;height:28px;color:var(--emerald);"></i>
-                    <span style="font-size:0.83rem;font-weight:600;color:var(--emerald);">Click to upload images</span>
-                    <span style="font-size:0.72rem;color:var(--text-subtle);">JPG, PNG, GIF, WEBP — max 5 MB each</span>
+                <label class="upload-zone" id="upload-label">
+                    <i data-lucide="upload-cloud" style="width:28px;height:28px;color:var(--primary);"></i>
+                    <span style="font-size:0.83rem;font-weight:600;color:var(--primary);">Click to upload images</span>
+                    <span style="font-size:0.72rem;color:var(--text-subtle);">JPG, PNG, GIF, WebP — max 5 MB each</span>
                     <input type="file" name="club_images" multiple accept=".jpg,.jpeg,.png,.gif,.webp"
                            class="hidden" id="image-input" onchange="updateLabel(this)">
                 </label>
-                <p class="form-hint" id="file-count"></p>
+                <p class="form-hint" id="file-count" style="font-weight:500;"></p>
             </div>
 
             <div class="flex gap-3">

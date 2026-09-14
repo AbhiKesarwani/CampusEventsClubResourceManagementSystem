@@ -38,11 +38,24 @@
     {# ── Card Body ── #}
     <div class="club-card-body">
 
-        {# Club name #}
-        <p style="font-size:0.7rem;font-weight:700;color:var(--blue-primary);text-transform:uppercase;letter-spacing:0.06em;margin:0;display:flex;align-items:center;gap:3px;">
-            <i data-lucide="users" style="width:10px;height:10px;"></i>
-            {{ event.club_name or '—' }}
-        </p>
+        {# Club name + status badge row #}
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <p style="font-size:0.7rem;font-weight:700;color:var(--blue-primary);text-transform:uppercase;letter-spacing:0.06em;margin:0;display:flex;align-items:center;gap:3px;">
+                <i data-lucide="users" style="width:10px;height:10px;"></i>
+                {{ event.club_name or '—' }}
+            </p>
+            {# Status badge — compare event.date to today #}
+            {% if event.date %}
+              {% set ev_date_str = event.date.strftime('%Y-%m-%d') if event.date.strftime is defined else event.date|string %}
+              {% if ev_date_str == today_str %}
+                <span class="event-status-badge event-status-today">Today</span>
+              {% elif ev_date_str > today_str %}
+                <span class="event-status-badge event-status-upcoming">Upcoming</span>
+              {% else %}
+                <span class="event-status-badge event-status-past">Past</span>
+              {% endif %}
+            {% endif %}
+        </div>
 
         {# Title #}
         <h3 class="line-clamp-2" style="font-size:0.9rem;font-weight:700;color:var(--text);line-height:1.3;margin:0;">

@@ -114,7 +114,7 @@ def assign():
                 user_id=user_id,
                 title=f"You are now Coordinator of {club['club_name']}",
                 body=(f"An admin has assigned you as Club Coordinator for {club['club_name']}. "
-                      f"You can now manage events and resources for your club."),
+                      f"You can now manage events and activities for your club."),
                 link=f"/clubs/{club_id}",
                 type='success',
                 event_key=f"coord_assigned_{club_id}_{user_id}"

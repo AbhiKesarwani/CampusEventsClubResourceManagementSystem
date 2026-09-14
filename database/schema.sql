@@ -34,12 +34,9 @@ DROP TABLE IF EXISTS user_activity;
 DROP TABLE IF EXISTS activity_logs;
 DROP TABLE IF EXISTS certificates;
 DROP TABLE IF EXISTS attendance;
-DROP TABLE IF EXISTS resource_requests;
-DROP TABLE IF EXISTS event_resources;
 DROP TABLE IF EXISTS club_images;
 DROP TABLE IF EXISTS event_images;
 DROP TABLE IF EXISTS events;
-DROP TABLE IF EXISTS resources;
 DROP TABLE IF EXISTS venues;
 DROP TABLE IF EXISTS clubs;
 DROP TABLE IF EXISTS users;
@@ -95,15 +92,6 @@ CREATE TABLE venues (
   type       VARCHAR(100)
 );
 
--- ─────────────────────────────────────────────────────────────────────────────
--- RESOURCES
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE resources (
-  resource_id    INT AUTO_INCREMENT PRIMARY KEY,
-  resource_name  VARCHAR(150) NOT NULL,
-  total_quantity INT DEFAULT 0,
-  description    TEXT
-);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- EVENTS
@@ -158,47 +146,6 @@ CREATE TABLE club_images (
   FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON DELETE CASCADE
 );
 
--- ─────────────────────────────────────────────────────────────────────────────
--- EVENT RESOURCES (pivot: which resources are allocated to which event)
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE event_resources (
-  event_id    INT NOT NULL,
-  resource_id INT NOT NULL,
-  quantity    INT NOT NULL DEFAULT 1,
-  PRIMARY KEY (event_id, resource_id),
-  FOREIGN KEY (event_id)    REFERENCES events(event_id)       ON DELETE CASCADE,
-  FOREIGN KEY (resource_id) REFERENCES resources(resource_id) ON DELETE CASCADE
-);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- RESOURCE REQUESTS — approval workflow with scheduled return tracking
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE resource_requests (
-  request_id     INT AUTO_INCREMENT PRIMARY KEY,
-  event_id       INT NOT NULL,
-  club_id        INT NOT NULL,
-  resource_id    INT NOT NULL,
-  quantity       INT NOT NULL DEFAULT 1,
-  requested_by   INT NOT NULL,
-  reviewed_by    INT DEFAULT NULL,
-  status         ENUM('Pending','Approved','Rejected','Completed') NOT NULL DEFAULT 'Pending',
-  reason         TEXT NULL,
-  purpose        TEXT NULL,
-  remarks        TEXT NULL,
-  required_date  DATE NULL DEFAULT NULL,
-  req_start_time TIME NULL DEFAULT NULL,
-  req_end_time   TIME NULL DEFAULT NULL,
-  return_date    DATE NULL DEFAULT NULL,
-  return_time    TIME NULL DEFAULT NULL,
-  auto_released  TINYINT(1) NOT NULL DEFAULT 0,
-  created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (event_id)     REFERENCES events(event_id)       ON DELETE CASCADE,
-  FOREIGN KEY (club_id)      REFERENCES clubs(club_id)         ON DELETE CASCADE,
-  FOREIGN KEY (resource_id)  REFERENCES resources(resource_id) ON DELETE CASCADE,
-  FOREIGN KEY (requested_by) REFERENCES users(user_id)         ON DELETE CASCADE,
-  FOREIGN KEY (reviewed_by)  REFERENCES users(user_id)         ON DELETE SET NULL
-);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- ATTENDANCE

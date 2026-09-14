@@ -88,14 +88,14 @@
             <!-- Card Body -->
             <div class="club-card-body">
                 <!-- Club Name -->
-                <h3 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);line-height:1.3;margin:0;"
+                <h3 class="club-card-name"
                     data-club-name="{{ c.club_name }}">
                     {{ c.club_name }}
                 </h3>
 
                 <!-- Coordinator -->
                 {% if c.coordinator_name %}
-                <p style="font-size:0.75rem;color:var(--emerald);font-weight:600;display:flex;align-items:center;gap:4px;margin:0;">
+                <p style="font-size:0.75rem;color:var(--primary);font-weight:600;display:flex;align-items:center;gap:4px;margin:0;">
                     <i data-lucide="user-check" style="width:12px;height:12px;"></i>
                     {{ c.coordinator_name }}
                 </p>
@@ -115,7 +115,7 @@
                 {% endif %}
 
                 <!-- Description -->
-                <p class="line-clamp-2" style="font-size:0.78rem;color:var(--text-subtle);margin:0;flex:1;">
+                <p class="club-card-desc">
                     {{ c.description or 'No description available.' }}
                 </p>
 

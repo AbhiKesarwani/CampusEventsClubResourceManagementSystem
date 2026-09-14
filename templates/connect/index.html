@@ -4,31 +4,88 @@
 
 {% block head %}
 <style>
-  /* ── Campus Connect — scoped styles ───────────────────────────────── */
+  /* ── Campus Connect — Scoped Styles ───────────────────────────────── */
   .cc-wrap { display: flex; flex-direction: column; gap: 14px; max-width: 1180px; }
+
+  /* Header Badge & Identity */
+  .cc-hub-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+  }
+  .cc-hub-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cc-hub-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(13, 148, 136, 0.12);
+    color: var(--primary, #0D9488);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Navigation Tabs */
   .cc-tabs {
-    display: flex; gap: 4px; padding: 4px; background: var(--bg-surface-soft);
-    border: 1px solid var(--border); border-radius: 12px; overflow-x: auto;
+    display: flex;
+    gap: 6px;
+    padding: 5px;
+    background: var(--bg-surface-soft, #f8fafc);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow-x: auto;
   }
   .cc-tab-btn {
-    display: flex; align-items: center; gap: 6px; padding: 8px 14px;
-    border-radius: 9px; border: none; background: transparent; cursor: pointer;
-    color: var(--text-muted); font-size: 0.82rem; font-weight: 600; white-space: nowrap;
-    transition: background .15s, color .15s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.83rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all .15s;
+    font-family: inherit;
   }
-  .cc-tab-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
-  .cc-tab-btn.active { background: #DBEAFE; color: #1E40AF; font-weight: 700; }
+  .cc-tab-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+  .cc-tab-btn.active {
+    background: #FFFFFF;
+    color: var(--primary, #0D9488);
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+  }
   .cc-tab-badge {
-    background: var(--red); color: #fff; font-size: 0.62rem; font-weight: 700;
-    border-radius: 999px; padding: 1px 6px; line-height: 1.4;
+    background: var(--red);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 1px 6px;
+    line-height: 1.4;
   }
   .cc-panel { display: none; }
   .cc-panel.active { display: block; }
 
-  /* Layout: split pane for Messages with bounded internal scroll */
+  /* Layout: Split pane for Messages with bounded internal scroll */
   .cc-split {
     display: grid;
-    grid-template-columns: 310px 1fr;
+    grid-template-columns: 320px 1fr;
     gap: 14px;
     height: clamp(520px, calc(100vh - 210px), 720px);
     min-height: 520px;
@@ -48,6 +105,8 @@
     box-shadow: var(--shadow-card);
     overflow: hidden;
   }
+
+  /* Conversation List */
   .cc-list {
     display: flex;
     flex-direction: column;
@@ -56,21 +115,72 @@
     max-height: 100%;
   }
   .cc-list-item {
-    display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer;
-    border-bottom: 1px solid var(--border); transition: background .15s; position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s, border-left .15s;
+    position: relative;
   }
-  .cc-list-item:hover, .cc-list-item.active { background: var(--bg-hover); }
+  .cc-list-item:hover { background: var(--bg-hover); }
+  .cc-list-item.active {
+    background: rgba(13, 148, 136, 0.08);
+    border-left: 3px solid var(--primary, #0D9488);
+  }
   .cc-avatar {
-    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: #DBEAFE; color: #1E40AF; font-weight: 700; font-size: 0.85rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #E0F2FE;
+    color: #0284C7;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .cc-avatar-ai {
+    background: rgba(139, 92, 246, 0.12);
+    color: #7C3AED;
+    border: 1px solid rgba(139, 92, 246, 0.2);
   }
   .cc-list-meta { min-width: 0; flex: 1; }
-  .cc-list-name { font-size: 0.83rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cc-list-preview { font-size: 0.74rem; color: var(--text-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
-  .cc-unread-dot { min-width: 18px; height: 18px; border-radius: 999px; background: #2563EB; color: #ffffff; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .cc-list-name {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+  }
+  .cc-list-preview {
+    font-size: 0.74rem;
+    color: var(--text-subtle);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    margin: 2px 0 0;
+  }
+  .cc-unread-dot {
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #2563EB;
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+  }
 
-  /* Chat thread */
+  /* Chat Thread */
   .cc-thread {
     display: flex;
     flex-direction: column;
@@ -85,7 +195,7 @@
     gap: 12px;
     padding: 12px 18px;
     border-bottom: 1px solid var(--border);
-    background: #F8FAFC;
+    background: var(--bg-surface-soft, #F8FAFC);
     flex-shrink: 0;
   }
   .cc-thread-body {
@@ -97,37 +207,69 @@
     gap: 10px;
     background: #FFFFFF;
   }
-  .cc-bubble-row { display: flex; margin-bottom: 2px; }
+
+  /* Message Bubbles & Typography (Prevents vertical character breaking) */
+  .cc-bubble-row { display: flex; margin-bottom: 3px; }
   .cc-bubble-row.me { justify-content: flex-end; }
   .cc-bubble-row.them { justify-content: flex-start; }
-  .cc-bubble-row > div { max-width: 72%; display: flex; flex-direction: column; min-width: 0; }
+  .cc-bubble-row > div {
+    max-width: 75%;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
   .cc-bubble-row.me > div { align-items: flex-end; }
   .cc-bubble-row.them > div { align-items: flex-start; }
+
   .cc-bubble {
     display: inline-block;
     width: fit-content;
-    min-width: 32px;
-    padding: 9px 14px;
+    min-width: fit-content;
+    max-width: 100%;
+    padding: 9px 15px;
     border-radius: 14px;
     font-size: 0.85rem;
-    line-height: 1.45;
+    line-height: 1.5;
     white-space: pre-wrap;
     word-break: normal;
     overflow-wrap: anywhere;
   }
-  .cc-bubble-row.me .cc-bubble { background: #1E3A8A; color: #FFFFFF; border-bottom-right-radius: 3px; box-shadow: 0 1px 3px rgba(15,23,42,0.1); }
-  .cc-bubble-row.them .cc-bubble { background: #F1F5F9; color: #0F172A; border-bottom-left-radius: 3px; border: 1px solid #E2E8F0; }
-  .cc-bubble-meta { font-size: 0.65rem; color: var(--text-subtle); margin-top: 3px; }
+  .cc-bubble-row.me .cc-bubble {
+    background: #1E3A8A;
+    color: #FFFFFF;
+    border-bottom-right-radius: 3px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  }
+  .cc-bubble-row.them .cc-bubble {
+    background: #F1F5F9;
+    color: #0F172A;
+    border-bottom-left-radius: 3px;
+    border: 1px solid #E2E8F0;
+  }
+  /* AI Assistant distinct bubble */
+  .cc-bubble-row.cc-bubble-ai .cc-bubble {
+    background: #F8FAFC;
+    color: #0F172A;
+    border: 1px solid #E2E8F0;
+    border-left: 3.5px solid #8B5CF6;
+  }
+
+  .cc-bubble-meta {
+    font-size: 0.68rem;
+    color: var(--text-subtle);
+    margin-top: 3px;
+    font-weight: 500;
+  }
   .cc-bubble-row.me .cc-bubble-meta { text-align: right; }
 
-  /* Messaging Composer (Sticky, correctly aligned) */
+  /* Messaging Composer (Sticky, ergonomic) */
   .cc-thread-input {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 12px 16px;
     border-top: 1px solid var(--border);
-    background: var(--bg-surface-soft);
+    background: var(--bg-surface-soft, #F8FAFC);
     flex-shrink: 0;
   }
   .cc-thread-input textarea {
@@ -135,7 +277,7 @@
     resize: none;
     height: 42px;
     min-height: 42px;
-    max-height: 110px;
+    max-height: 120px;
     background: var(--bg-surface);
     border: 1px solid var(--border-strong);
     border-radius: 10px;
@@ -148,14 +290,14 @@
   }
   .cc-thread-input textarea:focus {
     outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    border-color: var(--primary, #0D9488);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
   }
   .cc-send-btn {
     height: 42px;
     padding: 0 18px;
     border-radius: 10px;
-    background: var(--primary);
+    background: var(--primary, #0D9488);
     color: #ffffff;
     border: none;
     cursor: pointer;
@@ -170,9 +312,9 @@
     transition: all 0.15s;
   }
   .cc-send-btn:hover:not(:disabled) {
-    background: var(--primary-hover);
+    background: var(--primary-hover, #0F766E);
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(37,99,235,0.25);
+    box-shadow: 0 2px 6px rgba(13, 148, 136, 0.25);
   }
   .cc-send-btn:active:not(:disabled) {
     transform: scale(0.98);
@@ -183,87 +325,223 @@
     transform: none;
   }
 
-  .cc-typing { display: flex; gap: 4px; padding: 8px 13px; background: #F1F5F9; border-radius: 14px; width: fit-content; border: 1px solid #E2E8F0; }
-  .cc-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-subtle); animation: cc-bounce 1.2s infinite ease-in-out; }
+  .cc-typing {
+    display: flex;
+    gap: 4px;
+    padding: 8px 14px;
+    background: #F1F5F9;
+    border-radius: 14px;
+    width: fit-content;
+    border: 1px solid #E2E8F0;
+  }
+  .cc-typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-subtle);
+    animation: cc-bounce 1.2s infinite ease-in-out;
+  }
   .cc-typing span:nth-child(2) { animation-delay: .15s; }
   .cc-typing span:nth-child(3) { animation-delay: .3s; }
-  @keyframes cc-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+  @keyframes cc-bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
 
   .cc-spinner {
-    width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--border);
-    border-top-color: #1E3A8A; animation: cc-spin 0.7s linear infinite; margin: 24px auto;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2.5px solid var(--border);
+    border-top-color: var(--primary, #0D9488);
+    animation: cc-spin 0.7s linear infinite;
+    margin: 24px auto;
   }
   @keyframes cc-spin { to { transform: rotate(360deg); } }
 
-  .cc-ann-card { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  /* Announcements Cards & Badges */
+  .cc-ann-card {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
   .cc-ann-card:last-child { border-bottom: none; }
-  .cc-ann-pin { background: var(--warning-bg); color: var(--warning); font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; }
-  .cc-ann-target { background: var(--blue-muted); color: var(--blue-navy); font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; text-transform: capitalize; }
+  .cc-ann-card:hover { background: var(--bg-hover); }
 
+  .cc-ann-pin {
+    background: rgba(245, 158, 11, 0.12);
+    color: #D97706;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .cc-ann-target {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.02em;
+  }
+  .cc-ann-target-all {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563EB;
+  }
+  .cc-ann-target-students {
+    background: rgba(13, 148, 136, 0.1);
+    color: #0D9488;
+  }
+  .cc-ann-target-coords {
+    background: rgba(245, 158, 11, 0.12);
+    color: #D97706;
+  }
+  .cc-ann-target-club {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+  }
+  .cc-ann-target-direct {
+    background: rgba(139, 92, 246, 0.1);
+    color: #7C3AED;
+  }
+
+  .cc-ann-pinned-box {
+    background: rgba(254, 243, 199, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* Modals */
   .cc-modal-backdrop {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 200;
-    align-items: center; justify-content: center; padding: 16px;
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
   }
   .cc-modal-backdrop.active { display: flex; }
-  .cc-modal { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 460px; padding: 20px; max-height: 85vh; overflow-y: auto; }
-  .cc-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
-  .cc-field label { font-size: 0.76rem; font-weight: 600; color: var(--text-muted); }
-  .cc-field input, .cc-field select, .cc-field textarea {
-    background: var(--bg-surface-soft); border: 1px solid var(--border-strong); border-radius: 9px; color: var(--text-primary);
-    padding: 8px 10px; font-size: 0.82rem; font-family: inherit;
+  .cc-modal {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 480px;
+    padding: 22px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-modal, 0 10px 25px -5px rgba(0,0,0,0.1));
   }
-  .cc-field textarea { resize: vertical; min-height: 80px; }
+  .cc-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .cc-field label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+  .cc-field input, .cc-field select, .cc-field textarea {
+    background: var(--bg-surface-soft);
+    border: 1px solid var(--border-strong);
+    border-radius: 9px;
+    color: var(--text-primary);
+    padding: 9px 12px;
+    font-size: 0.84rem;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .cc-field input:focus, .cc-field select:focus, .cc-field textarea:focus {
+    outline: none;
+    border-color: var(--primary, #0D9488);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+  }
+  .cc-field textarea { resize: vertical; min-height: 85px; }
 
-  .cc-escalate-box { background: var(--amber-dim); border: 1px solid rgba(245,158,11,.3); border-radius: 12px; padding: 12px 14px; margin-top: 4px; }
-  code.cc-code { background: rgba(0,0,0,.35); padding: 1px 5px; border-radius: 4px; font-size: 0.8em; }
+  .cc-escalate-box {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-top: 6px;
+  }
+  code.cc-code {
+    background: rgba(15, 23, 42, 0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.82em;
+    font-family: ui-monospace, monospace;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-content anim-fade cc-wrap">
 
-  <div class="section-header mb-2">
-    <div>
-      <h1 class="page-title">Campus Connect</h1>
-      <p class="page-subtitle">AI assistant, messages &amp; announcements — all in one place.</p>
+  <!-- Communication Hub Page Header -->
+  <div class="cc-hub-header">
+    <div class="cc-hub-title-row">
+      <div class="cc-hub-icon">
+        <i data-lucide="radio" style="width:20px;height:20px;"></i>
+      </div>
+      <div>
+        <h1 class="page-title" style="margin:0;font-size:1.25rem;font-weight:800;letter-spacing:-0.02em;">Campus Connect</h1>
+        <p class="page-subtitle" style="margin:2px 0 0;font-size:0.8rem;color:var(--text-subtle);">
+          University communication hub for direct messaging, announcements, and AI assistance
+        </p>
+      </div>
     </div>
   </div>
 
-  <!-- Tabs -->
+  <!-- Tabs Navigation -->
   <div class="cc-tabs" id="cc-tabs">
     <button class="cc-tab-btn" data-tab="ai" onclick="ccSwitchTab('ai')">
-      <i data-lucide="bot" style="width:14px;height:14px;"></i> AI Assistant
+      <i data-lucide="bot" style="width:15px;height:15px;color:#8B5CF6;"></i> AI Assistant
     </button>
     <button class="cc-tab-btn" data-tab="messages" onclick="ccSwitchTab('messages')">
-      <i data-lucide="message-square" style="width:14px;height:14px;"></i> Messages
+      <i data-lucide="message-square" style="width:15px;height:15px;color:var(--primary);"></i> Messages
       {% if unread_messages > 0 %}<span class="cc-tab-badge" id="cc-msg-badge">{{ unread_messages }}</span>{% endif %}
     </button>
     <button class="cc-tab-btn" data-tab="announcements" onclick="ccSwitchTab('announcements')">
-      <i data-lucide="megaphone" style="width:14px;height:14px;"></i> Announcements
+      <i data-lucide="megaphone" style="width:15px;height:15px;color:#2563EB;"></i> Announcements
     </button>
   </div>
 
   <!-- ══════════════════ AI ASSISTANT ══════════════════ -->
   <div class="cc-panel" data-tab="ai">
     <div class="cc-card" style="display:flex;flex-direction:column;height:clamp(520px, calc(100vh - 210px), 720px);">
+      <!-- AI Header -->
       <div class="cc-thread-header">
-        <div class="cc-avatar" style="background:var(--purple-dim);color:var(--purple);"><i data-lucide="bot" style="width:17px;height:17px;"></i></div>
-        <div>
-          <p style="font-size:0.85rem;font-weight:700;color:var(--text-primary);margin:0;">Campus Connect Assistant</p>
-          <p style="font-size:0.7rem;color:var(--text-subtle);margin:0;">Ask about events, clubs, attendance, certificates &amp; more</p>
+        <div class="cc-avatar cc-avatar-ai">
+          <i data-lucide="bot" style="width:18px;height:18px;"></i>
         </div>
-        <button class="btn btn-secondary btn-xs" style="margin-left:auto;" onclick="ccClearAiHistory()">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <p style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin:0;">Campus Connect Assistant</p>
+            <span style="background:rgba(139,92,246,0.12);color:#7C3AED;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid rgba(139,92,246,0.2);">AI Assistant</span>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-subtle);margin:0;">Ask questions regarding campus events, clubs, attendance, certificates, and venues</p>
+        </div>
+        <button class="btn btn-secondary btn-xs" onclick="ccClearAiHistory()" title="Clear chat history">
           <i data-lucide="trash-2" style="width:12px;height:12px;"></i> Clear
         </button>
       </div>
+
+      <!-- AI Thread Body -->
       <div class="cc-thread-body" id="cc-ai-body">
         {% if not ai_history %}
-        <div class="empty-state" style="padding:30px 10px;">
-          <p style="font-size:0.82rem;color:var(--text-subtle);">👋 Hi! Ask me about events, clubs, attendance, certificates, or venues.</p>
+        <div class="empty-state" style="margin:auto;padding:32px 20px;text-align:center;">
+          <div class="empty-state-icon" style="background:rgba(139,92,246,0.12);margin:0 auto 12px;width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+            <i data-lucide="sparkles" style="width:24px;height:24px;color:#7C3AED;"></i>
+          </div>
+          <h4 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin:0 0 6px;">How can I help you today?</h4>
+          <p style="font-size:0.8rem;color:var(--text-subtle);max-width:360px;margin:0 auto;line-height:1.5;">Ask me about upcoming events, club memberships, attendance records, venues, or certificate verification.</p>
         </div>
         {% endif %}
         {% for h in ai_history %}
-        <div class="cc-bubble-row {{ 'me' if h.role=='user' else 'them' }}">
+        <div class="cc-bubble-row {{ 'me' if h.role=='user' else 'them cc-bubble-ai' }}">
           <div>
             <div class="cc-bubble">{{ h.content if h.role=='user' else '' }}<span class="cc-ai-md" data-raw="{{ h.content|e if h.role=='assistant' else '' }}"></span></div>
             <div class="cc-bubble-meta">{{ h.created_at.strftime('%I:%M %p') if h.created_at and h.created_at.strftime is defined else '' }}</div>
@@ -271,6 +549,8 @@
         </div>
         {% endfor %}
       </div>
+
+      <!-- AI Composer -->
       <div class="cc-thread-input">
         <textarea id="cc-ai-input" rows="1" placeholder="Ask Campus Connect Assistant… (Enter to send, Shift+Enter for new line)" onkeydown="ccAiKeydown(event)"></textarea>
         <button class="cc-send-btn" id="cc-ai-send-btn" onclick="ccAskAi()">
@@ -284,14 +564,19 @@
   <!-- ══════════════════ MESSAGES ══════════════════ -->
   <div class="cc-panel" data-tab="messages">
     <div class="cc-split">
-      <!-- Conversation list -->
+      <!-- Conversation List -->
       <div class="cc-card" style="display:flex;flex-direction:column;">
-        <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;">
-          <input type="text" id="cc-conv-search" placeholder="Search conversations…" oninput="ccFilterConversations()"
-                 style="flex:1;background:var(--bg-surface-soft);border:1px solid var(--border);border-radius:9px;color:var(--text-primary);padding:7px 10px;font-size:0.78rem;">
-          <button class="btn btn-primary btn-xs" onclick="ccOpenNewChat()" title="New chat"><i data-lucide="plus" style="width:13px;height:13px;"></i></button>
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;background:var(--bg-surface-soft);">
+          <div style="position:relative;flex:1;">
+            <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text-subtle);pointer-events:none;"></i>
+            <input type="text" id="cc-conv-search" placeholder="Search conversations…" oninput="ccFilterConversations()"
+                   style="width:100%;background:var(--bg-surface);border:1px solid var(--border);border-radius:9px;color:var(--text-primary);padding:7px 10px 7px 30px;font-size:0.78rem;">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="ccOpenNewChat()" title="New chat" style="padding:7px 10px;">
+            <i data-lucide="plus" style="width:13px;height:13px;"></i>
+          </button>
         </div>
-          <div class="cc-list" id="cc-conv-list">
+        <div class="cc-list" id="cc-conv-list">
           {% for c in inbox %}
           <div class="cc-list-item" data-name="{{ c.partner_name|lower }}" data-user-id="{{ c.partner_id }}"
                data-user-name="{{ c.partner_name }}" data-user-role="{{ c.partner_role }}" id="cc-conv-{{ c.partner_id }}">
@@ -305,19 +590,30 @@
             {% endif %}
           </div>
           {% else %}
-          <div class="empty-state" style="padding:30px 12px;">
-            <p style="font-size:0.8rem;color:var(--text-subtle);">No conversations yet.</p>
+          <div class="empty-state" style="padding:36px 16px;text-align:center;">
+            <div class="empty-state-icon" style="background:rgba(13,148,136,0.1);margin:0 auto 10px;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+              <i data-lucide="message-square" style="width:20px;height:20px;color:var(--primary);"></i>
+            </div>
+            <p style="font-size:0.82rem;font-weight:600;color:var(--text-primary);margin:0 0 2px;">No conversations yet</p>
+            <p style="font-size:0.74rem;color:var(--text-subtle);margin:0;">Click the + button above to start a chat.</p>
           </div>
           {% endfor %}
         </div>
       </div>
 
-      <!-- Thread -->
+      <!-- Thread Panel -->
       <div class="cc-card cc-thread" id="cc-thread-panel">
-        <div class="empty-state" style="margin:auto;">
-          <div class="empty-state-icon"><i data-lucide="message-circle" style="width:22px;height:22px;"></i></div>
-          <h3>Select a conversation</h3>
-          <p style="font-size:0.8rem;color:var(--text-subtle);">Choose a conversation on the left, or start a new one.</p>
+        <div class="empty-state" style="margin:auto;padding:32px 20px;text-align:center;">
+          <div class="empty-state-icon" style="background:rgba(13,148,136,0.1);margin:0 auto 14px;width:52px;height:52px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+            <i data-lucide="message-square" style="width:26px;height:26px;color:var(--primary);"></i>
+          </div>
+          <h3 style="font-size:1.1rem;font-weight:700;color:var(--text-primary);margin:0 0 6px;">Select a Conversation</h3>
+          <p style="font-size:0.83rem;color:var(--text-subtle);max-width:340px;margin:0 auto 16px;line-height:1.5;">
+            Choose a conversation from your inbox on the left, or start a new message to a student or club coordinator.
+          </p>
+          <button class="btn btn-primary btn-sm" onclick="ccOpenNewChat()">
+            <i data-lucide="plus" style="width:13px;height:13px;"></i> Start New Chat
+          </button>
         </div>
       </div>
     </div>
@@ -325,11 +621,11 @@
 
   <!-- ══════════════════ ANNOUNCEMENTS ══════════════════ -->
   <div class="cc-panel" data-tab="announcements">
-    <div class="cc-card" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div class="cc-card" style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <p style="font-size:0.83rem;color:var(--text-muted);margin:0;">
-        {% if role == 'admin' %}All campus announcements.
-        {% elif role == 'club_admin' %}Announcements for you &amp; your club.
-        {% else %}Announcements from your clubs, coordinators &amp; admin.{% endif %}
+        {% if role == 'admin' %}Official announcements broadcast campus-wide.
+        {% elif role == 'club_admin' %}Announcements for your club members and student body.
+        {% else %}Announcements from your clubs, coordinators &amp; campus administration.{% endif %}
       </p>
       {% if role in ('admin', 'club_admin') %}
       <button class="btn btn-primary btn-sm" onclick="ccOpenAnnouncementModal()">
@@ -337,45 +633,75 @@
       </button>
       {% endif %}
     </div>
+
+    <!-- Pinned Announcements -->
     {% set pinned_anns = announcements|selectattr('is_pinned')|list %}
     {% if pinned_anns %}
-    <div class="cc-card" id="cc-ann-pinned-list" style="margin-bottom:12px;border:1px solid rgba(245,158,11,.35);">
-      <div style="padding:10px 16px 0;display:flex;align-items:center;gap:6px;">
-        <i data-lucide="pin" style="width:12px;height:12px;color:var(--amber);"></i>
-        <span style="font-size:0.7rem;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;">Pinned</span>
+    <div class="cc-card cc-ann-pinned-box" id="cc-ann-pinned-list">
+      <div style="padding:12px 18px 4px;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="pin" style="width:13px;height:13px;color:#D97706;"></i>
+        <span style="font-size:0.72rem;font-weight:800;color:#D97706;text-transform:uppercase;letter-spacing:.06em;">Pinned Announcements</span>
       </div>
       {% for a in pinned_anns %}
       <div class="cc-ann-card">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-          <span class="cc-ann-target">{{ 'Students + Coordinators' if a.target_type == 'everyone' else (a.target_type|replace('_',' ')|title) }}</span>
-          <p style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0;">{{ a.title }}</p>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+          {% if a.target_type == 'everyone' %}
+          <span class="cc-ann-target cc-ann-target-all"><i data-lucide="globe" style="width:10px;height:10px;"></i> All Students &amp; Coordinators</span>
+          {% elif a.target_type == 'students' %}
+          <span class="cc-ann-target cc-ann-target-students"><i data-lucide="users" style="width:10px;height:10px;"></i> All Students</span>
+          {% elif a.target_type == 'coordinators' %}
+          <span class="cc-ann-target cc-ann-target-coords"><i data-lucide="shield" style="width:10px;height:10px;"></i> Coordinators</span>
+          {% elif a.target_type == 'club' %}
+          <span class="cc-ann-target cc-ann-target-club"><i data-lucide="award" style="width:10px;height:10px;"></i> Club Members</span>
+          {% else %}
+          <span class="cc-ann-target cc-ann-target-direct"><i data-lucide="user" style="width:10px;height:10px;"></i> Direct Message</span>
+          {% endif %}
+          <h4 style="font-size:0.92rem;font-weight:700;color:var(--text-primary);margin:0;">{{ a.title }}</h4>
         </div>
-        <p style="font-size:0.8rem;color:var(--text-muted);margin:0 0 6px;white-space:pre-wrap;">{{ a.body }}</p>
-        <span style="font-size:0.7rem;color:var(--text-subtle);">By {{ a.author_name }} · {{ a.created_at.strftime('%d %b, %I:%M %p') if a.created_at and a.created_at.strftime is defined else '' }}</span>
+        <p style="font-size:0.83rem;color:var(--text-secondary);margin:0 0 8px;line-height:1.5;white-space:pre-wrap;">{{ a.body }}</p>
+        <span style="font-size:0.72rem;color:var(--text-subtle);">By <strong>{{ a.author_name }}</strong> · {{ a.created_at.strftime('%d %b, %I:%M %p') if a.created_at and a.created_at.strftime is defined else '' }}</span>
       </div>
       {% endfor %}
     </div>
     {% endif %}
+
+    <!-- All Visible Announcements -->
     <div class="cc-card" id="cc-ann-list">
       {% for a in announcements %}
       <div class="cc-ann-card" id="cc-ann-{{ a.ann_id }}">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-          {% if a.is_pinned %}<span class="cc-ann-pin"><i data-lucide="pin" style="width:9px;height:9px;"></i> Pinned</span>{% endif %}
-          <span class="cc-ann-target">{{ 'Students + Coordinators' if a.target_type == 'everyone' else (a.target_type|replace('_',' ')|title) }}</span>
-          <p style="font-size:0.87rem;font-weight:700;color:var(--text);margin:0;">{{ a.title }}</p>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+          {% if a.is_pinned %}<span class="cc-ann-pin"><i data-lucide="pin" style="width:10px;height:10px;"></i> Pinned</span>{% endif %}
+          {% if a.target_type == 'everyone' %}
+          <span class="cc-ann-target cc-ann-target-all"><i data-lucide="globe" style="width:10px;height:10px;"></i> All Students &amp; Coordinators</span>
+          {% elif a.target_type == 'students' %}
+          <span class="cc-ann-target cc-ann-target-students"><i data-lucide="users" style="width:10px;height:10px;"></i> All Students</span>
+          {% elif a.target_type == 'coordinators' %}
+          <span class="cc-ann-target cc-ann-target-coords"><i data-lucide="shield" style="width:10px;height:10px;"></i> Coordinators</span>
+          {% elif a.target_type == 'club' %}
+          <span class="cc-ann-target cc-ann-target-club"><i data-lucide="award" style="width:10px;height:10px;"></i> Club Members</span>
+          {% else %}
+          <span class="cc-ann-target cc-ann-target-direct"><i data-lucide="user" style="width:10px;height:10px;"></i> Direct Message</span>
+          {% endif %}
+          <h4 style="font-size:0.92rem;font-weight:700;color:var(--text-primary);margin:0;">{{ a.title }}</h4>
         </div>
-        <p style="font-size:0.8rem;color:var(--text-muted);margin:0 0 6px;white-space:pre-wrap;">{{ a.body }}</p>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:0.7rem;color:var(--text-subtle);">By {{ a.author_name }} · {{ a.created_at.strftime('%d %b, %I:%M %p') if a.created_at and a.created_at.strftime is defined else '' }}</span>
+        <p style="font-size:0.83rem;color:var(--text-secondary);margin:0 0 8px;line-height:1.5;white-space:pre-wrap;">{{ a.body }}</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span style="font-size:0.72rem;color:var(--text-subtle);">By <strong>{{ a.author_name }}</strong> · {{ a.created_at.strftime('%d %b, %I:%M %p') if a.created_at and a.created_at.strftime is defined else '' }}</span>
           {% if role == 'admin' or (user and a.author_id == user.user_id) %}
-          <button class="btn btn-secondary btn-xs" onclick="ccPinAnnouncement({{ a.ann_id }})"><i data-lucide="pin" style="width:11px;height:11px;"></i></button>
-          <button class="btn btn-danger btn-xs" onclick="ccDeleteAnnouncement({{ a.ann_id }})"><i data-lucide="trash-2" style="width:11px;height:11px;"></i></button>
+          <div style="display:flex;gap:4px;">
+            <button class="btn btn-secondary btn-xs" onclick="ccPinAnnouncement({{ a.ann_id }})" title="{{ 'Unpin' if a.is_pinned else 'Pin' }}"><i data-lucide="pin" style="width:11px;height:11px;"></i></button>
+            <button class="btn btn-danger btn-xs" onclick="ccDeleteAnnouncement({{ a.ann_id }})" title="Delete"><i data-lucide="trash-2" style="width:11px;height:11px;"></i></button>
+          </div>
           {% endif %}
         </div>
       </div>
       {% else %}
-      <div class="empty-state" style="padding:30px 12px;">
-        <p style="font-size:0.8rem;color:var(--text-subtle);">No announcements yet.</p>
+      <div class="empty-state" style="padding:48px 16px;text-align:center;">
+        <div class="empty-state-icon" style="background:rgba(37,99,235,0.1);margin:0 auto 12px;width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+          <i data-lucide="megaphone" style="width:24px;height:24px;color:var(--primary);"></i>
+        </div>
+        <h4 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin:0 0 4px;">No announcements yet</h4>
+        <p style="font-size:0.8rem;color:var(--text-subtle);max-width:320px;margin:0 auto;">Campus updates and coordinator announcements will appear here.</p>
       </div>
       {% endfor %}
     </div>
@@ -386,11 +712,17 @@
 <!-- ══════════════════ New Chat Modal ══════════════════ -->
 <div class="cc-modal-backdrop" id="cc-newchat-modal">
   <div class="cc-modal">
-    <h3 style="font-size:0.95rem;font-weight:700;color:var(--text);margin:0 0 12px;">Start a Conversation</h3>
-    <input type="text" id="cc-contact-search" placeholder="Search…" oninput="ccSearchContacts(this.value)"
-           style="width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:8px 10px;font-size:0.82rem;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h3 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin:0;">Start a Conversation</h3>
+      <button class="btn btn-ghost btn-xs" onclick="ccCloseModal('cc-newchat-modal')"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+    </div>
+    <div style="position:relative;margin-bottom:12px;">
+      <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text-subtle);pointer-events:none;"></i>
+      <input type="text" id="cc-contact-search" placeholder="Search by name, role or club…" oninput="ccSearchContacts(this.value)"
+             style="width:100%;background:var(--bg-surface-soft);border:1px solid var(--border);border-radius:9px;color:var(--text-primary);padding:8px 10px 8px 30px;font-size:0.82rem;">
+    </div>
     <div id="cc-contact-list" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
-    <div style="text-align:right;margin-top:12px;">
+    <div style="text-align:right;margin-top:14px;">
       <button class="btn btn-secondary btn-sm" onclick="ccCloseModal('cc-newchat-modal')">Close</button>
     </div>
   </div>
@@ -399,15 +731,18 @@
 <!-- ══════════════════ Announcement Compose Modal ══════════════════ -->
 <div class="cc-modal-backdrop" id="cc-ann-modal">
   <div class="cc-modal">
-    <h3 style="font-size:0.95rem;font-weight:700;color:var(--text);margin:0 0 12px;">New Announcement</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--text-primary);margin:0;">Create Announcement</h3>
+      <button class="btn btn-ghost btn-xs" onclick="ccCloseModal('cc-ann-modal')"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+    </div>
     <div class="cc-field" id="cc-ann-target-wrap">
-      <label>Target</label>
+      <label>Target Audience</label>
       <select id="cc-ann-target-type" onchange="ccOnTargetTypeChange()">
         {% if role == 'admin' %}
         <option value="everyone">Students + Coordinators (All Campus)</option>
         <option value="students">All Students</option>
         <option value="coordinators">All Coordinators</option>
-        <option value="club">Specific Club</option>
+        <option value="club">Specific Club Members</option>
         <option value="user">Specific User</option>
         {% elif role == 'club_admin' %}
         <option value="club">My Club Members</option>
@@ -416,7 +751,7 @@
       </select>
     </div>
     <div class="cc-field" id="cc-ann-club-wrap" style="display:none;">
-      <label>Club</label>
+      <label>Select Club</label>
       <select id="cc-ann-club-id">
         {% for c in clubs_for_select %}
         <option value="{{ c.club_id }}">{{ c.club_name }}</option>
@@ -424,26 +759,26 @@
       </select>
     </div>
     <div class="cc-field" id="cc-ann-user-wrap" style="display:none;">
-      <label>User (search by name/email)</label>
-      <input type="text" id="cc-ann-user-search" placeholder="Type to search…" oninput="ccSearchAnnUsers(this.value)">
-      <div id="cc-ann-user-results" style="max-height:140px;overflow-y:auto;"></div>
+      <label>User (search by name or email)</label>
+      <input type="text" id="cc-ann-user-search" placeholder="Type name or email to search…" oninput="ccSearchAnnUsers(this.value)">
+      <div id="cc-ann-user-results" style="max-height:140px;overflow-y:auto;margin-top:4px;"></div>
       <input type="hidden" id="cc-ann-user-id">
-      <p id="cc-ann-user-selected" style="font-size:0.75rem;color:var(--emerald);margin:4px 0 0;"></p>
+      <p id="cc-ann-user-selected" style="font-size:0.75rem;color:var(--emerald);margin:4px 0 0;font-weight:600;"></p>
     </div>
     <div class="cc-field">
       <label>Title</label>
-      <input type="text" id="cc-ann-title" maxlength="255" placeholder="Announcement title">
+      <input type="text" id="cc-ann-title" maxlength="255" placeholder="Clear, concise headline">
     </div>
     <div class="cc-field">
-      <label>Message</label>
-      <textarea id="cc-ann-body" maxlength="3000" placeholder="Write your announcement…"></textarea>
+      <label>Message Content</label>
+      <textarea id="cc-ann-body" maxlength="3000" placeholder="Write announcement details…"></textarea>
     </div>
-    <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-muted);margin-bottom:12px;">
-      <input type="checkbox" id="cc-ann-pinned"> Pin this announcement
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-muted);margin-bottom:14px;cursor:pointer;">
+      <input type="checkbox" id="cc-ann-pinned" style="cursor:pointer;"> Pin this announcement at the top
     </label>
     <div style="text-align:right;display:flex;gap:8px;justify-content:flex-end;">
       <button class="btn btn-secondary btn-sm" onclick="ccCloseModal('cc-ann-modal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="ccSubmitAnnouncement()">Post</button>
+      <button class="btn btn-primary btn-sm" id="cc-ann-submit-btn" onclick="ccSubmitAnnouncement()">Post Announcement</button>
     </div>
   </div>
 </div>
@@ -503,9 +838,7 @@ document.addEventListener('DOMContentLoaded', () => {
     else ccFetchThread(initialWith, 'Conversation', '');
   }
 
-  // Event delegation for the conversation list (avoids inline onclick with
-  // interpolated names, which breaks on quotes/apostrophes and is harder to
-  // keep XSS-safe).
+  // Event delegation for the conversation list
   const convList = document.getElementById('cc-conv-list');
   if (convList) {
     convList.addEventListener('click', (e) => {
@@ -520,6 +853,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function ccSwitchTab(tab) {
   document.querySelectorAll('.cc-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.cc-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === tab));
+  if (window.lucide) lucide.createIcons();
 }
 
 function ccCloseModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -529,9 +863,9 @@ function ccAiKeydown(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ccAskAi(); }
 }
 
-function ccAppendBubble(container, who, html, meta) {
+function ccAppendBubble(container, who, html, meta, isAi = false) {
   const row = document.createElement('div');
-  row.className = 'cc-bubble-row ' + (who === 'me' ? 'me' : 'them');
+  row.className = 'cc-bubble-row ' + (who === 'me' ? 'me' : 'them') + (isAi ? ' cc-bubble-ai' : '');
   row.innerHTML = `<div><div class="cc-bubble">${html}</div><div class="cc-bubble-meta">${meta || ''}</div></div>`;
   container.appendChild(row);
   ccScrollBottom(container);
@@ -564,30 +898,30 @@ async function ccAskAi() {
     typingRow.remove();
 
     if (data.error) {
-      ccAppendBubble(body, 'them', ccEscapeHtml(data.error), '');
+      ccAppendBubble(body, 'them', ccEscapeHtml(data.error), '', true);
       return;
     }
-    ccAppendBubble(body, 'them', ccRenderMarkdownSafe(data.answer), ccFormatTime(new Date().toISOString()));
+    ccAppendBubble(body, 'them', ccRenderMarkdownSafe(data.answer), ccFormatTime(new Date().toISOString()), true);
 
     if (data.escalate) {
       const box = document.createElement('div');
       box.className = 'cc-escalate-box';
       box.innerHTML = `
-        <p style="font-size:0.8rem;color:var(--text);margin:0 0 8px;">
-          <i data-lucide="alert-triangle" style="width:13px;height:13px;vertical-align:-2px;"></i>
-          I couldn't confidently answer this. Send it to a Club Coordinator?
+        <p style="font-size:0.8rem;color:var(--text-primary);margin:0 0 8px;font-weight:600;">
+          <i data-lucide="alert-triangle" style="width:14px;height:14px;color:#D97706;vertical-align:-2px;"></i>
+          I couldn't confidently answer this. Would you like to forward this question to a Club Coordinator?
         </p>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-primary btn-xs" onclick="ccEscalate(this, ${JSON.stringify(question)})">Ask Coordinator</button>
-          <button class="btn btn-secondary btn-xs" onclick="this.closest('.cc-escalate-box').remove()">Cancel</button>
+          <button class="btn btn-secondary btn-xs" onclick="this.closest('.cc-escalate-box').remove()">Dismiss</button>
         </div>`;
       body.appendChild(box);
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
       ccScrollBottom(body);
     }
   } catch (e) {
     typingRow.remove();
-    ccAppendBubble(body, 'them', 'Something went wrong reaching the AI assistant. Please try again.', '');
+    ccAppendBubble(body, 'them', 'Something went wrong reaching the AI assistant. Please try again.', '', true);
   } finally {
     if (btn) btn.disabled = false;
     input.focus();
@@ -605,7 +939,7 @@ async function ccEscalate(btn, question) {
     const data = await resp.json();
     const box = btn.closest('.cc-escalate-box');
     if (data.success) {
-      box.innerHTML = '<p style="font-size:0.8rem;color:var(--emerald);margin:0;">✓ Sent to a coordinator. Check Messages for their reply.</p>';
+      box.innerHTML = '<p style="font-size:0.8rem;color:var(--emerald);margin:0;font-weight:600;">✓ Question sent to a club coordinator. Check the Messages tab for their response.</p>';
     } else {
       box.innerHTML = `<p style="font-size:0.8rem;color:var(--red);margin:0;">${ccEscapeHtml(data.error || 'No coordinator available.')}</p>`;
     }
@@ -618,7 +952,8 @@ async function ccClearAiHistory() {
   if (!confirm('Clear your AI chat history?')) return;
   await fetch('/connect/api/ai/history/clear', { method: 'POST' });
   document.getElementById('cc-ai-body').innerHTML =
-    '<div class="empty-state" style="padding:30px 10px;"><p style="font-size:0.82rem;color:var(--text-subtle);">History cleared. Ask me anything!</p></div>';
+    '<div class="empty-state" style="margin:auto;padding:32px 20px;text-align:center;"><div class="empty-state-icon" style="background:rgba(139,92,246,0.12);margin:0 auto 12px;width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="sparkles" style="width:24px;height:24px;color:#7C3AED;"></i></div><h4 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin:0 0 6px;">History Cleared</h4><p style="font-size:0.8rem;color:var(--text-subtle);">Ask me anything about campus events, clubs, or activities.</p></div>';
+  if (window.lucide) lucide.createIcons();
 }
 
 /* ══════════════════════════ MESSAGES ══════════════════════════════ */
@@ -645,7 +980,7 @@ async function ccFetchThread(otherId, name, role) {
     const resp = await fetch(`/connect/api/conversations/${otherId}`);
     const data = await resp.json();
     if (data.error) {
-      panel.innerHTML = `<div class="empty-state" style="margin:auto;"><p style="font-size:0.82rem;color:var(--red);">${ccEscapeHtml(data.error)}</p></div>`;
+      panel.innerHTML = `<div class="empty-state" style="margin:auto;padding:24px;"><p style="font-size:0.85rem;color:var(--red);">${ccEscapeHtml(data.error)}</p></div>`;
       return;
     }
     const otherName = data.other ? data.other.name : name;
@@ -654,11 +989,11 @@ async function ccFetchThread(otherId, name, role) {
       <div class="cc-thread-header">
         <div class="cc-avatar">${ccEscapeHtml(otherName[0] || '?').toUpperCase()}</div>
         <div style="flex:1;min-width:0;">
-          <p style="font-size:0.85rem;font-weight:700;color:var(--text);margin:0;">${ccEscapeHtml(otherName)}</p>
-          <p style="font-size:0.7rem;color:var(--text-subtle);margin:0;text-transform:capitalize;">${ccEscapeHtml(data.other ? data.other.role.replace('_',' ') : '')}</p>
+          <p style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin:0;">${ccEscapeHtml(otherName)}</p>
+          <p style="font-size:0.72rem;color:var(--text-subtle);margin:0;text-transform:capitalize;">${ccEscapeHtml(data.other ? data.other.role.replace('_',' ') : '')}</p>
         </div>
-        <button class="btn btn-secondary btn-xs" onclick="ccArchiveConversation(${otherId})" title="Archive"><i data-lucide="archive" style="width:12px;height:12px;"></i></button>
-        <button class="btn btn-danger btn-xs" onclick="ccDeleteConversation(${otherId})" title="Delete"><i data-lucide="trash-2" style="width:12px;height:12px;"></i></button>
+        <button class="btn btn-secondary btn-xs" onclick="ccArchiveConversation(${otherId})" title="Archive conversation"><i data-lucide="archive" style="width:12px;height:12px;"></i></button>
+        <button class="btn btn-danger btn-xs" onclick="ccDeleteConversation(${otherId})" title="Delete conversation"><i data-lucide="trash-2" style="width:12px;height:12px;"></i></button>
       </div>
       <div class="cc-thread-body" id="cc-thread-body"></div>
       <div class="cc-thread-input">
@@ -668,11 +1003,19 @@ async function ccFetchThread(otherId, name, role) {
           <i data-lucide="send" style="width:13px;height:13px;"></i>
         </button>
       </div>`;
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 
     const body = document.getElementById('cc-thread-body');
     if (!data.messages || !data.messages.length) {
-      body.innerHTML = '<div class="empty-state" style="margin:auto;"><p style="font-size:0.8rem;color:var(--text-subtle);">No messages yet. Say hello!</p></div>';
+      body.innerHTML = `
+        <div class="empty-state" style="margin:auto;padding:32px 16px;text-align:center;">
+          <div class="empty-state-icon" style="background:rgba(13,148,136,0.1);margin:0 auto 12px;width:42px;height:42px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+            <i data-lucide="message-circle" style="width:20px;height:20px;color:var(--primary);"></i>
+          </div>
+          <h4 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin:0 0 4px;">No messages yet</h4>
+          <p style="font-size:0.8rem;color:var(--text-subtle);margin:0;">Say hello to start the conversation!</p>
+        </div>`;
+      if (window.lucide) lucide.createIcons();
     } else {
       data.messages.forEach(m => {
         const mine = m.sender_id === CC_USER_ID;
@@ -683,7 +1026,7 @@ async function ccFetchThread(otherId, name, role) {
     ccScrollBottom(body);
     ccRefreshUnreadBadge();
   } catch (e) {
-    panel.innerHTML = '<div class="empty-state" style="margin:auto;"><p style="font-size:0.82rem;color:var(--red);">Failed to load conversation.</p></div>';
+    panel.innerHTML = '<div class="empty-state" style="margin:auto;padding:24px;"><p style="font-size:0.85rem;color:var(--red);">Failed to load conversation.</p></div>';
   }
 }
 
@@ -697,7 +1040,10 @@ async function ccSendMessage(otherId) {
   const text = input.value.trim();
   if (!text) return;
   input.value = '';
-  if (btn) btn.disabled = true;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>Sending…</span>';
+  }
 
   try {
     const resp = await fetch(`/connect/api/conversations/${otherId}/send`, {
@@ -713,7 +1059,11 @@ async function ccSendMessage(otherId) {
   } catch (e) {
     alert('Failed to send message.');
   } finally {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Send</span><i data-lucide="send" style="width:13px;height:13px;"></i>';
+      if (window.lucide) lucide.createIcons();
+    }
     input.focus();
   }
 }
@@ -732,7 +1082,7 @@ async function ccDeleteConversation(otherId) {
   const el = document.getElementById('cc-conv-' + otherId);
   if (el) el.remove();
   document.getElementById('cc-thread-panel').innerHTML =
-    '<div class="empty-state" style="margin:auto;"><p style="font-size:0.8rem;color:var(--text-subtle);">Conversation deleted.</p></div>';
+    '<div class="empty-state" style="margin:auto;padding:32px 16px;text-align:center;"><p style="font-size:0.85rem;color:var(--text-subtle);">Conversation deleted.</p></div>';
 }
 
 async function ccRefreshInbox() {
@@ -756,7 +1106,17 @@ async function ccRefreshInbox() {
         ${c.unread_count > 0 && c.partner_id !== ccActiveThreadUserId ? `<span class="cc-unread-dot">${c.unread_count}</span>` : ''}`;
       list.appendChild(div);
     });
-    if (!rows.length) list.innerHTML = '<div class="empty-state" style="padding:30px 12px;"><p style="font-size:0.8rem;color:var(--text-subtle);">No conversations yet.</p></div>';
+    if (!rows.length) {
+      list.innerHTML = `
+        <div class="empty-state" style="padding:36px 16px;text-align:center;">
+          <div class="empty-state-icon" style="background:rgba(13,148,136,0.1);margin:0 auto 10px;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+            <i data-lucide="message-square" style="width:20px;height:20px;color:var(--primary);"></i>
+          </div>
+          <p style="font-size:0.82rem;font-weight:600;color:var(--text-primary);margin:0 0 2px;">No conversations yet</p>
+          <p style="font-size:0.74rem;color:var(--text-subtle);margin:0;">Click the + button above to start a chat.</p>
+        </div>`;
+      if (window.lucide) lucide.createIcons();
+    }
     ccRefreshUnreadBadge();
   } catch (e) {}
 }
@@ -778,7 +1138,7 @@ async function ccRefreshUnreadBadge() {
   } catch (e) {}
 }
 
-/* ── New chat picker ── */
+/* ── New Chat Contact Search ── */
 function ccOpenNewChat() {
   document.getElementById('cc-newchat-modal').classList.add('active');
   ccSearchContacts('');
@@ -790,7 +1150,10 @@ async function ccSearchContacts(q) {
   try {
     const resp = await fetch('/connect/api/contacts?q=' + encodeURIComponent(q));
     const rows = await resp.json();
-    if (!rows.length) { list.innerHTML = '<p style="font-size:0.8rem;color:var(--text-subtle);padding:8px;">No contacts found.</p>'; return; }
+    if (!rows.length) {
+      list.innerHTML = '<p style="font-size:0.82rem;color:var(--text-subtle);padding:14px;text-align:center;">No contacts found.</p>';
+      return;
+    }
     list.innerHTML = '';
     rows.forEach(u => {
       const row = document.createElement('div');
@@ -809,7 +1172,9 @@ async function ccSearchContacts(q) {
       };
       list.appendChild(row);
     });
-  } catch (e) { list.innerHTML = '<p style="font-size:0.8rem;color:var(--red);padding:8px;">Failed to load contacts.</p>'; }
+  } catch (e) {
+    list.innerHTML = '<p style="font-size:0.82rem;color:var(--red);padding:14px;text-align:center;">Failed to load contacts.</p>';
+  }
 }
 
 /* ══════════════════════════ ANNOUNCEMENTS ══════════════════════════ */
@@ -834,13 +1199,11 @@ async function ccSearchAnnUsers(q) {
   try {
     const resp = await fetch('/connect/api/contacts?q=' + encodeURIComponent(q));
     let rows = await resp.json();
-    // Admin broadcasting to a specific user isn't limited to the "new chat"
-    // contact list, but reusing the same lookup keeps this simple & DRY.
     const results = document.getElementById('cc-ann-user-results');
     results.innerHTML = '';
     rows.forEach(u => {
       const row = document.createElement('div');
-      row.style.cssText = 'padding:6px 8px;cursor:pointer;border-radius:6px;font-size:0.78rem;color:var(--text);';
+      row.style.cssText = 'padding:7px 10px;cursor:pointer;border-radius:6px;font-size:0.8rem;color:var(--text-primary);';
       row.textContent = `${u.name} (${u.email})`;
       row.onmouseover = () => row.style.background = 'var(--bg-hover)';
       row.onmouseout = () => row.style.background = 'transparent';
@@ -860,6 +1223,7 @@ async function ccSubmitAnnouncement() {
   const title = document.getElementById('cc-ann-title').value.trim();
   const body = document.getElementById('cc-ann-body').value.trim();
   const pinned = document.getElementById('cc-ann-pinned').checked;
+  const submitBtn = document.getElementById('cc-ann-submit-btn');
   let targetId = null;
   if (targetType === 'club') targetId = document.getElementById('cc-ann-club-id').value || null;
   if (targetType === 'user') targetId = ccAnnUserSelectedId;
@@ -867,16 +1231,28 @@ async function ccSubmitAnnouncement() {
   if (!title || !body) { alert('Title and message are required.'); return; }
   if (targetType === 'user' && !targetId) { alert('Please select a user.'); return; }
 
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Posting…';
+  }
+
   try {
     const resp = await fetch('/connect/announcements/create', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ target_type: targetType, target_id: targetId, title, body, pinned })
     });
     const data = await resp.json();
-    if (data.error) { alert(data.error); return; }
+    if (data.error) {
+      alert(data.error);
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Post Announcement'; }
+      return;
+    }
     ccCloseModal('cc-ann-modal');
     location.reload();
-  } catch (e) { alert('Failed to post announcement.'); }
+  } catch (e) {
+    alert('Failed to post announcement.');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Post Announcement'; }
+  }
 }
 
 async function ccPinAnnouncement(annId) {
@@ -893,47 +1269,6 @@ async function ccDeleteAnnouncement(annId) {
   if (data.error) { alert(data.error); return; }
   const el = document.getElementById('cc-ann-' + annId);
   if (el) el.remove();
-}
-
-/* ══════════════════════════ ADMIN MODERATION ══════════════════════════ */
-async function ccLoadModConversations() {
-  const q = document.getElementById('cc-mod-search') ? document.getElementById('cc-mod-search').value : '';
-  const list = document.getElementById('cc-mod-list');
-  if (!list) return;
-  list.innerHTML = '<div class="cc-spinner"></div>';
-  try {
-    const resp = await fetch('/connect/api/admin/conversations?q=' + encodeURIComponent(q));
-    const rows = await resp.json();
-    if (!rows.length) { list.innerHTML = '<p style="font-size:0.8rem;color:var(--text-subtle);">No conversations found.</p>'; return; }
-    list.innerHTML = '';
-    rows.forEach(r => {
-      const row = document.createElement('div');
-      row.className = 'cc-list-item';
-      row.style.borderRadius = '9px';
-      row.innerHTML = `<div class="cc-list-meta">
-          <p class="cc-list-name">${ccEscapeHtml(r.a_name)} &harr; ${ccEscapeHtml(r.b_name)}</p>
-          <p class="cc-list-preview">${ccEscapeHtml((r.latest_body || '').slice(0,80))}</p>
-        </div>`;
-      row.onclick = () => ccViewModThread(r.a_id, r.b_id, r.a_name, r.b_name);
-      list.appendChild(row);
-    });
-  } catch (e) { list.innerHTML = '<p style="font-size:0.8rem;color:var(--red);">Failed to load.</p>'; }
-}
-
-async function ccViewModThread(a, b, aName, bName) {
-  const resp = await fetch(`/connect/api/admin/conversations/${a}/${b}`);
-  const data = await resp.json();
-  const win = document.getElementById('cc-mod-list');
-  win.innerHTML = `<button class="btn btn-secondary btn-xs" style="margin-bottom:8px;" onclick="ccLoadModConversations()">&larr; Back</button>`;
-  const thread = document.createElement('div');
-  thread.style.cssText = 'display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;padding:8px;background:var(--bg-2);border-radius:9px;';
-  (data.messages || []).forEach(m => {
-    const row = document.createElement('div');
-    row.className = 'cc-bubble-row ' + (m.sender_id === a ? 'me' : 'them');
-    row.innerHTML = `<div><div class="cc-bubble">${ccEscapeHtml(m.body)}</div><div class="cc-bubble-meta">${ccEscapeHtml(m.sender_name)} · ${ccFormatTime(m.created_at)}</div></div>`;
-    thread.appendChild(row);
-  });
-  win.appendChild(thread);
 }
 </script>
 {% endblock %}

@@ -469,6 +469,18 @@ function escapeHtml(str) {
         }
         return originalFetch(input, init);
     };
+
+    // Global form submit loading feedback
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (!form || form.dataset.safeDelete) return;
+        if (form.dataset.noLoading !== undefined) return;
+        if (typeof form.checkValidity === 'function' && !form.checkValidity()) return;
+        const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+        if (submitBtn && !submitBtn.disabled) {
+            submitBtn.classList.add('btn-loading');
+        }
+    });
 })();
 
 // -- Icons --

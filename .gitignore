@@ -73,6 +73,8 @@ logs/
 *.sqlite
 *.sqlite3
 *.db
+results/
+load_test_report.txt
 
 # ==============================================================================
 # Build & Distribution

@@ -1,15 +1,15 @@
-﻿# CECRMS — Technical Architecture
+# CampusOps — Technical Architecture
 
 ## 1. System Overview
 
 ```
 Browser (HTML / Vanilla JS / Tailwind CSS)
          |
-         | HTTP (Flask dev server / Gunicorn in production)
+         | HTTP (Flask dev server / Waitress in production)
          v
   Flask Application  (app.py — create_app factory)
          |
-         | Blueprint routing — 17 blueprints registered at startup
+         | Blueprint routing — 16 blueprints registered at startup
          v
    routes/          <- HTTP endpoints: auth, parsing, RBAC decorators
          |
@@ -19,7 +19,7 @@ Browser (HTML / Vanilla JS / Tailwind CSS)
          |
          | mysql-connector-python (connection pool)
          v
-   MySQL 8.0+       <- 20 tables, FK-constrained schema
+   MySQL 8.0+       <- 17 tables, FK-constrained schema
 ```
 
 AI Assistant sub-system:
@@ -68,7 +68,6 @@ Blueprints are registered with URL prefixes:
 | clubs | /clubs |
 | events | /events |
 | venues | /venues |
-| resources | /resources |
 | recommendations | /recommendations |
 | attendance | /attendance |
 | certificates | /certificates |
@@ -121,8 +120,8 @@ Jinja2 HTML templates. Base template `layout.html` provides:
 
 | File | Purpose |
 |---|---|
-| `schema.sql` | Creates all 20 tables from scratch — the canonical source of truth for fresh installs |
-| `seed.sql` | Demo data for development: 3 clubs, 6 users, venues, resources, events, announcements |
+| `schema.sql` | Creates all 17 tables from scratch — the canonical source of truth for fresh installs |
+| `seed.sql` | Demo data for development: 3 clubs, 6 users, venues, events, announcements |
 | `reset_database.sql` | One-command DROP + SOURCE schema.sql + SOURCE seed.sql |
 | `migrations/` | Incremental upgrades for databases that predate the current schema.sql |
 
@@ -299,7 +298,6 @@ def campus_connect_ai(question, user_id, history, response_style):
 | club | All clubs with coordinator and member count |
 | attendance | User's attendance records |
 | certificate | User's certificates |
-| resource | Resource availability (total minus allocated) |
 | venue | All venues with capacity/location |
 | coordinator | Clubs and their coordinator contacts |
 | announcement | Recent announcements from cc_announcements |
@@ -332,11 +330,8 @@ The OpenRouter API key is read exclusively from the environment (`os.getenv('OPE
 - `certificates` — one row per student per event (UNIQUE)
 - `user_activity` — interaction log feeding the recommendation engine
 
-**Resources and venues**
+**Venues**
 - `venues` — venue definitions
-- `resources` — resource inventory
-- `event_resources` — pivot: resources allocated to events
-- `resource_requests` — approval workflow with scheduled return tracking
 
 **Communication**
 - `notifications` — in-app notification centre with dedup via `event_key`
@@ -350,7 +345,6 @@ The OpenRouter API key is read exclusively from the environment (`os.getenv('OPE
 - `club_members` is the authoritative source for whether a student belongs to a club; `users.club_id` is only set for coordinators (indicates which club they coordinate)
 - `notifications.event_key` has a `UNIQUE KEY (user_id, event_key)`, enabling `INSERT IGNORE` for safe idempotent notification creation
 - `cc_ai_history.source` distinguishes database-first answers (`'db'`), LLM answers (`'ai'`), escalated answers (`'escalated'`), and user messages (`'user'`)
-- Resource `auto_released` flag prevents double-restoration of quantity when `release_expired_allocations()` is called multiple times
 
 ---
 
@@ -391,7 +385,6 @@ All secrets (SECRET_KEY, DB_PASSWORD, OPENROUTER_API_KEY) are read from environm
 | `event_service` | get_all_events, count_all_events, get_event_by_id, create_event, update_event, get_related_events |
 | `attendance_service` | generate_otp, get_event_by_otp, submit_otp_self, mark_attendance, has_attended, get_student_attendance_history, analytics functions |
 | `certificate_service` | get_user_certificates, issue_certificate, certificate_exists, search_certificates |
-| `resource_service` | get_all_resources, create_request, approve_request, reject_request, release_expired_allocations |
 | `connect_service` | can_message, send_message, get_inbox, get_conversation, mark_messages_read, create_announcement, save_ai_message, get_ai_history, escalate_to_coordinator |
 | `ai_service` | campus_connect_ai, detect_intent, answer_from_db, answer_from_openrouter, check_rate_limit |
 | `notification_service` | create_notification_safe, get_user_notifications, count_unread, mark_all_read |
@@ -421,7 +414,6 @@ All tests live in `tests/`. The `conftest.py` provides shared infrastructure:
 | test_attendance.py | OTP generation format, expiry, submission, certificate auto-issue |
 | test_certificates.py | Certificate existence check, deduplication |
 | test_notifications.py | create_notification_safe dedup; mark-all-read route |
-| test_resources_notifications.py | Approve/reject: single notification per event (regression) |
 | test_calendar.py | Month view, agenda view, month navigation, day-detail API |
 | test_pagination.py | Edge cases (empty set, page clamping) |
 | test_error_pages.py | 403, 404, 500 page rendering |
@@ -435,4 +427,4 @@ All tests live in `tests/`. The `conftest.py` provides shared infrastructure:
 | test_connect_routes.py | Campus Connect route handlers |
 | test_connect_rbac.py | Messaging and announcement RBAC for all three roles |
 
-Current result: **189 passed, 0 failures.**
+Current result: **261 passed, 0 failures.**

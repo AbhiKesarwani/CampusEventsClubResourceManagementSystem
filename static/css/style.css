@@ -337,13 +337,13 @@ p { color: var(--text-body); margin: 0; }
   border: 1px solid transparent;
 }
 .sidebar-link:hover {
-  background: rgba(13, 148, 136, 0.06);
+  background: rgba(13, 148, 136, 0.07);
   color: var(--primary);
-  transform: translateX(3px);
+  transform: translateX(2px);
 }
 .sidebar-link:hover .sidebar-icon {
   color: var(--primary);
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 .sidebar-link.active-nav {
   background: var(--primary-light);
@@ -354,13 +354,13 @@ p { color: var(--text-body); margin: 0; }
 }
 .sidebar-link.active-nav .sidebar-icon {
   color: var(--primary);
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 .sidebar-icon {
   width: 15px; height: 15px;
   flex-shrink: 0;
   color: var(--text-subtle);
-  transition: transform 0.18s ease, color 0.18s ease;
+  transition: transform 0.16s ease, color 0.16s ease;
 }
 .sidebar-badge {
   margin-left: auto;
@@ -370,25 +370,25 @@ p { color: var(--text-body); margin: 0; }
   padding: 1px 6px; border-radius: 99px;
   min-width: 18px;
   text-align: center;
-  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.35);
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.3);
   transition: transform 0.15s ease;
 }
 .sidebar-link:hover .sidebar-badge {
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 .sidebar-link-danger {
   color: var(--text-muted) !important;
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar-link-danger .sidebar-icon { color: var(--text-subtle) !important; }
 .sidebar-link-danger:hover {
   background: var(--danger-bg) !important;
   color: var(--danger) !important;
-  transform: translateX(3px);
+  transform: translateX(2px);
 }
 .sidebar-link-danger:hover .sidebar-icon {
   color: var(--danger) !important;
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 .sidebar-footer {
   padding: 8px;
@@ -739,7 +739,7 @@ main {
   margin-top: -6px;
 }
 
-/* ── Resource/Request Cards ── */
+/* ── Request Cards (used for membership requests) ── */
 .request-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -1017,8 +1017,8 @@ textarea.form-input { resize: vertical; min-height: 88px; }
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.notif-icon.type-resource_approved   { background: var(--success-bg); color: var(--success); }
-.notif-icon.type-resource_rejected   { background: var(--danger-bg);  color: var(--danger); }
+.notif-icon.type-membership_approved { background: var(--success-bg); color: var(--success); }
+.notif-icon.type-membership_rejected { background: var(--danger-bg);  color: var(--danger); }
 .notif-icon.type-certificate_generated { background: var(--accent-amber-muted); color: var(--accent-amber); }
 .notif-icon.type-attendance_marked   { background: var(--accent-green-muted); color: var(--accent-green); }
 .notif-icon.type-event_created       { background: var(--accent-coral-muted); color: var(--accent-coral); }
@@ -2149,3 +2149,482 @@ textarea.form-input { resize: vertical; min-height: 88px; }
 .event-timeline-step.done .event-timeline-status {
   color: var(--primary);
 }
+
+/* ════════════════════════════════════════════
+   PHASE 5 — VISUAL HIERARCHY ADDITIONS
+   Additive only — no existing rules modified.
+   ════════════════════════════════════════════ */
+
+/* ── Section title standard ── */
+.page-section-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.page-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 12px;
+}
+
+/* ── Event status badge ── */
+.event-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+.event-status-upcoming {
+  background: var(--primary-muted);
+  color: var(--primary-active);
+  border: 1px solid var(--primary-border);
+}
+.event-status-today {
+  background: var(--accent-coral-muted);
+  color: var(--accent-coral);
+  border: 1px solid var(--accent-coral-border);
+}
+.event-status-past {
+  background: var(--bg-surface-soft);
+  color: var(--text-subtle);
+  border: 1px solid var(--border);
+}
+
+/* ── Venue capacity badge ── */
+.venue-capacity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-green);
+  background: var(--accent-green-muted);
+  border: 1px solid var(--accent-green-border);
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+.venue-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+/* ── Certificate issue badge ── */
+.cert-issue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-green);
+  background: var(--accent-green-muted);
+  border: 1px solid var(--accent-green-border);
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+.cert-event-date {
+  font-size: 0.72rem;
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── Improved stat value ── */
+.stat-value-lg {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+/* ── Notification unread (stronger) ── */
+.notif-unread-strong {
+  border-left: 3px solid var(--primary) !important;
+  background: var(--primary-light) !important;
+}
+.notif-read {
+  border-left: 3px solid transparent;
+  opacity: 0.72;
+}
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Calendar status pills ── */
+.cal-status-approved {
+  background: var(--accent-green-muted);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green-border);
+}
+.cal-status-pending {
+  background: var(--accent-amber-muted);
+  color: var(--accent-amber);
+  border: 1px solid var(--accent-amber-border);
+}
+.cal-status-rejected {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+
+/* ── Improved greeting hero ── */
+.hero-banner-teal {
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-surface) 60%);
+  border: 1.5px solid var(--primary-border);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: 0 2px 8px rgba(13,148,136,0.06);
+  position: relative;
+  overflow: hidden;
+}
+.hero-banner-teal::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--primary), var(--primary-hover));
+  border-radius: 4px 0 0 4px;
+}
+
+/* ── Dashboard section divider ── */
+.dash-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dash-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+/* ── Club card improvements ── */
+.club-card-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.club-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+  flex: 1;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ════════════════════════════════════════════
+   PHASE 6 — NAVIGATION, FORMS & INTERACTION POLISH
+   ════════════════════════════════════════════ */
+
+/* ── 1. Top bar & Navigation feedback ── */
+.user-menu {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 50%;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.user-menu:hover .user-avatar {
+  box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--primary-border);
+}
+.nav-icon-btn {
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  border-radius: var(--radius-md);
+}
+.nav-icon-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.nav-icon-btn:active {
+  transform: scale(0.95);
+}
+.nav-icon-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+.sidebar-user {
+  transition: background-color 0.15s ease;
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+}
+.sidebar-user:hover {
+  background: rgba(13, 148, 136, 0.05);
+}
+
+/* ── 2. Button hierarchy & accessibility ── */
+.btn {
+  position: relative;
+  outline: none;
+  font-family: inherit;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.btn:disabled, .btn[disabled], .btn.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+.btn-loading * {
+  visibility: hidden;
+}
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  top: 50%;
+  left: 50%;
+  margin: -7px 0 0 -7px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+}
+.btn-secondary.btn-loading::after,
+.btn-ghost.btn-loading::after {
+  border-color: rgba(13, 148, 136, 0.25);
+  border-top-color: var(--primary);
+}
+@keyframes btn-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ── 3. Global Form Controls & Inputs ── */
+.form-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 9px 13px;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  font-family: inherit;
+}
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.14);
+  background: var(--bg-surface);
+}
+.form-input::placeholder {
+  color: var(--text-subtle);
+}
+.form-input:disabled {
+  background: var(--bg-surface-soft);
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Form selects */
+select.form-input {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+select.form-input option {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  padding: 6px 10px;
+}
+
+/* Form textareas */
+textarea.form-input {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.5;
+}
+
+/* Form validation states */
+.form-input.is-invalid {
+  border-color: var(--danger) !important;
+  background-color: rgba(239, 68, 68, 0.02);
+}
+.form-input.is-invalid:focus {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14) !important;
+}
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.form-label .req-star,
+.form-label .text-danger {
+  color: var(--danger);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.form-hint {
+  font-size: 0.74rem;
+  color: var(--text-subtle);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.form-error {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--danger);
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── 4. File upload dropzones ── */
+.upload-zone {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border-strong);
+  background: var(--bg-surface-soft);
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+.upload-zone:hover {
+  border-color: var(--primary);
+  background: rgba(13, 148, 136, 0.04);
+}
+.upload-zone-active {
+  border-color: var(--primary) !important;
+  background: var(--primary-light) !important;
+}
+
+/* ── 5. Modal & Dialog Polish ── */
+.sdm-overlay {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.sdm-dialog {
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.14), 0 10px 10px -5px rgba(0, 0, 0, 0.06);
+}
+.cc-modal-backdrop {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.cc-modal {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.14), 0 10px 10px -5px rgba(0, 0, 0, 0.06);
+}
+
+/* ── 6. Campus Connect Micro-Polish ── */
+.cc-thread-input textarea:focus,
+#cc-ai-input:focus,
+#cc-thread-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+.cc-send-btn {
+  transition: all 0.15s ease;
+}
+.cc-send-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.25);
+}
+.cc-send-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.cc-send-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.cc-bubble {
+  word-break: normal !important;
+  overflow-wrap: anywhere !important;
+  min-width: fit-content !important;
+}
+
+/* ── 7. Flash & Toast Polish ── */
+.flash-item {
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+.toast {
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+
+/* ── 8. Recommended Events Grid ── */
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.rec-grid.rec-grid-single {
+  grid-template-columns: minmax(320px, 420px);
+}
+@media (max-width: 1024px) {
+  .rec-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .rec-grid, .rec-grid.rec-grid-single {
+    grid-template-columns: 1fr;
+  }
+}
+

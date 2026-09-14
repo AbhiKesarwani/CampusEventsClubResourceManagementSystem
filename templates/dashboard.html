@@ -10,7 +10,7 @@
 <div class="anim-fade" style="display:flex;flex-direction:column;gap:20px;">
 
 {# ══════════════════════ LIGHT PAGE HEADER ══════════════════════ #}
-<div class="hero-banner" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+<div class="hero-banner-teal" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
     <div style="display:flex;flex-direction:column;gap:4px;">
         <p style="font-size:0.78rem;font-weight:600;color:var(--text-muted);">{{ greeting }},</p>
         <h1 style="font-size:1.45rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.01em;">{{ session.get('name','') }} 👋</h1>
@@ -46,7 +46,7 @@
 
 {# ══════════════════════════ QUICK ACTIONS ══════════════════════════ #}
 <div>
-    <h2 style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+    <h2 class="page-section-label" style="margin-bottom:12px;">
         <i data-lucide="zap" style="width:13px;height:13px;color:var(--amber);"></i>
         Quick Actions
     </h2>
@@ -175,30 +175,39 @@
         <canvas id="monthlyChart" height="180"></canvas>
     </div>
 
-    <!-- Pending requests -->
+    <!-- Pending Membership Requests -->
     <div class="card p-5">
-        <h3 style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin:0 0 14px;display:flex;align-items:center;gap:6px;">
-            <i data-lucide="clock" style="width:14px;height:14px;color:var(--warning);"></i>
-            Pending Resource Requests
-            {% if stat_pending_requests %}
-            <span class="badge badge-pending" style="margin-left:auto;">{{ stat_pending_requests }}</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <h3 class="page-section-title" style="margin:0;">
+                <i data-lucide="users" style="width:14px;height:14px;color:var(--warning);"></i>
+                Pending Membership Requests
+                {% if stat_pending_requests %}
+                <span class="badge badge-pending">{{ stat_pending_requests }}</span>
+                {% endif %}
+            </h3>
+            {% if my_club %}
+            <a href="{{ url_for('clubs.membership_requests', club_id=my_club.club_id) }}"
+               style="font-size:0.75rem;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:4px;">
+                View all <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
+            </a>
             {% endif %}
-        </h3>
-        {% if my_requests %}
+        </div>
+        {% if pending_requests %}
         <div style="display:flex;flex-direction:column;gap:6px;max-height:16rem;overflow-y:auto;">
-            {% for req in my_requests %}
-            {% if req.status == 'Pending' %}
-            <div class="request-card pending" style="padding:10px 12px;">
-                <p style="font-size:0.82rem;font-weight:600;color:var(--text-primary);margin:0;">{{ req.resource_name or 'Resource' }}</p>
-                <p style="font-size:0.73rem;color:var(--text-subtle);margin:2px 0 0;">Qty: {{ req.quantity }}</p>
+            {% for req in pending_requests %}
+            <div class="request-card pending" style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <p style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin:0;">{{ req.student_name or 'Student' }}</p>
+                    <p style="font-size:0.73rem;color:var(--text-subtle);margin:2px 0 0;">{{ req.student_email }}</p>
+                </div>
+                <span class="badge badge-pending" style="font-size:0.7rem;">Pending</span>
             </div>
-            {% endif %}
             {% endfor %}
         </div>
         {% else %}
         <div class="empty-state" style="padding:24px 12px;">
-            <div class="empty-state-icon"><i data-lucide="package-check" style="width:20px;height:20px;"></i></div>
-            <p>No pending requests</p>
+            <div class="empty-state-icon"><i data-lucide="user-check" style="width:20px;height:20px;"></i></div>
+            <p>No pending membership requests</p>
         </div>
         {% endif %}
     </div>
@@ -206,11 +215,13 @@
 
 {% else %}
 {# Student Stats #}
-<div class="stat-row">
+<div class="stats-grid">
     {% for icon, label, val, bg, color in [
         ('check-circle','Events Attended', stat_attended,      'var(--success-bg)',  'var(--success)'),
         ('award',       'Certificates',    stat_certificates,  'var(--warning-bg)',  'var(--warning)'),
+        ('users',       'Clubs Joined',    stat_clubs_joined if stat_clubs_joined is defined else None, 'var(--primary-light)', 'var(--primary)'),
     ] %}
+    {% if val is not none %}
     <div class="stat-card">
         <div class="stat-icon" style="background:{{ bg }};">
             <i data-lucide="{{ icon }}" style="width:16px;height:16px;color:{{ color }};"></i>
@@ -218,6 +229,7 @@
         <p class="stat-value" data-count="{{ val or 0 }}">0</p>
         <p class="stat-label">{{ label }}</p>
     </div>
+    {% endif %}
     {% endfor %}
 </div>
 {% endif %}
@@ -225,7 +237,7 @@
 {# ══════════════════════════ UPCOMING EVENTS ══════════════════════════ #}
 <div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h2 style="font-size:0.87rem;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:6px;margin:0;">
+        <h2 class="page-section-title">
             <i data-lucide="calendar-days" style="width:14px;height:14px;color:var(--success);"></i>
             Upcoming Events
         </h2>

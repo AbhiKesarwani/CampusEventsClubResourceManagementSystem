@@ -39,25 +39,22 @@
     <div style="display:flex;flex-direction:column;gap:8px;" id="notif-list">
         {% for n in notifications %}
         <div id="notif-{{ n.notif_id }}"
-             class="card"
-             style="padding:14px 16px;display:flex;align-items:flex-start;gap:14px;
-                    border-left:3px solid
-                    {% if not n.is_read %}var(--blue){% else %}transparent{% endif %};
-                    opacity:{% if n.is_read %}0.75{% else %}1{% endif %};
-                    transition:all 0.3s;">
+             class="card {% if not n.is_read %}notif-unread-strong{% else %}notif-read{% endif %}"
+             style="padding:14px 16px;display:flex;align-items:flex-start;gap:14px;transition:all 0.3s;">
 
-            <!-- Icon -->
-            <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-                        background:{% if n.type == 'success' or n.type == 'attendance_marked' or n.type == 'resource_approved' %}var(--success-bg)
-                        {% elif n.type == 'danger' or n.type == 'resource_rejected' %}var(--danger-bg)
-                        {% elif n.type == 'warning' %}var(--warning-bg)
-                        {% else %}var(--info-bg){% endif %};">
+            <!-- Icon — type-aware -->
+            <div class="notif-icon type-{{ n.type or 'info' }}"
+                 style="width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
                 <i data-lucide="
                     {% if n.type == 'attendance_marked' %}check-circle
+                    {% elif n.type == 'certificate_generated' %}award
                     {% elif n.type == 'warning' %}alert-triangle
                     {% elif n.type == 'danger' %}x-circle
+                    {% elif n.type == 'event_created' %}calendar
+                    {% elif n.type == 'club_created' or n.type == 'club_updated' %}users
+                    {% elif n.type == 'coordinator_assigned' %}user-check
                     {% else %}bell{% endif %}"
-                   style="width:15px;height:15px;color:{% if n.type == 'success' or n.type == 'attendance_marked' %}var(--emerald){% elif n.type == 'danger' %}var(--red){% elif n.type == 'warning' %}var(--amber){% else %}var(--blue){% endif %};"></i>
+                   style="width:15px;height:15px;"></i>
             </div>
 
             <!-- Content -->
@@ -87,18 +84,18 @@
                 <div style="display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap;">
                     {% if n.link %}
                     <a href="{{ n.link }}" onclick="markRead({{ n.notif_id }})"
-                       style="font-size:0.72rem;color:var(--emerald);font-weight:600;text-decoration:none;
+                       style="font-size:0.72rem;color:var(--primary);font-weight:600;text-decoration:none;
                               display:flex;align-items:center;gap:3px;"
                        onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
                         <i data-lucide="external-link" style="width:10px;height:10px;"></i>
                         View
                     </a>
                     {% endif %}
-                    <span style="font-size:0.7rem;color:var(--text-subtle);">
-                        {{ n.created_at.strftime('%b %d, %I:%M %p') if n.created_at and n.created_at.strftime is defined else (n.created_at or '') }}
+                    <span style="font-size:0.7rem;color:var(--text-subtle);" title="{{ n.created_at }}">
+                        {{ n.created_at | timeago if n.created_at else '' }}
                     </span>
                     {% if not n.is_read %}
-                    <span style="width:6px;height:6px;border-radius:50%;background:var(--emerald);display:inline-block;"></span>
+                    <span class="unread-dot"></span>
                     {% endif %}
                 </div>
             </div>
@@ -135,14 +132,14 @@ async function markRead(notifId) {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         if (el) {
-            el.style.borderLeftColor = 'transparent';
-            el.style.opacity = '0.7';
-            // Update font weight
+            el.classList.remove('notif-unread-strong');
+            el.classList.add('notif-read');
+            // Update font weight on title
             const title = el.querySelector('p');
             if (title) title.style.fontWeight = '500';
-            // Remove unread dot and mark-read button
+            // Remove mark-read button and unread dot
             el.querySelectorAll('[title="Mark as read"]').forEach(b => b.remove());
-            el.querySelectorAll('[style*="border-radius:50%;background:var(--emerald)"]').forEach(d => d.remove());
+            el.querySelectorAll('.unread-dot').forEach(d => d.remove());
         }
     } catch(e) {}
 }

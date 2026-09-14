@@ -18,8 +18,9 @@
   .cal-today .cal-daynum { color: var(--emerald); }
   .cal-event-pill {
     font-size: 0.63rem; font-weight: 600; padding: 2px 6px; border-radius: 5px;
-    background: var(--emerald-dim); color: var(--emerald); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    background: var(--primary-muted); color: var(--primary-active); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  .cal-event-pill.past { background: var(--bg-surface-soft); color: var(--text-subtle); }
   .cal-event-pill.pending { background: var(--amber-dim); color: var(--amber); }
   .cal-more { font-size: 0.62rem; color: var(--text-subtle); padding-left: 4px; }
   @media (max-width: 720px) { .cal-cell { min-height: 60px; } .cal-event-pill { display: none; } .cal-more { display: none; } }
@@ -67,7 +68,13 @@
                onclick="openDayDetail('{{ '%04d-%02d-%02d'|format(year, month, day) }}')">
             <span class="cal-daynum">{{ day }}</span>
             {% for ev in day_events[:2] %}
-            <span class="cal-event-pill {% if ev.approved_status == 'Pending' %}pending{% endif %}">{{ ev.title }}</span>
+            {% set ev_date_str2 = ev.date.strftime('%Y-%m-%d') if ev.date and ev.date.strftime is defined else '' %}
+            <span class="cal-event-pill
+              {%- if ev.approved_status == 'Pending' %} pending
+              {%- elif ev_date_str2 and ev_date_str2 < today_str %} past
+              {%- endif %}">
+              {{ ev.title }}
+            </span>
             {% endfor %}
             {% if day_events|length > 2 %}
             <span class="cal-more">+{{ day_events|length - 2 }} more</span>
@@ -91,9 +98,15 @@
         </div>
         <div style="flex:1;min-width:0;">
           <p style="font-size:0.85rem;font-weight:700;color:var(--text);margin:0;">{{ ev.title }}</p>
-          <p style="font-size:0.73rem;color:var(--text-subtle);margin:2px 0 0;">{{ ev.club_name or '' }} · {{ ev.venue_name or 'TBD' }} · {{ ev.start_time or '' }}</p>
+          <p style="font-size:0.73rem;color:var(--text-subtle);margin:2px 0 0;">{{ ev.club_name or '' }} · {{ ev.venue_name or 'TBD' }}{% if ev.start_time %} · {{ ev.start_time }}{% endif %}</p>
         </div>
-        <span class="badge badge-{{ 'approved' if ev.approved_status=='Approved' else 'pending' if ev.approved_status=='Pending' else 'rejected' }}">{{ ev.approved_status }}</span>
+        <span class="badge
+          {%- if ev.approved_status == 'Approved' %} badge-approved
+          {%- elif ev.approved_status == 'Pending' %} badge-pending
+          {%- elif ev.approved_status == 'Rejected' %} badge-rejected
+          {%- else %} badge-info{%- endif %}">
+          {{ ev.approved_status or 'Unknown' }}
+        </span>
       </a>
       {% endfor %}
     </div>

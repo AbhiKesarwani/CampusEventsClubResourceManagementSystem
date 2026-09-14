@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for the CECRMS test suite.
+"""Shared pytest fixtures for the CampusOps test suite.
 
 Tests never hit a real MySQL server — `database.get_db_connection` is
 monkeypatched with a lightweight fake connection/cursor that returns empty

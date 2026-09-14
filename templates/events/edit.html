@@ -94,15 +94,14 @@
             <!-- Upload More Images -->
             <div class="form-group">
                 <label class="form-label">Upload More Images</label>
-                <label style="cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:16px;border-radius:var(--radius-lg);border:2px dashed var(--border);background:var(--bg-hover);"
-                       id="edit-upload-zone">
-                    <i data-lucide="image-plus" style="width:22px;height:22px;color:var(--emerald);"></i>
-                    <span style="font-size:0.78rem;font-weight:600;color:var(--emerald);">Click to add more images</span>
-                    <span style="font-size:0.68rem;color:var(--text-subtle);">Max 5 MB each · JPG, PNG, GIF, WebP</span>
+                <label class="upload-zone" id="edit-upload-zone" style="padding:20px;">
+                    <i data-lucide="image-plus" style="width:24px;height:24px;color:var(--primary);"></i>
+                    <span style="font-size:0.82rem;font-weight:600;color:var(--primary);">Click to add more images</span>
+                    <span style="font-size:0.72rem;color:var(--text-subtle);">Max 5 MB each · JPG, PNG, GIF, WebP</span>
                     <input type="file" name="event_images" multiple accept=".jpg,.jpeg,.png,.gif,.webp"
                            class="hidden" onchange="updateEditZone(this)">
                 </label>
-                <p class="form-hint" id="edit-file-names"></p>
+                <p class="form-hint" id="edit-file-names" style="font-weight:500;"></p>
             </div>
 
             <div class="flex gap-3">

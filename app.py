@@ -72,6 +72,7 @@ def create_app(config_class=Config):
     # ── Jinja Globals ─────────────────────────────────────────────────────────
     @app.context_processor
     def inject_globals():
+        from datetime import date as _date
         user = None
         unread_count = 0
         cc_unread_count = 0
@@ -85,7 +86,8 @@ def create_app(config_class=Config):
             except Exception:
                 pass
         return dict(current_user=user, session=session, unread_count=unread_count,
-                   cc_unread_count=cc_unread_count)
+                   cc_unread_count=cc_unread_count,
+                   today_str=_date.today().strftime('%Y-%m-%d'))
 
     # ── Jinja Filters ─────────────────────────────────────────────────────────
     from datetime import datetime as _dt

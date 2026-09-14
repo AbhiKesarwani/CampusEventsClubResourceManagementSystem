@@ -1,7 +1,7 @@
 -- =============================================================================
 -- CECRMS — Sample Seed Data (v1.0.0)
 -- Run AFTER schema.sql. Provides enough data to explore every feature
--- immediately: admin, coordinators, students, clubs, venues, resources,
+-- immediately: admin, coordinators, students, clubs, venues,
 -- events, attendance, certificates, notifications, and Campus Connect
 -- announcements.
 --
@@ -73,13 +73,6 @@ INSERT INTO venues (venue_name, capacity, location, type) VALUES
   ('Open Air Theatre', 800, 'Central Lawn', 'Outdoor'),
   ('Robotics Lab', 40, 'Block C, 1st Floor', 'Lab');
 
--- ── Resources ────────────────────────────────────────────────────────────────
-INSERT INTO resources (resource_name, total_quantity, description) VALUES
-  ('Projector', 6, 'HD projectors for presentations'),
-  ('Microphone (Wireless)', 10, 'Handheld wireless mics'),
-  ('Foldable Chairs', 300, 'Stackable audience seating'),
-  ('Portable Speaker', 4, 'Battery-powered PA speakers'),
-  ('Extension Cable', 15, '10m heavy-duty extension cords');
 
 -- ── Events ───────────────────────────────────────────────────────────────────
 INSERT INTO events (club_id, title, description, event_lead, contact_no, venue_id,
@@ -129,14 +122,6 @@ INSERT INTO certificates (event_id, user_id, issue_date, cert_path) VALUES
    (SELECT user_id FROM users WHERE email='asha@cecrms.com'),
    CURDATE(), NULL);
 
--- ── Resource requests ────────────────────────────────────────────────────────
-INSERT INTO resource_requests (event_id, club_id, resource_id, quantity, requested_by,
-                               status, purpose, required_date) VALUES
-  ((SELECT event_id FROM events WHERE title='Robo Wars 2026'),
-   (SELECT club_id FROM clubs WHERE club_name='Robotics Club'),
-   (SELECT resource_id FROM resources WHERE resource_name='Projector'),
-   2, (SELECT user_id FROM users WHERE email='coord.robotics@cecrms.com'),
-   'Pending', 'Live scoreboard display', DATE_ADD(CURDATE(), INTERVAL 10 DAY));
 
 -- ── Notifications ────────────────────────────────────────────────────────────
 INSERT INTO notifications (user_id, title, body, link, type, event_key) VALUES

@@ -1,12 +1,12 @@
-# CECRMS — Campus Event & Club Resource Management System
+# CampusOps — Campus Event & Club Operations Management System
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-2.3.3-000000?style=flat&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Tests](https://img.shields.io/badge/Tests-192%20Passed-brightgreen?style=flat&logo=pytest&logoColor=white)](pytest.ini)
+[![Tests](https://img.shields.io/badge/Tests-261%20Passed-brightgreen?style=flat&logo=pytest&logoColor=white)](pytest.ini)
 [![License](https://img.shields.io/badge/License-Educational%20%2F%20MIT-blue?style=flat)](LICENSE)
 
-A robust, enterprise-grade full-stack web application built with **Python/Flask** and **MySQL** for managing campus clubs, events, inventory resources, attendance tracking, and communications. CECRMS is purpose-built for three distinct user roles: **Student**, **Club Coordinator**, and **Administrator**.
+A robust, enterprise-grade full-stack web application built with **Python/Flask** and **MySQL** for managing campus clubs, events, attendance tracking, and communications. CampusOps is purpose-built for three distinct user roles: **Student**, **Club Coordinator**, and **Administrator**.
 
 ---
 
@@ -33,9 +33,9 @@ A robust, enterprise-grade full-stack web application built with **Python/Flask*
 
 ## 1. Overview
 
-CECRMS centralizes fragmented campus student affairs into an integrated digital hub. Students discover upcoming events, join clubs, verify attendance via dynamic OTPs, and download authentic certificates. Club coordinators manage their rosters, submit event proposals, and reserve campus resources. Administrators oversee system approvals, review audit logs, and export analytics.
+CampusOps centralizes fragmented campus student affairs into an integrated digital hub. Students discover upcoming events, join clubs, verify attendance via dynamic OTPs, and download authentic certificates. Club coordinators manage their rosters, submit event proposals, and coordinate club operations. Administrators oversee system approvals, review audit logs, and export analytics.
 
-Additionally, CECRMS includes **Campus Connect** — a real-time messaging, club/campus announcement hub, and an intelligent AI Assistant with **multi-model fallback orchestration** via OpenRouter.
+Additionally, CampusOps includes **Campus Connect** — a real-time messaging, club/campus announcement hub, and an intelligent AI Assistant with **multi-model fallback orchestration** via OpenRouter.
 
 ---
 
@@ -50,7 +50,6 @@ Additionally, CECRMS includes **Campus Connect** — a real-time messaging, club
 | **Event Life Cycle** | Event creation, review/approval workflow, date/venue collision checks, and image galleries. |
 | **Attendance via OTP** | Coordinator generates a 6-digit dynamic OTP (5-minute expiry); students self-verify to register attendance. |
 | **Certificate Engine** | High-resolution PNG certificates dynamically rendered with Pillow, complete with unique verification identifiers. |
-| **Resource Inventory** | Campus inventory reservation system with conflict detection and automated resource release on event closure. |
 | **Venues** | Facility directory with capacities and locations; automated double-booking prevention. |
 | **In-App Notifications** | Notification center with deduplication via `event_key` ensuring users receive single, idempotent alerts. |
 | **Universal Search (Ctrl+K)** | Instant search across events, clubs, venues, contacts, announcements, and AI query history. |
@@ -72,8 +71,6 @@ Additionally, CECRMS includes **Campus Connect** — a real-time messaging, club
 | Propose Events for Club | — | ✅ (Own Club) | ✅ (Any Club) |
 | Approve / Reject Events | — | — | ✅ |
 | Generate Attendance OTPs | — | ✅ (Own Club Events) | ✅ |
-| Request Equipment / Resources | — | ✅ (Own Club Events) | ✅ |
-| Approve / Reject Resource Requests | — | — | ✅ |
 | Manage Club Roster & Positions | — | ✅ (Own Club) | ✅ |
 | Direct Message Coordinators | ✅ | ✅ | ✅ |
 | Send Club Announcements | — | ✅ (Own Club Members) | ✅ |
@@ -89,7 +86,7 @@ Additionally, CECRMS includes **Campus Connect** — a real-time messaging, club
 | Layer | Technology | Details |
 |---|---|---|
 | **Runtime & Language** | Python 3.11+ | High-performance Python backend |
-| **Web Framework** | Flask 2.3.3 | Modular architecture using 17 Blueprints |
+| **Web Framework** | Flask 2.3.3 | Modular architecture using 16 Blueprints |
 | **Security & CSRF** | Flask-WTF 1.2.1 | Global CSRF tokens on all state-changing endpoints |
 | **Database** | MySQL 8.0+ | Relational schema with foreign keys, indexes, and ENUMs |
 | **Database Connector** | mysql-connector-python 8.0.33 | Thread-safe connection pooling (`MySQLConnectionPool`) |
@@ -101,7 +98,7 @@ Additionally, CECRMS includes **Campus Connect** — a real-time messaging, club
 | **Spreadsheet Exports** | openpyxl 3.1.2 | Styled Excel export with custom branding |
 | **Document Exports** | reportlab 4.0.7 | Clean PDF reports with auto-wrapping tables |
 | **AI Integration** | OpenRouter REST API | Multi-model fallback (GPT-4o-mini, Gemini, Llama, Qwen) |
-| **Testing** | pytest 7.4.3 | Mock-based unit & integration tests (192 tests) |
+| **Testing** | pytest 7.4.3 | Mock-based unit & integration tests (261 tests) |
 | **Package Management** | pip / uv | Fast, reliable dependency resolution |
 
 ---
@@ -122,7 +119,7 @@ Additionally, CECRMS includes **Campus Connect** — a real-time messaging, club
                      ┌──────────────────┴──────────────────┐
                      ▼                                     ▼
         ┌─────────────────────────┐           ┌─────────────────────────┐
-        │  routes/ (17 Blueprints)│           │  helpers/               │
+        │  routes/ (16 Blueprints)│           │  helpers/               │
         │  HTTP request parsing,  │◄─────────┤  - auth_helpers (RBAC)  │
         │  view routing, and RBAC │           │  - upload_helpers       │
         └────────────┬────────────┘           │  - pagination           │
@@ -151,7 +148,7 @@ Additionally, CECRMS includes **Campus Connect** — a real-time messaging, club
 ## 6. Project Structure
 
 ```
-CampusEventsClubResourceManagementSystem/
+CampusOps/
 │
 ├── app.py                      # Flask application factory, error handlers, template filters
 ├── config.py                   # Environment-driven configuration loader
@@ -162,7 +159,7 @@ CampusEventsClubResourceManagementSystem/
 ├── .gitignore                  # Production-ready git ignore rules
 ├── README.md                   # System documentation
 │
-├── routes/                     # 17 Modular Flask blueprints
+├── routes/                     # 16 Modular Flask blueprints
 │   ├── admin.py                # Admin coordinator directory and club assignment
 │   ├── attendance.py           # Dynamic 6-digit OTP generation and student self-marking
 │   ├── auth.py                 # User authentication, registration, logout, and CSRF
@@ -176,7 +173,6 @@ CampusEventsClubResourceManagementSystem/
 │   ├── notifications.py        # In-app notifications feed and mark-read controls
 │   ├── profile.py              # User profiles, avatar uploads, and activity history
 │   ├── recommendations.py      # Personalized event recommendation feed
-│   ├── resources.py            # Inventory management and reservation workflows
 │   ├── search.py               # Global search modal (Ctrl+K) and full results page
 │   ├── settings.py             # Account settings, security, and AI preferences
 │   └── venues.py               # Venue directory and booking capacity overview
@@ -193,7 +189,6 @@ CampusEventsClubResourceManagementSystem/
 │   ├── membership_service.py   # Join requests, approvals, and cancellations
 │   ├── notification_service.py # In-app notification creation with event_key deduplication
 │   ├── recommendation_service.py # Multi-factor scoring for tailored event suggestions
-│   ├── resource_service.py     # Resource reservation, conflict checking, and release
 │   ├── user_service.py         # User credentials, password hashing, and profile settings
 │   └── venue_service.py        # Venue capacity and conflict prevention queries
 │
@@ -211,20 +206,20 @@ CampusEventsClubResourceManagementSystem/
 │   ├── admin/, attendance/, certificates/, clubs/
 │   ├── components/             # Reusable UI partials (event cards, pagination)
 │   ├── connect/                # Campus Connect messenger and AI chat interface
-│   └── events/, resources/, venues/, profile.html, settings.html, export.html, calendar.html
+│   └── events/, venues/, profile.html, settings.html, export.html, calendar.html
 │
 ├── database/                   # Database schemas, seeds, and migrations
-│   ├── schema.sql              # Clean complete schema definition (20 tables)
-│   ├── seed.sql                # Rich demo dataset (clubs, users, events, venues, resources)
+│   ├── schema.sql              # Clean complete schema definition (17 tables)
+│   ├── seed.sql                # Rich demo dataset (clubs, users, events, venues, announcements)
 │   ├── reset_database.sql      # Database rebuild and seed utility script
 │   └── migrations/             # Idempotent incremental migration scripts
 │       ├── v1.1_profile_settings.sql
 │       ├── v1.2_campus_connect_schema.sql
 │       └── v1.3_ai_history_source_enum.sql
 │
-├── tests/                      # Automated test suite (192 tests, 100% pass)
+├── tests/                      # Automated test suite (261 tests, 100% pass)
 │   ├── conftest.py             # Shared fixtures and FakeDB mock layer (runs without MySQL)
-│   └── test_*.py               # 21 comprehensive test suites
+│   └── test_*.py               # 27 comprehensive test suites
 │
 ├── docs/                       # Technical documentation and assets
 │   ├── architecture.md         # Deep-dive architecture design documentation
@@ -305,7 +300,7 @@ OPENROUTER_FALLBACK_MODELS=google/gemini-2.0-flash-001,meta-llama/llama-3.3-70b-
 OPENROUTER_TIMEOUT=20
 ```
 
-> **Note:** `OPENROUTER_API_KEY` is optional. Without it, the AI Assistant answers all campus, club, event, coordinator, and resource queries directly from the MySQL database, gracefully notifying users for general chit-chat.
+> **Note:** `OPENROUTER_API_KEY` is optional. Without it, the AI Assistant answers all campus, club, event, and coordinator queries directly from the MySQL database, gracefully notifying users for general chit-chat.
 
 ---
 
@@ -313,7 +308,7 @@ OPENROUTER_TIMEOUT=20
 
 ### Fresh Installation
 
-`schema.sql` creates the `cecrms` database along with all 20 normalized tables:
+`schema.sql` creates the `cecrms` database along with all 17 normalized tables:
 
 ```powershell
 # 1. Create database schema
@@ -384,29 +379,12 @@ uv run pytest
 
 ```text
 ============================== test session starts ==============================
-collected 192 items
+collected 261 items
 
-tests/test_ai_service.py .........................                         [ 13%]
-tests/test_ai_service_regression.py ....................                  [ 23%]
-tests/test_attendance.py ............                                     [ 29%]
-tests/test_auth.py ................                                       [ 38%]
-tests/test_calendar.py .......                                            [ 41%]
-tests/test_certificates.py .......                                        [ 45%]
-tests/test_connect_rbac.py ...........                                    [ 51%]
-tests/test_connect_routes.py ...........                                  [ 56%]
-tests/test_connect_service.py .........................                   [ 70%]
-tests/test_dashboard.py .....                                             [ 72%]
-tests/test_error_pages.py ....                                            [ 74%]
-tests/test_export.py .....                                                [ 77%]
-tests/test_notifications.py .....                                         [ 80%]
-tests/test_pagination.py .....                                            [ 82%]
-tests/test_profile_settings.py ........                                   [ 86%]
-tests/test_rbac_helpers.py ....                                           [ 89%]
-tests/test_recommendations.py ...                                         [ 90%]
-tests/test_resources_notifications.py ..                                  [ 91%]
-tests/test_search.py .....                                                [100%]
+27 comprehensive test suites covering auth, RBAC, events, clubs, venues,
+attendance, certificates, notifications, Campus Connect, and admin workflows.
 
-====================== 192 passed, 0 failures in ~20s ===========================
+====================== 261 passed, 0 failures in ~27s ===========================
 ```
 
 Key test categories:
@@ -433,7 +411,7 @@ Key test categories:
 
 ## 12. Campus Connect & AI Assistant
 
-Campus Connect is the integrated real-time communication platform in CECRMS:
+Campus Connect is the integrated real-time communication platform in CampusOps:
 
 ```
                                   ┌────────────────────────┐
@@ -449,7 +427,7 @@ Campus Connect is the integrated real-time communication platform in CECRMS:
       │ Parameterized Database Lookup │               │ OpenRouter Multi-Model Engine │
       │ - Upcoming events & venues    │               │  1. Primary Model             │
       │ - Club details & coordinators │               │  2. Configured Fallback Array │
-      │ - Attendance & resources      │               │  3. Built-in Reliable Models  │
+      │ - Attendance & venues         │               │  3. Built-in Reliable Models  │
       └───────────────┬───────────────┘               └───────────────┬───────────────┘
                       │ Answer Found                                  │ Response Generated
                       └───────────────────────┬───────────────────────┘
@@ -500,17 +478,16 @@ Reference mockups and application captures located in `docs/screenshots/`:
 | 05 | Events Directory & Filters | `docs/screenshots/05_events.png` |
 | 06 | Event Details & Gallery | `docs/screenshots/06_event_detail.png` |
 | 07 | Attendance OTP Generator & Verification | `docs/screenshots/07_attendance_otp.png` |
-| 08 | Resource Allocation Workflow | `docs/screenshots/08_resources.png` |
-| 09 | Certificate Generation & Verification | `docs/screenshots/09_certificates.png` |
-| 10 | Campus Connect — Message Threads | `docs/screenshots/10_cc_inbox.png` |
-| 11 | Campus Connect — Conversation View | `docs/screenshots/11_cc_conversation.png` |
-| 12 | Campus Connect — AI Assistant | `docs/screenshots/12_cc_ai.png` |
-| 13 | Campus Connect — Announcements | `docs/screenshots/13_cc_announcements.png` |
-| 14 | Coordinator Dashboard | `docs/screenshots/14_coordinator_dashboard.png` |
-| 15 | Administrator Dashboard | `docs/screenshots/15_admin_dashboard.png` |
-| 16 | Admin Coordinator Management | `docs/screenshots/16_admin_coordinators.png` |
-| 17 | Schedule & Calendar View | `docs/screenshots/17_calendar.png` |
-| 18 | Quick Search Modal (Ctrl+K) | `docs/screenshots/18_search.png` |
+| 08 | Certificate Generation & Verification | `docs/screenshots/09_certificates.png` |
+| 09 | Campus Connect — Message Threads | `docs/screenshots/10_cc_inbox.png` |
+| 10 | Campus Connect — Conversation View | `docs/screenshots/11_cc_conversation.png` |
+| 11 | Campus Connect — AI Assistant | `docs/screenshots/12_cc_ai.png` |
+| 12 | Campus Connect — Announcements | `docs/screenshots/13_cc_announcements.png` |
+| 13 | Coordinator Dashboard | `docs/screenshots/14_coordinator_dashboard.png` |
+| 14 | Administrator Dashboard | `docs/screenshots/15_admin_dashboard.png` |
+| 15 | Admin Coordinator Management | `docs/screenshots/16_admin_coordinators.png` |
+| 16 | Schedule & Calendar View | `docs/screenshots/17_calendar.png` |
+| 17 | Quick Search Modal (Ctrl+K) | `docs/screenshots/18_search.png` |
 
 ---
 

@@ -96,6 +96,9 @@ def _club_admin_stats(club_id) -> dict:
     if not club_id:
         return {
             'my_club': None, 'my_events': [],
+            'stat_events': 0, 'stat_members': 0,
+            'stat_pending_requests': 0, 'pending_requests': [],
+            'stat_attendance': 0,
             'chart_monthly_labels': json.dumps([]),
             'chart_monthly_data':   json.dumps([]),
         }
@@ -105,11 +108,17 @@ def _club_admin_stats(club_id) -> dict:
 
     monthly = get_club_monthly_attendance(club_id, 6)
 
+    from services.membership_service import get_requests_for_club
+    all_pending = get_requests_for_club(club_id, status='Pending')
+    pending_cnt = len(all_pending)
+
     return {
         'my_club':      my_club,
         'my_events':    my_events,
         'stat_events':  len(my_events),
         'stat_members': member_cnt,
+        'stat_pending_requests': pending_cnt,
+        'pending_requests': all_pending[:10],
         'stat_attendance': count_attendance(),
         'chart_monthly_labels': json.dumps([m['month'] for m in monthly]),
         'chart_monthly_data':   json.dumps([m['count'] for m in monthly]),
